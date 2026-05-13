@@ -40,18 +40,34 @@ const COLS: { key: SortKey; label: string; short: string }[] = [
   { key: 'avg_points_per_game', label: 'Avg', short: 'Avg' },
 ];
 
+function getMonthOptions() {
+  const opts: { value: string; label: string }[] = [{ value: '', label: 'All Time' }];
+  const now = new Date();
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    opts.push({ value, label });
+  }
+  return opts;
+}
+
 export default function LeaderboardTable() {
   const [stats, setStats] = useState<PlayerStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortKey, setSortKey] = useState<SortKey>('win_rate');
   const [sortDesc, setSortDesc] = useState(true);
+  const [month, setMonth] = useState('');
+  const monthOptions = getMonthOptions();
 
   useEffect(() => {
-    fetch('/api/stats')
+    setLoading(true);
+    const url = month ? `/api/stats?month=${month}` : '/api/stats';
+    fetch(url)
       .then(r => r.json())
       .then((data: PlayerStats[]) => { setStats(data); setLoading(false); })
       .catch(() => setLoading(false));
-  }, []);
+  }, [month]);
 
   function handleSort(key: SortKey) {
     if (key === sortKey) setSortDesc(d => !d);
@@ -64,15 +80,32 @@ export default function LeaderboardTable() {
     return sortDesc ? bv - av : av - bv;
   });
 
-  if (loading) return <div className="loading">Loading rankings…</div>;
-  if (!stats.length) return (
-    <div className="empty-state">
-      <p>No players yet. <a href="/players" style={{ color: 'var(--felt-light)' }}>Add players</a> to see rankings.</p>
+  const monthPicker = (
+    <div style={{ marginBottom: '1rem' }}>
+      <select
+        className="form-input"
+        value={month}
+        onChange={e => setMonth(e.target.value)}
+        style={{ maxWidth: 220 }}
+      >
+        {monthOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
     </div>
+  );
+
+  if (loading) return <>{monthPicker}<div className="loading">Loading rankings…</div></>;
+  if (!stats.length) return (
+    <>
+      {monthPicker}
+      <div className="empty-state">
+        <p>No data{month ? ' for this month' : ''}. <a href="/players" style={{ color: 'var(--felt-light)' }}>Add players</a> to see rankings.</p>
+      </div>
+    </>
   );
 
   return (
     <div>
+      {monthPicker}
       <div className="lb-table-wrap">
         <table className="lb-table">
           <thead>

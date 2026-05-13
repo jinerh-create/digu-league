@@ -26,6 +26,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
       player1_id?: string;
       player2_id?: string;
       target_score?: number;
+      team1_name?: string;
+      team2_name?: string;
+      team1_player2_id?: string;
+      team2_player2_id?: string;
     };
 
     if (!body.player1_id || !body.player2_id) {
@@ -41,7 +45,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const id = crypto.randomUUID();
     const started_at = new Date().toISOString();
-    await createMatch(db, id, body.player1_id, body.player2_id, targetScore, started_at);
+    await createMatch(
+      db, id, body.player1_id, body.player2_id, targetScore, started_at,
+      body.team1_name, body.team2_name, body.team1_player2_id, body.team2_player2_id
+    );
 
     return new Response(
       JSON.stringify({ id, player1_id: body.player1_id, player2_id: body.player2_id, target_score: targetScore, started_at, winner_id: null, completed_at: null }),

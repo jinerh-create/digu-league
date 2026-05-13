@@ -55,11 +55,15 @@ export async function getMatches(db: D1Database, limit = 50): Promise<Match[]> {
       `SELECT m.*,
         p1.name AS player1_name, p1.avatar_b64 AS player1_avatar,
         p2.name AS player2_name, p2.avatar_b64 AS player2_avatar,
-        pw.name AS winner_name
+        pw.name AS winner_name,
+        p3.name AS team1_player2_name,
+        p4.name AS team2_player2_name
        FROM matches m
        JOIN players p1 ON p1.id = m.player1_id
        JOIN players p2 ON p2.id = m.player2_id
        LEFT JOIN players pw ON pw.id = m.winner_id
+       LEFT JOIN players p3 ON p3.id = m.team1_player2_id
+       LEFT JOIN players p4 ON p4.id = m.team2_player2_id
        ORDER BY m.started_at DESC
        LIMIT ?`
     )
@@ -74,11 +78,15 @@ export async function getMatch(db: D1Database, id: string): Promise<Match | null
       `SELECT m.*,
         p1.name AS player1_name, p1.avatar_b64 AS player1_avatar,
         p2.name AS player2_name, p2.avatar_b64 AS player2_avatar,
-        pw.name AS winner_name
+        pw.name AS winner_name,
+        p3.name AS team1_player2_name,
+        p4.name AS team2_player2_name
        FROM matches m
        JOIN players p1 ON p1.id = m.player1_id
        JOIN players p2 ON p2.id = m.player2_id
        LEFT JOIN players pw ON pw.id = m.winner_id
+       LEFT JOIN players p3 ON p3.id = m.team1_player2_id
+       LEFT JOIN players p4 ON p4.id = m.team2_player2_id
        WHERE m.id = ?`
     )
     .bind(id)
@@ -107,13 +115,24 @@ export async function createMatch(
   player1_id: string,
   player2_id: string,
   target_score: number,
-  started_at: string
+  started_at: string,
+  team1_name?: string | null,
+  team2_name?: string | null,
+  team1_player2_id?: string | null,
+  team2_player2_id?: string | null
 ): Promise<void> {
   await db
     .prepare(
-      'INSERT INTO matches (id, player1_id, player2_id, target_score, started_at) VALUES (?, ?, ?, ?, ?)'
+      `INSERT INTO matches
+        (id, player1_id, player2_id, target_score, started_at,
+         team1_name, team2_name, team1_player2_id, team2_player2_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
-    .bind(id, player1_id, player2_id, target_score, started_at)
+    .bind(
+      id, player1_id, player2_id, target_score, started_at,
+      team1_name ?? null, team2_name ?? null,
+      team1_player2_id ?? null, team2_player2_id ?? null
+    )
     .run();
 }
 
@@ -162,12 +181,17 @@ export async function addGame(db: D1Database, game: Game): Promise<void> {
     .run();
 }
 
-export async function computePlayerStats(db: D1Database): Promise<PlayerStats[]> {
+export async function computePlayerStats(db: D1Database, month?: string): Promise<PlayerStats[]> {
   const players = await getPlayers(db);
-  const matchesResult = await db
-    .prepare('SELECT * FROM matches WHERE completed_at IS NOT NULL')
-    .all<Match>();
-  const gamesResult = await db.prepare('SELECT * FROM games').all<Game>();
+  // month format: "YYYY-MM"
+  const matchesResult = month
+    ? await db.prepare("SELECT * FROM matches WHERE completed_at IS NOT NULL AND strftime('%Y-%m', started_at) = ?").bind(month).all<Match>()
+    : await db.prepare('SELECT * FROM matches WHERE completed_at IS NOT NULL').all<Match>();
+  const matchIds = matchesResult.results.map(m => m.id);
+  const gamesResult = matchIds.length > 0
+    ? await db.prepare(`SELECT * FROM games WHERE match_id IN (${matchIds.map(() => '?').join(',')})`)
+        .bind(...matchIds).all<Game>()
+    : { results: [] as Game[] };
 
   const matches = matchesResult.results;
   const games = gamesResult.results;

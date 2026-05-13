@@ -14,9 +14,16 @@ export interface Match {
   winner_id: string | null;
   started_at: string;
   completed_at: string | null;
+  // team fields (optional)
+  team1_name: string | null;
+  team2_name: string | null;
+  team1_player2_id: string | null;
+  team2_player2_id: string | null;
   // joined fields
   player1_name?: string;
   player2_name?: string;
+  team1_player2_name?: string;
+  team2_player2_name?: string;
   winner_name?: string;
   player1_avatar?: string | null;
   player2_avatar?: string | null;

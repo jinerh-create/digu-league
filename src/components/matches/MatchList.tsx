@@ -57,26 +57,27 @@ export default function MatchList() {
         <section>
           <div className="label" style={{ marginBottom: '0.5rem' }}>Completed</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {completed.map(m => (
+            {completed.map(m => {
+              const team1 = m.team1_name || m.player1_name;
+              const team2 = m.team2_name || m.player2_name;
+              const winnerTeam = m.winner_id === m.player1_id ? team1 : team2;
+              return (
               <div key={m.id} className="card match-card">
                 <div className="match-row">
                   <div className="match-vs">
-                    <span className={`player-name ${m.winner_id === m.player1_id ? 'winner' : 'loser'}`}>
-                      {m.player1_name}
-                    </span>
+                    <span className={`player-name ${m.winner_id === m.player1_id ? 'winner' : 'loser'}`}>{team1}</span>
                     <span className="vs-text">vs</span>
-                    <span className={`player-name ${m.winner_id === m.player2_id ? 'winner' : 'loser'}`}>
-                      {m.player2_name}
-                    </span>
+                    <span className={`player-name ${m.winner_id === m.player2_id ? 'winner' : 'loser'}`}>{team2}</span>
                   </div>
-                  <span className="badge badge-win">{m.winner_name} wins</span>
+                  <span className="badge badge-win">{winnerTeam} wins</span>
                 </div>
                 <div className="match-sub">
-                  <span>To {m.target_score} pts</span>
-                  <span>{formatDate(m.started_at)}</span>
+                  <span>To {m.target_score} pts · {formatDate(m.started_at)}</span>
+                  <a href={`/scoresheet/${m.id}`} style={{ color: 'var(--felt-light)', fontWeight: 600 }}>Scoresheet →</a>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}

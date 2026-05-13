@@ -1,0 +1,13 @@
+---
+export const prerender = false;
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Scoresheet from '../../components/scoresheet/Scoresheet';
+
+const { id } = Astro.params;
+---
+
+<BaseLayout title="Scoresheet" activeTab="matches">
+  <div class="container" style="padding-top: 0.75rem;">
+    <Scoresheet matchId={id!} client:load />
+  </div>
+</BaseLayout>

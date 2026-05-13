@@ -7,11 +7,11 @@ function getDB(locals: Record<string, unknown>): D1Database {
   return runtime.env.DB;
 }
 
-export const GET: APIRoute = async ({ locals }) => {
+export const GET: APIRoute = async ({ locals, url }) => {
   try {
     const db = getDB(locals as Record<string, unknown>);
-    const stats = await computePlayerStats(db);
-    // Sort: win rate desc, then total points desc
+    const month = url.searchParams.get('month'); // e.g. "2026-05"
+    const stats = await computePlayerStats(db, month ?? undefined);
     stats.sort((a, b) => {
       if (b.win_rate !== a.win_rate) return b.win_rate - a.win_rate;
       return b.total_points_scored - a.total_points_scored;
