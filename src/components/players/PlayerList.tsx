@@ -1,0 +1,181 @@
+import { useState, useEffect, useRef } from 'react';
+import type { Player } from '../../lib/types';
+
+function Avatar({ name, avatar_b64, size = 40 }: { name: string; avatar_b64: string | null; size?: number }) {
+  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  const colors = ['#2B4F37', '#78270D', '#1a3a5c', '#4a2060', '#2c4a1a'];
+  const color = colors[name.charCodeAt(0) % colors.length];
+  if (avatar_b64) {
+    return <img src={`data:image/jpeg;base64,${avatar_b64}`} alt={name} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />;
+  }
+  return (
+    <div style={{ width: size, height: size, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.35, fontWeight: 700, color: '#DDD1BF', flexShrink: 0 }}>
+      {initials}
+    </div>
+  );
+}
+
+function resizeImage(file: File, maxSize = 200): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const scale = Math.min(maxSize / img.width, maxSize / img.height, 1);
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      resolve(dataUrl.replace('data:image/jpeg;base64,', ''));
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+export default function PlayerList() {
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newName, setNewName] = useState('');
+  const [adding, setAdding] = useState(false);
+  const [error, setError] = useState('');
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadTargetId = useRef<string | null>(null);
+
+  function fetchPlayers() {
+    return fetch('/api/players')
+      .then(r => r.json())
+      .then((data: Player[]) => setPlayers(data))
+      .finally(() => setLoading(false));
+  }
+
+  useEffect(() => { fetchPlayers(); }, []);
+
+  async function handleAdd(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newName.trim()) return;
+    setError('');
+    setAdding(true);
+    try {
+      const res = await fetch('/api/players', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newName.trim() }),
+      });
+      const data = await res.json() as Player & { error?: string };
+      if (!res.ok) { setError(data.error ?? 'Failed'); setAdding(false); return; }
+      setPlayers(prev => [...prev, data]);
+      setNewName('');
+    } catch { setError('Network error'); }
+    finally { setAdding(false); }
+  }
+
+  async function handleDeactivate(id: string) {
+    await fetch(`/api/players/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ active: 0 }),
+    });
+    setPlayers(prev => prev.filter(p => p.id !== id));
+  }
+
+  function handleAvatarClick(playerId: string) {
+    uploadTargetId.current = playerId;
+    fileInputRef.current?.click();
+  }
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !uploadTargetId.current) return;
+    const id = uploadTargetId.current;
+    setUploadingId(id);
+    try {
+      const b64 = await resizeImage(file);
+      const res = await fetch(`/api/players/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ avatar_b64: b64 }),
+      });
+      const updated = await res.json() as Player;
+      setPlayers(prev => prev.map(p => p.id === id ? updated : p));
+    } catch { /* silent */ }
+    finally { setUploadingId(null); e.target.value = ''; }
+  }
+
+  if (loading) return <div className="loading">Loading players…</div>;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      {/* Add Player Form */}
+      <div className="card">
+        <div className="form-label" style={{ marginBottom: '0.75rem' }}>Add New Player</div>
+        <form onSubmit={handleAdd} style={{ display: 'flex', gap: '0.625rem' }}>
+          <input
+            className="form-input"
+            type="text"
+            placeholder="Player name"
+            value={newName}
+            onChange={e => setNewName(e.target.value)}
+            maxLength={50}
+            required
+          />
+          <button type="submit" className="btn btn-primary" disabled={adding} style={{ flexShrink: 0 }}>
+            {adding ? '…' : 'Add'}
+          </button>
+        </form>
+        {error && <div className="error-message" style={{ marginTop: '0.5rem' }}>{error}</div>}
+      </div>
+
+      {/* Player List */}
+      {!players.length && (
+        <div className="empty-state"><p>No players yet. Add your first player above!</p></div>
+      )}
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handleFileChange}
+      />
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        {players.map(p => (
+          <div key={p.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', padding: '0.875rem 1rem' }}>
+            <button
+              type="button"
+              onClick={() => handleAvatarClick(p.id)}
+              style={{ position: 'relative', background: 'none', border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0 }}
+              title="Upload photo"
+            >
+              {uploadingId === p.id
+                ? <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.625rem', color: 'var(--text-muted)' }}>…</div>
+                : <Avatar name={p.name} avatar_b64={p.avatar_b64} />
+              }
+              <span style={{ position: 'absolute', bottom: -2, right: -2, background: 'var(--card-raised)', border: '1px solid var(--border)', borderRadius: '50%', width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.5rem' }}>📷</span>
+            </button>
+
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 600, fontSize: '0.9375rem' }}>{p.name}</div>
+              <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
+                Joined {new Date(p.joined_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleDeactivate(p.id)}
+              className="btn btn-ghost"
+              style={{ fontSize: '0.75rem', padding: '0.375rem 0.625rem', minHeight: 'auto' }}
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

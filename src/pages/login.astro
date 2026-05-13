@@ -1,0 +1,97 @@
+---
+export const prerender = false;
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const next = Astro.url.searchParams.get('next') ?? '/';
+---
+
+<BaseLayout title="Admin Login" activeTab="home">
+  <div class="container">
+    <div class="login-wrap">
+      <img src="/logo.png" alt="Digu League" class="login-logo" />
+      <h1>Admin Access</h1>
+      <p>Enter the league password to record scores.</p>
+
+      <form id="login-form" class="login-form">
+        <input type="hidden" id="next-url" value={next} />
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            class="form-input"
+            placeholder="Enter admin password"
+            autocomplete="current-password"
+            required
+          />
+        </div>
+        <div id="error-msg" class="error-message" style="display:none"></div>
+        <button type="submit" class="btn btn-primary btn-lg btn-block" id="submit-btn">
+          Sign In
+        </button>
+      </form>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const form = document.getElementById('login-form') as HTMLFormElement;
+  const errorMsg = document.getElementById('error-msg') as HTMLElement;
+  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+  const nextUrl = (document.getElementById('next-url') as HTMLInputElement).value;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const password = (document.getElementById('password') as HTMLInputElement).value;
+    errorMsg.style.display = 'none';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Signing in…';
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      if (res.ok) {
+        window.location.href = nextUrl;
+      } else {
+        const data = await res.json() as { error?: string };
+        errorMsg.textContent = data.error ?? 'Invalid password';
+        errorMsg.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign In';
+      }
+    } catch {
+      errorMsg.textContent = 'Network error. Please try again.';
+      errorMsg.style.display = 'block';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Sign In';
+    }
+  });
+</script>
+
+<style>
+  .login-wrap {
+    max-width: 380px;
+    margin: 3rem auto 0;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .login-logo {
+    width: 90px;
+    margin: 0 auto;
+    border-radius: 10px;
+  }
+
+  .login-form {
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+</style>

@@ -1,0 +1,14 @@
+---
+export const prerender = false;
+import BaseLayout from '../layouts/BaseLayout.astro';
+import LeaderboardTable from '../components/leaderboard/LeaderboardTable';
+---
+
+<BaseLayout title="Leaderboard" activeTab="leaderboard">
+  <div class="container">
+    <div class="page-header">
+      <h1>&#9733; Rankings</h1>
+    </div>
+    <LeaderboardTable client:load />
+  </div>
+</BaseLayout>

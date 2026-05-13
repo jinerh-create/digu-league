@@ -1,0 +1,14 @@
+---
+export const prerender = false;
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PlayerList from '../components/players/PlayerList';
+---
+
+<BaseLayout title="Players" activeTab="players">
+  <div class="container">
+    <div class="page-header">
+      <h1>&#9829; Players</h1>
+    </div>
+    <PlayerList client:load />
+  </div>
+</BaseLayout>

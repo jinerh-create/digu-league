@@ -1,0 +1,23 @@
+---
+export const prerender = false;
+import BaseLayout from '../layouts/BaseLayout.astro';
+import NewMatchForm from '../components/matches/NewMatchForm';
+---
+
+<BaseLayout title="New Match" activeTab="matches">
+  <div class="container">
+    <div class="page-header" style="display:flex; align-items:center; gap: 0.75rem;">
+      <a href="/matches" class="back-btn">&larr;</a>
+      <h1>New Match</h1>
+    </div>
+    <NewMatchForm client:load />
+  </div>
+</BaseLayout>
+
+<style>
+  .back-btn {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    line-height: 1;
+  }
+</style>

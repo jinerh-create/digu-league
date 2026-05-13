@@ -1,0 +1,268 @@
+---
+export const prerender = false;
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getActiveMatch, getMatches, getActivePlayers } from '../lib/db';
+
+const runtime = (Astro.locals as Record<string, unknown>).runtime as
+  | { env: { DB: D1Database } }
+  | undefined;
+
+let activeMatch = null;
+let recentMatches: Awaited<ReturnType<typeof getMatches>> = [];
+let playerCount = 0;
+let matchCount = 0;
+
+if (runtime?.env?.DB) {
+  try {
+    activeMatch = await getActiveMatch(runtime.env.DB);
+    recentMatches = await getMatches(runtime.env.DB, 5);
+    const players = await getActivePlayers(runtime.env.DB);
+    playerCount = players.length;
+    matchCount = recentMatches.length;
+  } catch {}
+}
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+---
+
+<BaseLayout title="Home" activeTab="home">
+  <div class="container">
+    <!-- Hero -->
+    <div class="hero">
+      <img src="/logo.png" alt="Digu League" class="hero-logo" />
+      <p class="hero-sub">Gin Rummy Competition Tracker</p>
+    </div>
+
+    <!-- Active Match CTA -->
+    {activeMatch && (
+      <a href={`/match/${activeMatch.id}`} class="active-match-card card">
+        <div class="active-match-label">
+          <span class="live-dot"></span>
+          <span class="label">Live Match</span>
+        </div>
+        <div class="active-match-players">
+          <span>{activeMatch.player1_name}</span>
+          <span class="vs">vs</span>
+          <span>{activeMatch.player2_name}</span>
+        </div>
+        <span class="btn btn-primary" style="margin-top: 0.75rem">Continue Scoring &rarr;</span>
+      </a>
+    )}
+
+    <!-- Quick Stats -->
+    <div class="stats-strip">
+      <div class="stat-pill">
+        <span class="stat-value">{playerCount}</span>
+        <span class="stat-label">Players</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-value">{recentMatches.filter(m => m.completed_at).length}</span>
+        <span class="stat-label">Matches</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-value">&#9824;</span>
+        <span class="stat-label">Digu League</span>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    {!activeMatch && (
+      <div class="quick-actions">
+        <a href="/new-match" class="btn btn-primary btn-lg btn-block">
+          &#9654; Start New Match
+        </a>
+      </div>
+    )}
+
+    <!-- Recent Matches -->
+    {recentMatches.length > 0 && (
+      <section class="recent-section">
+        <div class="section-header">
+          <h2>Recent Matches</h2>
+          <a href="/matches" class="see-all">See all</a>
+        </div>
+        <div class="match-list">
+          {recentMatches.map((m) => (
+            <a
+              href={m.completed_at ? `/matches` : `/match/${m.id}`}
+              class="match-row card"
+            >
+              <div class="match-players">
+                <span class={m.winner_id === m.player1_id ? 'winner' : ''}>
+                  {m.player1_name}
+                </span>
+                <span class="vs">vs</span>
+                <span class={m.winner_id === m.player2_id ? 'winner' : ''}>
+                  {m.player2_name}
+                </span>
+              </div>
+              <div class="match-meta">
+                {m.completed_at
+                  ? <span class="badge badge-win">{m.winner_name} wins</span>
+                  : <span class="badge badge-gin">In Progress</span>
+                }
+                <span class="match-date">{formatDate(m.started_at)}</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {recentMatches.length === 0 && playerCount === 0 && (
+      <div class="empty-state">
+        <p>Welcome! Add players and start your first match.</p>
+        <div style="display:flex; gap: 0.75rem; justify-content: center; margin-top: 1rem; flex-wrap: wrap;">
+          <a href="/players" class="btn btn-secondary">Add Players</a>
+          <a href="/new-match" class="btn btn-primary">New Match</a>
+        </div>
+      </div>
+    )}
+  </div>
+</BaseLayout>
+
+<style>
+  .hero {
+    text-align: center;
+    padding: 1.5rem 0 1rem;
+  }
+
+  .hero-logo {
+    width: 120px;
+    height: auto;
+    margin: 0 auto 0.5rem;
+    border-radius: 12px;
+  }
+
+  .hero-sub {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+
+  .active-match-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 1.25rem;
+    border-color: var(--felt-light);
+    background: linear-gradient(135deg, #1a2e22, #1a1a1a);
+    padding: 1.25rem;
+  }
+
+  .active-match-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--heart);
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .active-match-players {
+    font-size: 1.125rem;
+    font-weight: 700;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .vs {
+    color: var(--text-muted);
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
+
+  .stats-strip {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .stat-pill {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.875rem 0.5rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .quick-actions {
+    margin-bottom: 1.5rem;
+  }
+
+  .recent-section {
+    margin-top: 0.25rem;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .see-all {
+    font-size: 0.8125rem;
+    color: var(--felt-light);
+    font-weight: 600;
+  }
+
+  .match-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .match-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.875rem 1rem;
+  }
+
+  .match-players {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+
+  .winner {
+    color: var(--gold);
+  }
+
+  .match-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .match-date {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+</style>

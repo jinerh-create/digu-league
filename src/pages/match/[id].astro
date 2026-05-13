@@ -1,0 +1,13 @@
+---
+export const prerender = false;
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ActiveMatch from '../../components/scorekeeper/ActiveMatch';
+
+const { id } = Astro.params;
+---
+
+<BaseLayout title="Live Match" activeTab="matches">
+  <div class="container" style="padding-top: 0.5rem;">
+    <ActiveMatch matchId={id!} client:load />
+  </div>
+</BaseLayout>

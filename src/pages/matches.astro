@@ -1,0 +1,28 @@
+---
+export const prerender = false;
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MatchList from '../components/matches/MatchList';
+---
+
+<BaseLayout title="Matches" activeTab="matches">
+  <div class="container">
+    <div class="page-header" style="display:flex; justify-content:space-between; align-items:center;">
+      <h1>Matches</h1>
+      <a href="/new-match" class="btn btn-primary" id="new-match-btn" style="display:none">+ New</a>
+    </div>
+    <MatchList client:load />
+  </div>
+</BaseLayout>
+
+<script>
+  // Show "New Match" button only if session cookie is present
+  fetch('/api/auth/login', { method: 'HEAD' }).catch(() => {});
+  // Simple check: try a protected endpoint
+  fetch('/api/matches', { method: 'POST', body: '{}', headers: { 'Content-Type': 'application/json' } })
+    .then((r) => {
+      if (r.status !== 401) {
+        (document.getElementById('new-match-btn') as HTMLElement).style.display = 'inline-flex';
+      }
+    })
+    .catch(() => {});
+</script>
