@@ -1,6 +1,6 @@
 export const prerender = false;
 import type { APIRoute } from 'astro';
-import { getPlayer, updatePlayerAvatar, updatePlayerActive } from '../../../lib/db';
+import { getPlayer, updatePlayerAvatar, updatePlayerActive, updatePlayerName } from '../../../lib/db';
 
 function getDB(locals: Record<string, unknown>): D1Database {
   const runtime = locals.runtime as { env: { DB: D1Database } } | undefined;
@@ -24,10 +24,14 @@ export const GET: APIRoute = async ({ params, locals }) => {
 export const PATCH: APIRoute = async ({ params, request, locals }) => {
   try {
     const db = getDB(locals as Record<string, unknown>);
-    const body = await request.json() as { avatar_b64?: string; active?: number };
+    const body = await request.json() as { avatar_b64?: string; active?: number; name?: string };
 
+    if (body.name !== undefined) {
+      const trimmed = body.name.trim();
+      if (!trimmed) return new Response(JSON.stringify({ error: 'Name required' }), { status: 400 });
+      await updatePlayerName(db, params.id!, trimmed);
+    }
     if (body.avatar_b64 !== undefined) {
-      // Limit avatar size to ~200KB base64
       if (body.avatar_b64.length > 280000) {
         return new Response(JSON.stringify({ error: 'Avatar too large' }), { status: 400 });
       }

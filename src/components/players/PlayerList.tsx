@@ -42,6 +42,9 @@ export default function PlayerList() {
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState('');
   const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [savingId, setSavingId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadTargetId = useRef<string | null>(null);
 
@@ -80,6 +83,32 @@ export default function PlayerList() {
       body: JSON.stringify({ active: 0 }),
     });
     setPlayers(prev => prev.filter(p => p.id !== id));
+  }
+
+  function startEdit(p: Player) {
+    setEditingId(p.id);
+    setEditName(p.name);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditName('');
+  }
+
+  async function handleSaveName(id: string) {
+    if (!editName.trim()) return;
+    setSavingId(id);
+    try {
+      const res = await fetch(`/api/players/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editName.trim() }),
+      });
+      const updated = await res.json() as Player;
+      setPlayers(prev => prev.map(p => p.id === id ? updated : p));
+      setEditingId(null);
+    } catch { /* silent */ }
+    finally { setSavingId(null); }
   }
 
   function handleAvatarClick(playerId: string) {
@@ -159,20 +188,60 @@ export default function PlayerList() {
             </button>
 
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontWeight: 600, fontSize: '0.9375rem' }}>{p.name}</div>
-              <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
-                Joined {new Date(p.joined_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-              </div>
+              {editingId === p.id ? (
+                <form onSubmit={e => { e.preventDefault(); handleSaveName(p.id); }} style={{ display: 'flex', gap: '0.375rem', alignItems: 'center' }}>
+                  <input
+                    className="form-input"
+                    value={editName}
+                    onChange={e => setEditName(e.target.value)}
+                    maxLength={50}
+                    autoFocus
+                    style={{ fontSize: '0.875rem', padding: '0.25rem 0.5rem', minHeight: 'auto', flex: 1 }}
+                  />
+                  <button type="submit" className="btn btn-primary" disabled={savingId === p.id} style={{ fontSize: '0.75rem', padding: '0.25rem 0.625rem', minHeight: 'auto' }}>
+                    {savingId === p.id ? '…' : 'Save'}
+                  </button>
+                  <button type="button" className="btn btn-ghost" onClick={cancelEdit} style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem', minHeight: 'auto' }}>
+                    Cancel
+                  </button>
+                </form>
+              ) : (
+                <>
+                  <div style={{ fontWeight: 600, fontSize: '0.9375rem' }}>{p.name}</div>
+                  <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
+                    Joined {new Date(p.joined_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                  </div>
+                </>
+              )}
             </div>
 
-            <button
-              type="button"
-              onClick={() => handleDeactivate(p.id)}
-              className="btn btn-ghost"
-              style={{ fontSize: '0.75rem', padding: '0.375rem 0.625rem', minHeight: 'auto' }}
-            >
-              Remove
-            </button>
+            {editingId !== p.id && (
+              <div style={{ display: 'flex', gap: '0.375rem', flexShrink: 0 }}>
+                <a
+                  href={`/players/${p.id}`}
+                  className="btn btn-ghost"
+                  style={{ fontSize: '0.75rem', padding: '0.375rem 0.625rem', minHeight: 'auto', display: 'inline-flex', alignItems: 'center' }}
+                >
+                  Profile
+                </a>
+                <button
+                  type="button"
+                  onClick={() => startEdit(p)}
+                  className="btn btn-ghost"
+                  style={{ fontSize: '0.75rem', padding: '0.375rem 0.625rem', minHeight: 'auto' }}
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDeactivate(p.id)}
+                  className="btn btn-ghost"
+                  style={{ fontSize: '0.75rem', padding: '0.375rem 0.625rem', minHeight: 'auto' }}
+                >
+                  Remove
+                </button>
+              </div>
+            )}
           </div>
         ))}
       </div>

@@ -14,9 +14,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return next();
   }
 
-  const secret = (context.locals as Record<string, unknown>).runtime
+  const secret = ((context.locals as Record<string, unknown>).runtime
     ? ((context.locals as Record<string, unknown>).runtime as { env: Record<string, string> }).env.SESSION_SECRET
-    : (import.meta.env.SESSION_SECRET as string | undefined);
+    : (import.meta.env.SESSION_SECRET as string | undefined))?.trim();
 
   if (!secret) {
     // No secret configured — allow everything (dev mode)

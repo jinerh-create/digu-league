@@ -1,0 +1,14 @@
+---
+export const prerender = false;
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PlayerProfile from '../../components/players/PlayerProfile';
+const { id } = Astro.params;
+---
+<BaseLayout title="Player Profile" activeTab="players">
+  <div class="container">
+    <div class="page-header" style="display:flex;align-items:center;gap:0.75rem;">
+      <a href="/players" style="color:var(--text-muted);font-size:0.875rem;">← Players</a>
+    </div>
+    <PlayerProfile playerId={id!} client:load />
+  </div>
+</BaseLayout>

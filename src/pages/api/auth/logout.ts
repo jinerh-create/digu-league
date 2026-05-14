@@ -1,3 +1,4 @@
+export const prerender = false;
 import type { APIRoute } from 'astro';
 import { clearSessionCookie } from '../../../lib/auth';
 

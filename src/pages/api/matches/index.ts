@@ -1,3 +1,4 @@
+export const prerender = false;
 import type { APIRoute } from 'astro';
 import { getMatches, createMatch } from '../../../lib/db';
 
@@ -30,6 +31,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       team2_name?: string;
       team1_player2_id?: string;
       team2_player2_id?: string;
+      max_rounds?: number;
     };
 
     if (!body.player1_id || !body.player2_id) {
@@ -38,8 +40,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (body.player1_id === body.player2_id) {
       return new Response(JSON.stringify({ error: 'Players must be different' }), { status: 400 });
     }
-    const targetScore = body.target_score ?? 100;
-    if (![100, 500].includes(targetScore) && (targetScore < 10 || targetScore > 10000)) {
+    const maxRounds = body.max_rounds ?? 0;
+    const targetScore = maxRounds > 0 ? 0 : (body.target_score ?? 100);
+    if (maxRounds > 0 && maxRounds < 5) {
+      return new Response(JSON.stringify({ error: 'Minimum 5 rounds' }), { status: 400 });
+    }
+    if (maxRounds === 0 && (targetScore < 10 || targetScore > 10000)) {
       return new Response(JSON.stringify({ error: 'Invalid target score' }), { status: 400 });
     }
 
@@ -47,7 +53,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const started_at = new Date().toISOString();
     await createMatch(
       db, id, body.player1_id, body.player2_id, targetScore, started_at,
-      body.team1_name, body.team2_name, body.team1_player2_id, body.team2_player2_id
+      body.team1_name, body.team2_name, body.team1_player2_id, body.team2_player2_id,
+      maxRounds
     );
 
     return new Response(

@@ -19,6 +19,7 @@ export interface Match {
   team2_name: string | null;
   team1_player2_id: string | null;
   team2_player2_id: string | null;
+  max_rounds: number; // 0 = score-based, >0 = rounds-based
   // joined fields
   player1_name?: string;
   player2_name?: string;
@@ -42,6 +43,12 @@ export interface Game {
   is_undercut: number; // 0 or 1
   score_awarded: number;
   timestamp: string;
+  // team card counts (nullable, only for 2v2 matches)
+  t1_p1_cards?: number | null;
+  t1_p2_cards?: number | null;
+  t2_p1_cards?: number | null;
+  t2_p2_cards?: number | null;
+  gin_player_id?: string | null;
 }
 
 export interface PlayerStats {
@@ -50,6 +57,7 @@ export interface PlayerStats {
   avatar_b64: string | null;
   matches_played: number;
   matches_won: number;
+  matches_drawn: number;
   matches_lost: number;
   games_played: number;
   games_won: number;
@@ -59,6 +67,7 @@ export interface PlayerStats {
   biggest_hand: number;
   avg_points_per_game: number;
   win_rate: number;
+  league_points: number;
 }
 
 export interface LeagueSettings {
@@ -70,3 +79,12 @@ export const DEFAULT_SETTINGS: LeagueSettings = {
   ginBonus: 25,
   undercutBonus: 25,
 };
+
+export interface TeamStats {
+  team_name: string;
+  matches_played: number;
+  matches_won: number;
+  matches_drawn: number;
+  matches_lost: number;
+  league_points: number;
+}

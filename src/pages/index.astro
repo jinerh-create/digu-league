@@ -25,6 +25,13 @@ if (runtime?.env?.DB) {
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
+
+function side1(m: typeof recentMatches[0]) {
+  return m.team1_player2_name ? `${m.player1_name} / ${m.team1_player2_name}` : (m.player1_name ?? '');
+}
+function side2(m: typeof recentMatches[0]) {
+  return m.team2_player2_name ? `${m.player2_name} / ${m.team2_player2_name}` : (m.player2_name ?? '');
+}
 ---
 
 <BaseLayout title="Home" activeTab="home">
@@ -43,9 +50,9 @@ function formatDate(iso: string) {
           <span class="label">Live Match</span>
         </div>
         <div class="active-match-players">
-          <span>{activeMatch.player1_name}</span>
+          <span>{activeMatch.team1_player2_name ? `${activeMatch.player1_name} / ${activeMatch.team1_player2_name}` : activeMatch.player1_name}</span>
           <span class="vs">vs</span>
-          <span>{activeMatch.player2_name}</span>
+          <span>{activeMatch.team2_player2_name ? `${activeMatch.player2_name} / ${activeMatch.team2_player2_name}` : activeMatch.player2_name}</span>
         </div>
         <span class="btn btn-primary" style="margin-top: 0.75rem">Continue Scoring &rarr;</span>
       </a>
@@ -91,16 +98,16 @@ function formatDate(iso: string) {
             >
               <div class="match-players">
                 <span class={m.winner_id === m.player1_id ? 'winner' : ''}>
-                  {m.player1_name}
+                  {side1(m)}
                 </span>
                 <span class="vs">vs</span>
                 <span class={m.winner_id === m.player2_id ? 'winner' : ''}>
-                  {m.player2_name}
+                  {side2(m)}
                 </span>
               </div>
               <div class="match-meta">
                 {m.completed_at
-                  ? <span class="badge badge-win">{m.winner_name} wins</span>
+                  ? <span class="badge badge-win">{m.winner_id === m.player1_id ? side1(m) : side2(m)} wins</span>
                   : <span class="badge badge-gin">In Progress</span>
                 }
                 <span class="match-date">{formatDate(m.started_at)}</span>

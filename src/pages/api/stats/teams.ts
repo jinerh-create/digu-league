@@ -1,6 +1,6 @@
 export const prerender = false;
 import type { APIRoute } from 'astro';
-import { computePlayerStats } from '../../../lib/db';
+import { computeTeamStats } from '../../../lib/db';
 
 function getDB(locals: Record<string, unknown>): D1Database {
   const runtime = locals.runtime as { env: { DB: D1Database } } | undefined;
@@ -11,14 +11,8 @@ function getDB(locals: Record<string, unknown>): D1Database {
 export const GET: APIRoute = async ({ locals, url }) => {
   try {
     const db = getDB(locals as Record<string, unknown>);
-    const month = url.searchParams.get('month'); // e.g. "2026-05"
-    const type = url.searchParams.get('type') as 'single' | 'team' | null;
-    const stats = await computePlayerStats(db, month ?? undefined, type ?? undefined);
-    stats.sort((a, b) => {
-      if (b.matches_won !== a.matches_won) return b.matches_won - a.matches_won;
-      if (b.win_rate !== a.win_rate) return b.win_rate - a.win_rate;
-      return b.total_points_scored - a.total_points_scored;
-    });
+    const month = url.searchParams.get('month');
+    const stats = await computeTeamStats(db, month ?? undefined);
     return new Response(JSON.stringify(stats), {
       headers: { 'Content-Type': 'application/json' },
     });

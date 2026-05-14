@@ -1,3 +1,4 @@
+export const prerender = false;
 import type { APIRoute } from 'astro';
 import { createSessionCookie } from '../../../lib/auth';
 
@@ -6,8 +7,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     | { env: Record<string, string> }
     | undefined;
 
-  const adminPassword = runtime?.env.ADMIN_PASSWORD ?? import.meta.env.ADMIN_PASSWORD;
-  const sessionSecret = runtime?.env.SESSION_SECRET ?? import.meta.env.SESSION_SECRET;
+  const adminPassword = (runtime?.env.ADMIN_PASSWORD ?? import.meta.env.ADMIN_PASSWORD)?.trim();
+  const sessionSecret = (runtime?.env.SESSION_SECRET ?? import.meta.env.SESSION_SECRET)?.trim();
 
   if (!adminPassword || !sessionSecret) {
     return new Response(JSON.stringify({ error: 'Server misconfigured' }), {

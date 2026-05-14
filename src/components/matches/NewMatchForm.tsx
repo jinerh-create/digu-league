@@ -9,9 +9,11 @@ export default function NewMatchForm() {
   const [p1b, setP1b] = useState('');
   const [p2a, setP2a] = useState('');
   const [p2b, setP2b] = useState('');
+  const [targetMode, setTargetMode] = useState<'pts' | 'rounds'>('pts');
   const [target, setTarget] = useState<number>(100);
   const [customTarget, setCustomTarget] = useState('');
   const [useCustom, setUseCustom] = useState(false);
+  const [roundCount, setRoundCount] = useState('10');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -26,12 +28,17 @@ export default function NewMatchForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
-    const finalTarget = useCustom ? parseInt(customTarget, 10) : target;
     if (!p1a || !p2a) { setError('Select at least one player per team'); return; }
     const allSelected = [p1a, p1b, p2a, p2b].filter(Boolean);
     const unique = new Set(allSelected);
     if (unique.size !== allSelected.length) { setError('Each player can only appear once'); return; }
-    if (isNaN(finalTarget) || finalTarget < 10) { setError('Invalid target score'); return; }
+
+    const isRounds = targetMode === 'rounds';
+    const maxRounds = isRounds ? parseInt(roundCount, 10) : 0;
+    const finalTarget = isRounds ? 0 : (useCustom ? parseInt(customTarget, 10) : target);
+
+    if (isRounds && (isNaN(maxRounds) || maxRounds < 5)) { setError('Minimum 5 rounds required'); return; }
+    if (!isRounds && (isNaN(finalTarget) || finalTarget < 10)) { setError('Invalid target score'); return; }
     setSubmitting(true);
     try {
       const res = await fetch('/api/matches', {
@@ -41,6 +48,7 @@ export default function NewMatchForm() {
           player1_id: p1a,
           player2_id: p2a,
           target_score: finalTarget,
+          max_rounds: maxRounds,
           team1_name: team1Name.trim() || null,
           team2_name: team2Name.trim() || null,
           team1_player2_id: p1b || null,
@@ -74,7 +82,7 @@ export default function NewMatchForm() {
       {/* Team A */}
       <div className="card">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.875rem' }}>
-          <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#4a9eff', flexShrink: 0 }} />
+          <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'var(--team-a)', flexShrink: 0 }} />
           <input
             className="form-input"
             style={{ fontWeight: 700, fontSize: '1rem', padding: '0.375rem 0.625rem', height: 'auto', minHeight: 'auto' }}
@@ -107,7 +115,7 @@ export default function NewMatchForm() {
       {/* Team B */}
       <div className="card">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.875rem' }}>
-          <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'var(--heart)', flexShrink: 0 }} />
+          <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'var(--team-b)', flexShrink: 0 }} />
           <input
             className="form-input"
             style={{ fontWeight: 700, fontSize: '1rem', padding: '0.375rem 0.625rem', height: 'auto', minHeight: 'auto' }}
@@ -137,21 +145,59 @@ export default function NewMatchForm() {
 
       {/* Target Score */}
       <div className="card">
-        <div className="form-label" style={{ marginBottom: '0.75rem' }}>Target Score</div>
-        <div className="toggle-group" style={{ marginBottom: useCustom ? '0.75rem' : 0 }}>
-          {[100, 500].map(t => (
-            <button key={t} type="button" className={`toggle-option ${!useCustom && target === t ? 'active' : ''}`}
-              onClick={() => { setTarget(t); setUseCustom(false); }}>
-              {t} pts
+        <div className="form-label" style={{ marginBottom: '0.75rem' }}>Match Format</div>
+
+        {/* Mode toggle: PTS vs Rounds */}
+        <div style={{ display: 'flex', gap: 4, background: 'var(--card-raised)', borderRadius: 8, padding: 4, marginBottom: '0.875rem' }}>
+          {(['pts', 'rounds'] as const).map(m => (
+            <button key={m} type="button" onClick={() => setTargetMode(m)} style={{
+              flex: 1, padding: '0.5rem', borderRadius: 6, border: 'none', cursor: 'pointer',
+              fontWeight: 700, fontSize: '0.875rem',
+              background: targetMode === m ? 'var(--felt)' : 'transparent',
+              color: targetMode === m ? 'var(--cream)' : 'var(--text-muted)',
+              transition: 'all 0.15s',
+            }}>
+              {m === 'pts' ? '🏆 Points' : '🔄 Rounds'}
             </button>
           ))}
-          <button type="button" className={`toggle-option ${useCustom ? 'active' : ''}`} onClick={() => setUseCustom(true)}>
-            Custom
-          </button>
         </div>
-        {useCustom && (
-          <input type="number" className="form-input" inputMode="numeric" placeholder="e.g. 250"
-            value={customTarget} onChange={e => setCustomTarget(e.target.value)} min={10} max={10000} required />
+
+        {targetMode === 'pts' ? (
+          <>
+            <div className="form-label" style={{ marginBottom: '0.5rem', fontSize: '0.75rem' }}>Target Score</div>
+            <div className="toggle-group" style={{ marginBottom: useCustom ? '0.75rem' : 0, flexWrap: 'wrap' }}>
+              {[100, 500, 1000].map(t => (
+                <button key={t} type="button" className={`toggle-option ${!useCustom && target === t ? 'active' : ''}`}
+                  onClick={() => { setTarget(t); setUseCustom(false); }}>
+                  {t} pts
+                </button>
+              ))}
+              <button type="button" className={`toggle-option ${useCustom ? 'active' : ''}`} onClick={() => setUseCustom(true)}>
+                Custom
+              </button>
+            </div>
+            {useCustom && (
+              <input type="number" className="form-input" inputMode="numeric" placeholder="e.g. 250"
+                value={customTarget} onChange={e => setCustomTarget(e.target.value)} min={10} max={10000} />
+            )}
+          </>
+        ) : (
+          <>
+            <div className="form-label" style={{ marginBottom: '0.5rem', fontSize: '0.75rem' }}>Number of Rounds <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(min 5)</span></div>
+            <input
+              type="number"
+              className="form-input"
+              inputMode="numeric"
+              placeholder="e.g. 10"
+              value={roundCount}
+              onChange={e => setRoundCount(e.target.value)}
+              min={5}
+              style={{ fontSize: '1.25rem', fontWeight: 700, textAlign: 'center' }}
+            />
+            <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginTop: '0.375rem' }}>
+              Match finishes after all rounds are played. Winner by highest score.
+            </div>
+          </>
         )}
       </div>
 
