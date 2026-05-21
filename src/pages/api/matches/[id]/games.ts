@@ -54,12 +54,12 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
 
       const team1Total = t1p1 + t1p2;
       const team2Total = t2p1 + t2p2;
-      const team1Wins = team1Total <= team2Total;
+      const team1Wins = team1Total >= team2Total;
       winnerId = team1Wins ? match.player1_id : match.player2_id;
       loserId = team1Wins ? match.player2_id : match.player1_id;
-      const losingTotal = team1Wins ? team2Total : team1Total;
       const winningTotal = team1Wins ? team1Total : team2Total;
-      scoreAwarded = isGin ? losingTotal + GIN_BONUS : Math.max(0, losingTotal - winningTotal);
+      const losingTotal = team1Wins ? team2Total : team1Total;
+      scoreAwarded = isGin ? winningTotal + GIN_BONUS : Math.max(0, winningTotal - losingTotal);
     } else {
       if (!body.winner_id || body.score === undefined) {
         return new Response(JSON.stringify({ error: 'winner_id and score required' }), { status: 400 });

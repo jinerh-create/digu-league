@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <radialGradient id="bg2" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#4FC3F7"/>
+      <stop offset="50%" stop-color="#0288D1"/>
+      <stop offset="100%" stop-color="#01579B"/>
+    </radialGradient>
+    <radialGradient id="rim2" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#80DEEA"/>
+      <stop offset="50%" stop-color="#00BCD4"/>
+      <stop offset="100%" stop-color="#006064"/>
+    </radialGradient>
+    <linearGradient id="shld" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E0F7FA"/>
+      <stop offset="100%" stop-color="#00BCD4"/>
+    </linearGradient>
+    <linearGradient id="txt2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#B2EBF2"/>
+    </linearGradient>
+    <filter id="glow2"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#00BCD4" flood-opacity="0.7"/></filter>
+    <filter id="shadow2"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.5"/></filter>
+  </defs>
+  <circle cx="100" cy="103" r="90" fill="#000" opacity="0.4"/>
+  <circle cx="100" cy="100" r="90" fill="url(#rim2)"/>
+  <circle cx="100" cy="100" r="83" fill="url(#bg2)"/>
+  <!-- Shield -->
+  <g filter="url(#glow2)">
+    <path d="M100,45 L135,60 L135,100 C135,125 100,148 100,148 C100,148 65,125 65,100 L65,60 Z" fill="url(#shld)" opacity="0.2" stroke="url(#txt2)" stroke-width="2"/>
+  </g>
+  <!-- Checkmark -->
+  <g filter="url(#glow2)">
+    <polyline points="78,102 93,118 122,84" fill="none" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <!-- PERFECT text -->
+  <text x="100" y="163" font-family="Georgia,serif" font-size="11" font-weight="900" text-anchor="middle" fill="url(#txt2)" letter-spacing="2" filter="url(#shadow2)">PERFECT</text>
+  <text x="100" y="177" font-family="Georgia,serif" font-size="11" font-weight="900" text-anchor="middle" fill="url(#txt2)" letter-spacing="2">SHUTOUT</text>
+  <circle cx="100" cy="100" r="90" fill="none" stroke="#80DEEA" stroke-width="0.8" opacity="0.3"/>
+</svg>

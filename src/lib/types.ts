@@ -1,6 +1,7 @@
 export interface Player {
   id: string;
   name: string;
+  nickname: string | null;
   avatar_b64: string | null;
   joined_at: string;
   active: number; // 1 = active, 0 = inactive
@@ -14,6 +15,8 @@ export interface Match {
   winner_id: string | null;
   started_at: string;
   completed_at: string | null;
+  comment: string | null;
+  season_id: string | null;
   // team fields (optional)
   team1_name: string | null;
   team2_name: string | null;
@@ -28,6 +31,10 @@ export interface Match {
   winner_name?: string;
   player1_avatar?: string | null;
   player2_avatar?: string | null;
+  player1_nickname?: string | null;
+  player2_nickname?: string | null;
+  team1_player2_nickname?: string | null;
+  team2_player2_nickname?: string | null;
 }
 
 export interface Game {
@@ -54,6 +61,7 @@ export interface Game {
 export interface PlayerStats {
   player_id: string;
   name: string;
+  nickname: string | null;
   avatar_b64: string | null;
   matches_played: number;
   matches_won: number;
@@ -80,6 +88,13 @@ export const DEFAULT_SETTINGS: LeagueSettings = {
   undercutBonus: 25,
 };
 
+export interface Season {
+  id: string;
+  name: string;
+  started_at: string;
+  ended_at: string | null;
+}
+
 export interface TeamStats {
   team_name: string;
   matches_played: number;
@@ -87,4 +102,33 @@ export interface TeamStats {
   matches_drawn: number;
   matches_lost: number;
   league_points: number;
+}
+
+export interface MatchReaction {
+  id: string;
+  match_id: string;
+  emoji: string;
+  created_at: string;
+}
+
+export interface ScheduledMatch {
+  id: string;
+  player1_id: string;
+  player2_id: string;
+  team1_player2_id: string | null;
+  team2_player2_id: string | null;
+  team1_name: string | null;
+  team2_name: string | null;
+  scheduled_at: string;
+  note: string | null;
+  created_at: string;
+  // joined
+  player1_name?: string;
+  player2_name?: string;
+  team1_player2_name?: string;
+  team2_player2_name?: string;
+  player1_nickname?: string | null;
+  player2_nickname?: string | null;
+  team1_player2_nickname?: string | null;
+  team2_player2_nickname?: string | null;
 }

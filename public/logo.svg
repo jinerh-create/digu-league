@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <defs>
+    <radialGradient id="badgeBg" cx="50%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#1E2A44"/>
+      <stop offset="65%" stop-color="#121A2E"/>
+      <stop offset="100%" stop-color="#0B0F1A"/>
+    </radialGradient>
+    <linearGradient id="goldV" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFE680"/>
+      <stop offset="35%" stop-color="#D4AF37"/>
+      <stop offset="75%" stop-color="#8B6810"/>
+      <stop offset="100%" stop-color="#C09A28"/>
+    </linearGradient>
+    <linearGradient id="goldH" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0B0F1A" stop-opacity="0"/>
+      <stop offset="25%" stop-color="#D4AF37"/>
+      <stop offset="50%" stop-color="#FFE566"/>
+      <stop offset="75%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#0B0F1A" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="neonGreen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00FF9C"/>
+      <stop offset="100%" stop-color="#00C46E"/>
+    </linearGradient>
+    <linearGradient id="cardFace" x1="10%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#DEDEDE"/>
+    </linearGradient>
+    <linearGradient id="textGold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFF0A0"/>
+      <stop offset="30%" stop-color="#FFD700"/>
+      <stop offset="65%" stop-color="#C8980E"/>
+      <stop offset="100%" stop-color="#A07010"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="1" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.85"/>
+    </filter>
+    <filter id="badgeGlow" x="-15%" y="-15%" width="130%" height="130%">
+      <feGaussianBlur stdDeviation="7" result="blur"/>
+      <feFlood flood-color="#D4AF37" flood-opacity="0.35" result="c"/>
+      <feComposite in="c" in2="blur" operator="in" result="glow"/>
+      <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="greenGlow" x="-25%" y="-60%" width="150%" height="220%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feFlood flood-color="#00D47E" flood-opacity="0.7" result="c"/>
+      <feComposite in="c" in2="blur" operator="in" result="glow"/>
+      <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="textShadow" x="-10%" y="-10%" width="120%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.9"/>
+    </filter>
+  </defs>
+
+  <!-- Outer ambient glow -->
+  <circle cx="150" cy="150" r="148" fill="none" stroke="#D4AF37" stroke-width="12" opacity="0.06" filter="url(#badgeGlow)"/>
+
+  <!-- Badge body -->
+  <circle cx="150" cy="150" r="142" fill="url(#badgeBg)"/>
+
+  <!-- 3D metallic border — dark base -->
+  <circle cx="150" cy="150" r="142" fill="none" stroke="#4A3000" stroke-width="7"/>
+  <!-- 3D metallic border — gold face -->
+  <circle cx="150" cy="150" r="142" fill="none" stroke="url(#goldV)" stroke-width="4.5"/>
+  <!-- 3D metallic border — bright top highlight -->
+  <circle cx="150" cy="150" r="139.5" fill="none" stroke="#FFF0A0" stroke-width="0.75" opacity="0.55"/>
+  <!-- Inner ring -->
+  <circle cx="150" cy="150" r="134" fill="none" stroke="#D4AF37" stroke-width="0.5" opacity="0.25"/>
+
+  <!-- Subtle sphere highlight (top) -->
+  <ellipse cx="150" cy="95" rx="72" ry="32" fill="white" opacity="0.035"/>
+
+  <!-- ── PLAYING CARDS ── -->
+
+  <!-- Left card · Hearts -->
+  <g transform="rotate(-24, 150, 178)" filter="url(#cardShadow)">
+    <rect x="82" y="38" width="54" height="76" rx="5" fill="url(#cardFace)" stroke="#C8C8C8" stroke-width="0.75"/>
+    <text x="89"  y="54" font-size="10.5" font-weight="900" font-family="Georgia,serif" fill="#C8102E">A</text>
+    <text x="89"  y="65" font-size="10"   font-family="serif" fill="#C8102E">♥</text>
+    <text x="109" y="97" font-size="24"   font-family="serif" fill="#C8102E" text-anchor="middle">♥</text>
+  </g>
+
+  <!-- Right card · Diamonds -->
+  <g transform="rotate(24, 150, 178)" filter="url(#cardShadow)">
+    <rect x="164" y="38" width="54" height="76" rx="5" fill="url(#cardFace)" stroke="#C8C8C8" stroke-width="0.75"/>
+    <text x="171" y="54" font-size="10.5" font-weight="900" font-family="Georgia,serif" fill="#C8102E">A</text>
+    <text x="171" y="65" font-size="10"   font-family="serif" fill="#C8102E">♦</text>
+    <text x="191" y="97" font-size="24"   font-family="serif" fill="#C8102E" text-anchor="middle">♦</text>
+  </g>
+
+  <!-- Center card · Spades (on top) -->
+  <g filter="url(#cardShadow)">
+    <rect x="123" y="28" width="54" height="78" rx="5" fill="url(#cardFace)" stroke="#C8C8C8" stroke-width="0.75"/>
+    <!-- top-left pip -->
+    <text x="130" y="45" font-size="10.5" font-weight="900" font-family="Georgia,serif" fill="#111">A</text>
+    <text x="130" y="56" font-size="10"   font-family="serif" fill="#111">♠</text>
+    <!-- center -->
+    <text x="150" y="90" font-size="26"   font-family="serif" fill="#111" text-anchor="middle">♠</text>
+    <!-- bottom-right pip (flipped) -->
+    <text x="170" y="100" font-size="10.5" font-weight="900" font-family="Georgia,serif" fill="#111"
+          transform="rotate(180,170,95)">A</text>
+  </g>
+
+  <!-- ── DIVIDER ── -->
+  <line x1="22" y1="144" x2="278" y2="144" stroke="url(#goldH)" stroke-width="1.25"/>
+  <!-- Centre diamond ornament -->
+  <polygon points="150,137 156,144 150,151 144,144" fill="#D4AF37"/>
+  <circle cx="114" cy="144" r="2" fill="#D4AF37" opacity="0.5"/>
+  <circle cx="186" cy="144" r="2" fill="#D4AF37" opacity="0.5"/>
+
+  <!-- ── DIGU — 3-D STACKED TEXT ── -->
+  <!-- depth layer 3 -->
+  <text x="154" y="196" text-anchor="middle" font-size="58" font-weight="900"
+        font-family="'Arial Black',Impact,sans-serif" fill="#2A1600" letter-spacing="1">DIGU</text>
+  <!-- depth layer 2 -->
+  <text x="152.5" y="194.5" text-anchor="middle" font-size="58" font-weight="900"
+        font-family="'Arial Black',Impact,sans-serif" fill="#5A3400" letter-spacing="1">DIGU</text>
+  <!-- depth layer 1 -->
+  <text x="151" y="193" text-anchor="middle" font-size="58" font-weight="900"
+        font-family="'Arial Black',Impact,sans-serif" fill="#8B5E00" letter-spacing="1">DIGU</text>
+  <!-- face -->
+  <text x="150" y="191.5" text-anchor="middle" font-size="58" font-weight="900"
+        font-family="'Arial Black',Impact,sans-serif" fill="url(#textGold)" letter-spacing="1"
+        filter="url(#textShadow)">DIGU</text>
+
+  <!-- ── LEAGUE ── -->
+  <!-- shadow -->
+  <text x="151" y="218" text-anchor="middle" font-size="18" font-weight="700"
+        font-family="Arial,sans-serif" fill="#003820" letter-spacing="9">LEAGUE</text>
+  <!-- face with glow -->
+  <text x="150" y="217" text-anchor="middle" font-size="18" font-weight="700"
+        font-family="Arial,sans-serif" fill="url(#neonGreen)" letter-spacing="9"
+        filter="url(#greenGlow)">LEAGUE</text>
+
+  <!-- ── BOTTOM AREA ── -->
+  <line x1="52" y1="232" x2="248" y2="232" stroke="url(#goldH)" stroke-width="0.75" opacity="0.5"/>
+
+  <text x="150" y="248" text-anchor="middle" font-size="10" font-weight="600"
+        font-family="Arial,sans-serif" fill="#C8A020" opacity="0.7" letter-spacing="5">OC</text>
+
+  <!-- bottom accent dots -->
+  <circle cx="128" cy="260" r="1.8" fill="#D4AF37" opacity="0.45"/>
+  <circle cx="150" cy="263" r="2.2" fill="#D4AF37" opacity="0.55"/>
+  <circle cx="172" cy="260" r="1.8" fill="#D4AF37" opacity="0.45"/>
+
+  <!-- side spade accents -->
+  <text x="16"  y="168" font-size="16" fill="#D4AF37" opacity="0.3" text-anchor="middle">♠</text>
+  <text x="284" y="168" font-size="16" fill="#D4AF37" opacity="0.3" text-anchor="middle">♠</text>
+</svg>

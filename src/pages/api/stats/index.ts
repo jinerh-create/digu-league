@@ -11,9 +11,10 @@ function getDB(locals: Record<string, unknown>): D1Database {
 export const GET: APIRoute = async ({ locals, url }) => {
   try {
     const db = getDB(locals as Record<string, unknown>);
-    const month = url.searchParams.get('month'); // e.g. "2026-05"
+    const month = url.searchParams.get('month');
     const type = url.searchParams.get('type') as 'single' | 'team' | null;
-    const stats = await computePlayerStats(db, month ?? undefined, type ?? undefined);
+    const season = url.searchParams.get('season');
+    const stats = await computePlayerStats(db, month ?? undefined, type ?? undefined, season ?? undefined);
     stats.sort((a, b) => {
       if (b.matches_won !== a.matches_won) return b.matches_won - a.matches_won;
       if (b.win_rate !== a.win_rate) return b.win_rate - a.win_rate;

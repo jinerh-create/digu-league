@@ -1,0 +1,297 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 360" width="260" height="360">
+  <defs>
+    <!-- Card dark background -->
+    <radialGradient id="cardBg" cx="40%" cy="30%" r="72%">
+      <stop offset="0%"   stop-color="#2a1e04"/>
+      <stop offset="65%"  stop-color="#1a1200"/>
+      <stop offset="100%" stop-color="#0c0800"/>
+    </radialGradient>
+    <!-- Gold border bevel -->
+    <linearGradient id="goldRim" x1="8%" y1="5%" x2="92%" y2="95%">
+      <stop offset="0%"   stop-color="#fff8c0"/>
+      <stop offset="18%"  stop-color="#f0d060"/>
+      <stop offset="48%"  stop-color="#c8980a"/>
+      <stop offset="78%"  stop-color="#7a5808"/>
+      <stop offset="100%" stop-color="#3d2c04"/>
+    </linearGradient>
+    <!-- Spade outline gold -->
+    <linearGradient id="spadeRim" x1="12%" y1="5%" x2="88%" y2="95%">
+      <stop offset="0%"   stop-color="#fff0a0"/>
+      <stop offset="28%"  stop-color="#e0b830"/>
+      <stop offset="60%"  stop-color="#a07c18"/>
+      <stop offset="100%" stop-color="#4e3808"/>
+    </linearGradient>
+    <!-- Gold text -->
+    <linearGradient id="textGold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#fff0a0"/>
+      <stop offset="45%"  stop-color="#d4af37"/>
+      <stop offset="100%" stop-color="#8b6210"/>
+    </linearGradient>
+    <!-- Gem facet gradients -->
+    <linearGradient id="gemTopFacet" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%"   stop-color="#fff8c0"/>
+      <stop offset="100%" stop-color="#d4af37"/>
+    </linearGradient>
+    <linearGradient id="gemLeftFacet" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#e8c84a"/>
+      <stop offset="100%" stop-color="#6b4e0e"/>
+    </linearGradient>
+    <linearGradient id="gemRightFacet" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#c8a020"/>
+      <stop offset="100%" stop-color="#4a3408"/>
+    </linearGradient>
+    <linearGradient id="gemBottomFacet" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%"   stop-color="#9a7820"/>
+      <stop offset="100%" stop-color="#3d2c04"/>
+    </linearGradient>
+    <!-- Filters -->
+    <filter id="cardshadow" x="-25%" y="-15%" width="150%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#000" flood-opacity="0.85"/>
+    </filter>
+    <filter id="spadeglow" x="-12%" y="-10%" width="124%" height="125%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="gemshine" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- ── CARD DROP SHADOW ── -->
+  <rect x="20" y="20" width="220" height="320" rx="20" ry="20"
+    fill="#000" opacity="0.55" filter="url(#cardshadow)"/>
+
+  <!-- ══════════════════════════════════
+       CARD BODY
+  ══════════════════════════════════ -->
+  <!-- Outer gold rim / bevel -->
+  <rect x="16" y="16" width="228" height="328" rx="22" ry="22" fill="url(#goldRim)"/>
+  <!-- Bevel highlight top-left edge -->
+  <path d="M 38,16 L 222,16 Q 244,16 244,38 L 244,60"
+    fill="none" stroke="rgba(255,255,200,0.75)" stroke-width="3" stroke-linecap="round"/>
+  <!-- Bevel shadow bottom-right edge -->
+  <path d="M 244,65 L 244,322 Q 244,344 222,344 L 38,344 Q 16,344 16,322 L 16,310"
+    fill="none" stroke="rgba(0,0,0,0.5)" stroke-width="3" stroke-linecap="round"/>
+  <!-- Card face -->
+  <rect x="22" y="22" width="216" height="316" rx="18" ry="18" fill="url(#cardBg)"/>
+  <!-- Inner card edge line -->
+  <rect x="28" y="28" width="204" height="304" rx="14" ry="14"
+    fill="none" stroke="#d4af37" stroke-width="1" opacity="0.2"/>
+
+  <!-- ══════════════════════════════════
+       CORNER WHEEL ORNAMENTS
+  ══════════════════════════════════ -->
+  <!-- Helper macro via reuse: define wheel at top-left, copy transform for others -->
+  <!-- TOP-LEFT wheel -->
+  <g opacity="0.75">
+    <circle cx="50" cy="50" r="20" fill="none" stroke="#d4af37" stroke-width="1.8"/>
+    <circle cx="50" cy="50" r="13" fill="none" stroke="#d4af37" stroke-width="1"/>
+    <circle cx="50" cy="50" r="5"  fill="#d4af37" opacity="0.8"/>
+    <g stroke="#d4af37" stroke-width="1" opacity="0.6">
+      <line x1="50" y1="30" x2="50" y2="70"/>
+      <line x1="30" y1="50" x2="70" y2="50"/>
+      <line x1="36" y1="36" x2="64" y2="64"/>
+      <line x1="64" y1="36" x2="36" y2="64"/>
+    </g>
+    <!-- Flourish arms top-left -->
+    <path d="M 35,35 C 30,28 22,26 18,30" fill="none" stroke="#d4af37" stroke-width="1.5"/>
+    <path d="M 35,35 C 28,30 26,22 30,18" fill="none" stroke="#d4af37" stroke-width="1.5"/>
+  </g>
+  <!-- TOP-RIGHT wheel -->
+  <g opacity="0.75">
+    <circle cx="210" cy="50" r="20" fill="none" stroke="#d4af37" stroke-width="1.8"/>
+    <circle cx="210" cy="50" r="13" fill="none" stroke="#d4af37" stroke-width="1"/>
+    <circle cx="210" cy="50" r="5"  fill="#d4af37" opacity="0.8"/>
+    <g stroke="#d4af37" stroke-width="1" opacity="0.6">
+      <line x1="210" y1="30" x2="210" y2="70"/>
+      <line x1="190" y1="50" x2="230" y2="50"/>
+      <line x1="196" y1="36" x2="224" y2="64"/>
+      <line x1="224" y1="36" x2="196" y2="64"/>
+    </g>
+    <path d="M 225,35 C 230,28 238,26 242,30" fill="none" stroke="#d4af37" stroke-width="1.5"/>
+    <path d="M 225,35 C 232,30 234,22 230,18" fill="none" stroke="#d4af37" stroke-width="1.5"/>
+  </g>
+  <!-- BOTTOM-LEFT wheel -->
+  <g opacity="0.75">
+    <circle cx="50" cy="310" r="20" fill="none" stroke="#d4af37" stroke-width="1.8"/>
+    <circle cx="50" cy="310" r="13" fill="none" stroke="#d4af37" stroke-width="1"/>
+    <circle cx="50" cy="310" r="5"  fill="#d4af37" opacity="0.8"/>
+    <g stroke="#d4af37" stroke-width="1" opacity="0.6">
+      <line x1="50" y1="290" x2="50" y2="330"/>
+      <line x1="30" y1="310" x2="70" y2="310"/>
+      <line x1="36" y1="296" x2="64" y2="324"/>
+      <line x1="64" y1="296" x2="36" y2="324"/>
+    </g>
+    <path d="M 35,325 C 30,332 22,334 18,330" fill="none" stroke="#d4af37" stroke-width="1.5"/>
+    <path d="M 35,325 C 28,330 26,338 30,342" fill="none" stroke="#d4af37" stroke-width="1.5"/>
+  </g>
+  <!-- BOTTOM-RIGHT wheel -->
+  <g opacity="0.75">
+    <circle cx="210" cy="310" r="20" fill="none" stroke="#d4af37" stroke-width="1.8"/>
+    <circle cx="210" cy="310" r="13" fill="none" stroke="#d4af37" stroke-width="1"/>
+    <circle cx="210" cy="310" r="5"  fill="#d4af37" opacity="0.8"/>
+    <g stroke="#d4af37" stroke-width="1" opacity="0.6">
+      <line x1="210" y1="290" x2="210" y2="330"/>
+      <line x1="190" y1="310" x2="230" y2="310"/>
+      <line x1="196" y1="296" x2="224" y2="324"/>
+      <line x1="224" y1="296" x2="196" y2="324"/>
+    </g>
+    <path d="M 225,325 C 230,332 238,334 242,330" fill="none" stroke="#d4af37" stroke-width="1.5"/>
+    <path d="M 225,325 C 232,330 234,338 230,342" fill="none" stroke="#d4af37" stroke-width="1.5"/>
+  </g>
+
+  <!-- ══════════════════════════════════
+       CORNER "A" + ♠ SYMBOLS
+  ══════════════════════════════════ -->
+  <!-- Top-left -->
+  <text x="34" y="98"  font-family="Georgia, serif" font-size="30" font-weight="900" fill="url(#textGold)">A</text>
+  <text x="38" y="122" font-family="Georgia, serif" font-size="20" fill="url(#textGold)">♠</text>
+  <!-- Bottom-right (rotated 180°) -->
+  <g transform="rotate(180 130 180)">
+    <text x="34" y="98"  font-family="Georgia, serif" font-size="30" font-weight="900" fill="url(#textGold)">A</text>
+    <text x="38" y="122" font-family="Georgia, serif" font-size="20" fill="url(#textGold)">♠</text>
+  </g>
+
+  <!-- ══════════════════════════════════
+       DECORATIVE FILIGREE BORDER LINES
+  ══════════════════════════════════ -->
+  <path d="M 76,76 Q 100,70 130,72 Q 160,70 184,76"
+    fill="none" stroke="#d4af37" stroke-width="1.2" opacity="0.35"/>
+  <path d="M 76,284 Q 100,290 130,288 Q 160,290 184,284"
+    fill="none" stroke="#d4af37" stroke-width="1.2" opacity="0.35"/>
+
+  <!-- ══════════════════════════════════
+       LARGE CENTRAL SPADE — OUTER GOLD BORDER
+  ══════════════════════════════════ -->
+  <path d="
+    M 130,84
+    C 162,84 208,114 208,155
+    C 208,186 186,206 166,205
+    L 162,220
+    C 162,231 176,237 188,242
+    L 72,242
+    C 84,237 98,231 98,220
+    L 94,205
+    C 74,206 52,186 52,155
+    C 52,114 98,84 130,84
+    Z"
+    fill="url(#spadeRim)" filter="url(#spadeglow)"/>
+
+  <!-- Spade bevel highlight (top-left) -->
+  <path d="M 130,86 C 160,86 204,115 206,155"
+    fill="none" stroke="rgba(255,252,200,0.65)" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M 54,155 C 54,115 98,86 130,86"
+    fill="none" stroke="rgba(255,252,200,0.65)" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Spade bevel shadow (bottom-right) -->
+  <path d="M 206,158 C 204,186 184,204 166,203"
+    fill="none" stroke="rgba(0,0,0,0.4)" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- SPADE INNER DARK BODY -->
+  <path d="
+    M 130,95
+    C 158,95 198,122 198,157
+    C 198,183 178,200 160,200
+    L 156,215
+    C 156,224 168,230 180,234
+    L 80,234
+    C 92,230 104,224 104,215
+    L 100,200
+    C 82,200 62,183 62,157
+    C 62,122 102,95 130,95
+    Z"
+    fill="#100c02"/>
+
+  <!-- ══════════════════════════════════
+       FILIGREE SWIRLS INSIDE SPADE
+  ══════════════════════════════════ -->
+  <!-- Left swirl -->
+  <path d="M 80,160 C 76,148 84,138 94,141 C 103,144 103,155 96,159 C 89,162 86,155 91,152"
+    fill="none" stroke="#d4af37" stroke-width="1.3" opacity="0.5"/>
+  <!-- Right swirl (mirrored) -->
+  <path d="M 180,160 C 184,148 176,138 166,141 C 157,144 157,155 164,159 C 171,162 174,155 169,152"
+    fill="none" stroke="#d4af37" stroke-width="1.3" opacity="0.5"/>
+  <!-- Upper arch filigree -->
+  <path d="M 105,122 C 116,113 130,111 144,113 C 155,115 163,122 165,130"
+    fill="none" stroke="#d4af37" stroke-width="1" opacity="0.35"/>
+  <!-- Stem bottom swirls -->
+  <path d="M 96,228 C 108,222 118,220 130,220 C 142,220 152,222 164,228"
+    fill="none" stroke="#d4af37" stroke-width="1" opacity="0.35"/>
+  <path d="M 104,232 C 107,228 112,226 130,226 C 148,226 153,228 156,232"
+    fill="none" stroke="#d4af37" stroke-width="0.8" opacity="0.25"/>
+
+  <!-- ══════════════════════════════════
+       CENTRAL GEM — multi-facet gold diamond
+  ══════════════════════════════════ -->
+  <!-- Gem ambient glow -->
+  <ellipse cx="130" cy="153" rx="42" ry="46" fill="rgba(212,175,55,0.12)"/>
+  <!-- Gem cast shadow -->
+  <polygon points="130,109 174,150 130,192 86,150"
+    fill="#000" transform="translate(4,5)" opacity="0.5"/>
+
+  <!-- === Gem facets === -->
+  <!-- TOP facet: bright yellow-white -->
+  <polygon points="130,109 174,150 130,135" fill="url(#gemTopFacet)" filter="url(#gemshine)"/>
+  <!-- TOP-LEFT facet -->
+  <polygon points="130,109 86,150 116,150 130,135" fill="#e8c84a"/>
+  <!-- TOP-RIGHT facet -->
+  <polygon points="130,109 174,150 144,150 130,135" fill="#d4af37"/>
+  <!-- CENTER facet (girdle) -->
+  <polygon points="116,150 130,135 144,150 130,165" fill="#c8a020"/>
+  <!-- LEFT facet -->
+  <polygon points="86,150 116,150 130,165 130,192" fill="url(#gemLeftFacet)"/>
+  <!-- RIGHT facet -->
+  <polygon points="174,150 144,150 130,165 130,192" fill="url(#gemRightFacet)"/>
+  <!-- BOTTOM facet -->
+  <polygon points="86,150 174,150 130,192" fill="url(#gemBottomFacet)" opacity="0.85"/>
+
+  <!-- Gem facet lines (edges) -->
+  <g stroke="rgba(255,248,180,0.35)" stroke-width="0.8">
+    <line x1="130" y1="109" x2="130" y2="192"/>
+    <line x1="86"  y1="150" x2="174" y2="150"/>
+    <line x1="130" y1="109" x2="116" y2="150"/>
+    <line x1="130" y1="109" x2="144" y2="150"/>
+    <line x1="130" y1="135" x2="86"  y2="150"/>
+    <line x1="130" y1="135" x2="174" y2="150"/>
+    <line x1="130" y1="165" x2="86"  y2="150"/>
+    <line x1="130" y1="165" x2="174" y2="150"/>
+  </g>
+
+  <!-- Gem top specular highlights -->
+  <polygon points="130,109 150,136 130,125" fill="rgba(255,255,220,0.55)"/>
+  <polygon points="130,109 110,134 122,127" fill="rgba(255,255,220,0.22)"/>
+
+  <!-- ══════════════════════════════════
+       SCORE + ACHIEVEMENT TEXT
+  ══════════════════════════════════ -->
+  <!-- 1,000 PTS shadow -->
+  <text x="132" y="222" text-anchor="middle"
+    font-family="'Arial Black', Arial, sans-serif"
+    font-size="20" font-weight="900"
+    fill="#1a0e00" letter-spacing="0" opacity="0.85">1,000 PTS</text>
+  <!-- 1,000 PTS main -->
+  <text x="130" y="220" text-anchor="middle"
+    font-family="'Arial Black', Arial, sans-serif"
+    font-size="20" font-weight="900"
+    fill="#fff8e0" letter-spacing="0">1,000 PTS</text>
+
+  <!-- THE GOLDEN KNOCK -->
+  <text x="130" y="260" text-anchor="middle"
+    font-family="'Arial Black', Arial, sans-serif"
+    font-size="11.5" font-weight="900"
+    fill="url(#textGold)" letter-spacing="1.2">THE GOLDEN KNOCK</text>
+
+  <!-- DIGU LEAGUE -->
+  <text x="130" y="274" text-anchor="middle"
+    font-family="'Arial Black', Arial, sans-serif"
+    font-size="8.5" font-weight="800"
+    fill="#8b6210" letter-spacing="3.5">DIGU LEAGUE</text>
+
+  <!-- ══════════════════════════════════
+       TOP CARD SHINE OVERLAY
+  ══════════════════════════════════ -->
+  <rect x="22" y="22" width="216" height="130" rx="18" ry="18"
+    fill="rgba(255,252,200,0.05)"/>
+  <path d="M 44,22 L 216,22 Q 238,22 238,44 L 238,80"
+    fill="none" stroke="rgba(255,252,200,0.22)" stroke-width="2"/>
+</svg>

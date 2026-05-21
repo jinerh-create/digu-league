@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { PlayerStats, TeamStats } from '../../lib/types';
+import type { PlayerStats, TeamStats, Season } from '../../lib/types';
 
 type SortKey = keyof Pick<PlayerStats,
   'league_points' | 'win_rate' | 'matches_won' | 'matches_lost' | 'matches_played' |
@@ -36,61 +36,213 @@ const PLAYER_COLS: { key: SortKey; label: string; short: string }[] = [
   { key: 'matches_played', label: 'Games Played', short: 'GP' },
   { key: 'matches_won', label: 'Wins', short: 'W' },
   { key: 'matches_lost', label: 'Losses', short: 'L' },
-  { key: 'league_points', label: 'League Points (W=3 D=1 L=0)', short: 'LP' },
   { key: 'gin_count', label: 'Digu', short: 'DIGU' },
-  { key: 'total_points_scored', label: 'Points Scored', short: 'PTS' },
+  { key: 'league_points', label: 'League Points', short: 'PTS' },
   { key: 'win_rate', label: 'Win Rate', short: 'WIN%' },
 ];
 
 function getMonthOptions() {
   const opts: { value: string; label: string }[] = [{ value: '', label: 'All Time' }];
-  const now = new Date();
-  for (let i = 0; i < 12; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  for (let month = 0; month < 12; month++) {
+    const d = new Date(2026, month, 1);
+    const value = `2026-${String(month + 1).padStart(2, '0')}`;
     const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     opts.push({ value, label });
   }
   return opts;
 }
 
-function AwardCard({ icon, title, name, subtitle, gradient }: {
-  icon: string; title: string; name: string; subtitle: string; gradient: string;
+function AwardCard({ icon, title, name, subtitle, accentColor }: {
+  icon: string; title: string; name: string; subtitle: string; accentColor: string;
 }) {
   return (
     <div style={{
-      background: gradient,
-      borderRadius: 14,
-      padding: '1.125rem 1.25rem',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '1rem',
+      background: 'var(--card)',
+      border: `2px solid ${accentColor}`,
+      borderRadius: 16,
+      padding: '0.625rem 0.75rem',
       flex: 1,
       minWidth: 0,
+      textAlign: 'center',
+      boxShadow: `0 4px 20px ${accentColor}33`,
+      position: 'relative',
+      overflow: 'hidden',
     }}>
-      <div style={{ fontSize: '2rem', flexShrink: 0 }}>{icon}</div>
-      <div style={{ minWidth: 0 }}>
-        <div style={{
-          fontSize: '0.6rem',
-          fontWeight: 700,
-          letterSpacing: '0.1em',
-          textTransform: 'uppercase',
-          color: 'rgba(255,255,255,0.65)',
-          marginBottom: '0.2rem',
-        }}>{title}</div>
-        <div style={{
-          fontFamily: "'Playfair Display', Georgia, serif",
-          fontSize: '1.0625rem',
-          fontWeight: 700,
-          color: '#fff',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-        }}>{name}</div>
-        <div style={{ fontSize: '0.6875rem', color: 'rgba(255,255,255,0.55)', marginTop: '0.1rem' }}>{subtitle}</div>
-      </div>
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, height: 3,
+        background: `linear-gradient(90deg, transparent, ${accentColor}, transparent)`,
+      }} />
+      <div style={{ fontSize: '1.25rem', lineHeight: 1, marginBottom: '0.25rem' }}>{icon}</div>
+      <div style={{
+        fontSize: '0.5rem', fontWeight: 700, letterSpacing: '0.12em',
+        textTransform: 'uppercase', color: accentColor, marginBottom: '0.2rem',
+      }}>{title}</div>
+      <div style={{
+        fontFamily: "'Playfair Display', Georgia, serif",
+        fontSize: '0.875rem', fontWeight: 800,
+        color: 'var(--text-primary)',
+        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+        marginBottom: '0.15rem',
+      }}>{name}</div>
+      <div style={{
+        fontSize: '0.6875rem', fontWeight: 700,
+        color: accentColor,
+      }}>{subtitle}</div>
     </div>
   );
+}
+
+async function generateRankingsImage(rows: PlayerStats[], label: string): Promise<Blob> {
+  const W = 640;
+  const HEADER_H = 90;
+  const ROW_H = 52;
+  const FOOTER_H = 36;
+  const H = HEADER_H + rows.length * ROW_H + FOOTER_H;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d')!;
+
+  // Background
+  ctx.fillStyle = '#111111';
+  ctx.fillRect(0, 0, W, H);
+
+  // Header gold bar
+  const hg = ctx.createLinearGradient(0, 0, W, 0);
+  hg.addColorStop(0, '#2B4F37'); hg.addColorStop(0.5, '#1a1200'); hg.addColorStop(1, '#2B4F37');
+  ctx.fillStyle = hg;
+  ctx.fillRect(0, 0, W, HEADER_H);
+
+  // Header text
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#D4AF37';
+  ctx.font = 'bold 26px system-ui';
+  ctx.fillText('DIGU LEAGUE', W / 2, 34);
+  ctx.fillStyle = '#DDD1BF';
+  ctx.font = '700 14px system-ui';
+  ctx.fillText(`Rankings · ${label}`, W / 2, 56);
+
+  // Divider line
+  ctx.strokeStyle = '#D4AF37';
+  ctx.globalAlpha = 0.4;
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(40, 72); ctx.lineTo(W - 40, 72); ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  // Column headers
+  const COL = { rank: 36, name: 80, gp: 320, w: 370, l: 420, digu: 470, pts: 528, wr: 598 };
+  ctx.fillStyle = '#888';
+  ctx.font = '700 11px system-ui';
+  ctx.textAlign = 'center';
+  ctx.fillText('GP',    COL.gp,  80);
+  ctx.fillText('W',     COL.w,   80);
+  ctx.fillText('L',     COL.l,   80);
+  ctx.fillText('DIGU',  COL.digu, 80);
+  ctx.fillText('PTS',   COL.pts,  80);
+  ctx.fillText('WIN%',  COL.wr,  80);
+  ctx.textAlign = 'left';
+  ctx.fillText('PLAYER', COL.name, 80);
+
+  // Rows
+  rows.forEach((s, i) => {
+    const y = HEADER_H + i * ROW_H;
+    const isTop = i === 0;
+    const isRelStart = rows.length >= 3 && i === rows.length - 2;
+    const isRel = rows.length >= 3 && i >= rows.length - 2;
+
+    // Row background
+    if (isTop) {
+      ctx.fillStyle = 'rgba(212,175,55,0.08)';
+    } else if (isRel) {
+      ctx.fillStyle = 'rgba(200,16,46,0.12)';
+    } else {
+      ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent';
+    }
+    ctx.fillRect(0, y, W, ROW_H);
+
+    // Relegation divider
+    if (isRelStart) {
+      ctx.strokeStyle = 'rgba(200,16,46,0.5)';
+      ctx.setLineDash([4, 3]);
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Row divider
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, y + ROW_H - 1); ctx.lineTo(W, y + ROW_H - 1); ctx.stroke();
+
+    const cy = y + ROW_H / 2 + 5;
+
+    // Rank
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
+    ctx.textAlign = 'center';
+    if (medal) {
+      ctx.font = '18px system-ui';
+      ctx.fillText(medal, COL.rank, cy);
+    } else {
+      ctx.fillStyle = isRel ? '#FF4A6A' : '#666';
+      ctx.font = isRel ? 'bold 13px system-ui' : '700 13px system-ui';
+      ctx.fillText(isRel ? '⬇' : String(i + 1), COL.rank, cy);
+    }
+
+    // Avatar circle
+    const ax = 56, ay = y + ROW_H / 2;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(ax, ay, 16, 0, Math.PI * 2);
+    ctx.clip();
+    const colors = ['#2B4F37', '#78270D', '#1a3a5c', '#4a2060', '#2c4a1a'];
+    ctx.fillStyle = colors[s.name.charCodeAt(0) % colors.length];
+    ctx.fillRect(ax - 16, ay - 16, 32, 32);
+    ctx.restore();
+
+    // Avatar initials
+    ctx.fillStyle = '#DDD1BF';
+    ctx.font = 'bold 11px system-ui';
+    ctx.textAlign = 'center';
+    const initials = s.name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
+    ctx.fillText(initials, ax, ay + 4);
+
+    // Name
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#DDD1BF';
+    ctx.font = '600 14px system-ui';
+    ctx.fillText(s.nickname || s.name, COL.name, cy);
+
+    // Stats
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#aaa';      ctx.font = '700 13px system-ui';
+    ctx.fillText(String(s.matches_played), COL.gp, cy);
+
+    ctx.fillStyle = '#638D6F';
+    ctx.fillText(String(s.matches_won), COL.w, cy);
+
+    ctx.fillStyle = '#C8102E';
+    ctx.fillText(String(s.matches_lost), COL.l, cy);
+
+    ctx.fillStyle = '#D4AF37';
+    ctx.fillText(String(s.gin_count), COL.digu, cy);
+
+    ctx.fillStyle = '#D4AF37'; ctx.font = 'bold 14px system-ui';
+    ctx.fillText(String(s.league_points), COL.pts, cy);
+
+    ctx.fillStyle = s.win_rate >= 50 ? '#638D6F' : '#888'; ctx.font = '700 13px system-ui';
+    ctx.fillText(s.matches_played > 0 ? `${s.win_rate}%` : '—', COL.wr, cy);
+  });
+
+  // Footer
+  const fy = HEADER_H + rows.length * ROW_H;
+  ctx.fillStyle = 'rgba(212,175,55,0.06)';
+  ctx.fillRect(0, fy, W, FOOTER_H);
+  ctx.fillStyle = '#555';
+  ctx.font = '600 11px system-ui';
+  ctx.textAlign = 'center';
+  ctx.fillText('digu-league.pages.dev', W / 2, fy + 22);
+
+  return new Promise(res => canvas.toBlob(b => res(b!), 'image/png'));
 }
 
 export default function LeaderboardTable() {
@@ -98,37 +250,91 @@ export default function LeaderboardTable() {
   const [stats, setStats] = useState<PlayerStats[]>([]);
   const [teamStats, setTeamStats] = useState<TeamStats[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sortKey, setSortKey] = useState<SortKey>('league_points');
+  const [sortKey, setSortKey] = useState<SortKey>('matches_won');
   const [sortDesc, setSortDesc] = useState(true);
   const [month, setMonth] = useState('');
+  const [season, setSeason] = useState('');
+  const [seasons, setSeasons] = useState<Season[]>([]);
+  const [showSeasonModal, setShowSeasonModal] = useState(false);
+  const [newSeasonName, setNewSeasonName] = useState('');
+  const [savingSeason, setSavingSeason] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const monthOptions = getMonthOptions();
+
+  useEffect(() => {
+    fetch('/api/seasons').then(r => r.json()).then((data: Season[]) => setSeasons(data)).catch(() => {});
+  }, []);
+
+  function buildUrl(base: string) {
+    const p = new URLSearchParams();
+    if (month) p.set('month', month);
+    if (season) p.set('season', season);
+    const qs = p.toString();
+    return qs ? `${base}?${qs}` : base;
+  }
 
   useEffect(() => {
     setLoading(true);
     if (tab === 'players') {
-      const url = month ? `/api/stats?month=${month}` : '/api/stats';
-      fetch(url)
+      fetch(buildUrl('/api/stats'))
         .then(r => r.json())
         .then((data: PlayerStats[]) => { setStats(data); setLoading(false); })
         .catch(() => setLoading(false));
     } else {
-      const url = month ? `/api/stats/teams?month=${month}` : '/api/stats/teams';
-      fetch(url)
+      fetch(buildUrl('/api/stats/teams'))
         .then(r => r.json())
         .then((data: TeamStats[]) => { setTeamStats(data); setLoading(false); })
         .catch(() => setLoading(false));
     }
-  }, [tab, month]);
+  }, [tab, month, season]);
 
-  // Always fetch player stats for awards (all types, current month)
   const [awardStats, setAwardStats] = useState<PlayerStats[]>([]);
   useEffect(() => {
-    const url = month ? `/api/stats?month=${month}` : '/api/stats';
-    fetch(url)
+    fetch(buildUrl('/api/stats'))
       .then(r => r.json())
       .then((data: PlayerStats[]) => setAwardStats(data))
       .catch(() => {});
-  }, [month]);
+  }, [month, season]);
+
+  async function handleStartSeason() {
+    setSavingSeason(true);
+    const res = await fetch('/api/seasons', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newSeasonName }),
+    });
+    const data = await res.json() as { ok: boolean; id: string };
+    if (data.ok) {
+      const updated = await fetch('/api/seasons').then(r => r.json()) as Season[];
+      setSeasons(updated);
+      setSeason('current');
+      setShowSeasonModal(false);
+      setNewSeasonName('');
+    }
+    setSavingSeason(false);
+  }
+
+  async function handleShare() {
+    if (!sorted.length) return;
+    setSharing(true);
+    try {
+      const label = month
+        ? monthOptions.find(o => o.value === month)?.label ?? 'All Time'
+        : 'All Time';
+      const blob = await generateRankingsImage(sorted, label);
+      const file = new File([blob], 'digu-league-rankings.png', { type: 'image/png' });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'Digu League Rankings' });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'digu-league-rankings.png'; a.click();
+        URL.revokeObjectURL(url);
+      }
+    } finally {
+      setSharing(false);
+    }
+  }
 
   function handleSort(key: SortKey) {
     if (key === sortKey) setSortDesc(d => !d);
@@ -144,22 +350,43 @@ export default function LeaderboardTable() {
   // Awards — pick best player regardless of whether they have data yet
   const hasPlayed = awardStats.filter(s => s.matches_played > 0);
   const playerOfMonth = hasPlayed.length > 0
-    ? hasPlayed.reduce((best, s) => s.total_points_scored > best.total_points_scored ? s : best, hasPlayed[0])
+    ? hasPlayed.reduce((best, s) => s.league_points > best.league_points ? s : best, hasPlayed[0])
     : null;
   const diguKing = hasPlayed.length > 0
     ? hasPlayed.reduce((best, s) => s.gin_count > best.gin_count ? s : best, hasPlayed[0])
     : null;
 
   const monthPicker = (
-    <div style={{ marginBottom: '1rem' }}>
-      <select
-        className="form-input"
-        value={month}
-        onChange={e => setMonth(e.target.value)}
-        style={{ maxWidth: 220 }}
-      >
+    <div style={{ marginBottom: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+      <select className="form-input" value={month} onChange={e => setMonth(e.target.value)} style={{ maxWidth: 200, flex: 1 }}>
         {monthOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
+      {seasons.length > 0 && (
+        <select className="form-input" value={season} onChange={e => setSeason(e.target.value)} style={{ maxWidth: 200, flex: 1 }}>
+          <option value="">All Seasons</option>
+          <option value="current">Current Season</option>
+          {seasons.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+        </select>
+      )}
+      <button
+        className="btn btn-secondary"
+        style={{ fontSize: '0.75rem', padding: '0.375rem 0.75rem', minHeight: 44, whiteSpace: 'nowrap', borderColor: 'var(--gold)', color: 'var(--gold)' }}
+        onClick={() => { setNewSeasonName(`Season ${new Date().getFullYear()}`); setShowSeasonModal(true); }}
+      >
+        New Season
+      </button>
+      {tab === 'players' && sorted.length > 0 && (
+        <button
+          className="btn btn-secondary"
+          style={{ fontSize: '0.75rem', padding: '0.375rem 0.75rem', minHeight: 44, whiteSpace: 'nowrap', borderColor: 'var(--felt-light)', color: 'var(--felt-light)' }}
+          onClick={handleShare}
+          disabled={sharing}
+        >
+          {sharing ? '…' : '📤 Share'}
+        </button>
+      )}
+      <a href="/h2h" className="btn btn-secondary" style={{ fontSize: '0.75rem', padding: '0.375rem 0.75rem', minHeight: 44, whiteSpace: 'nowrap', textDecoration: 'none' }}>⚔ H2H</a>
+      <a href="/records" className="btn btn-secondary" style={{ fontSize: '0.75rem', padding: '0.375rem 0.75rem', minHeight: 44, whiteSpace: 'nowrap', textDecoration: 'none' }}>🏅 Records</a>
     </div>
   );
 
@@ -198,19 +425,19 @@ export default function LeaderboardTable() {
           icon="🏆"
           title="Player of the Month"
           name={playerOfMonth ? playerOfMonth.name : '—'}
-          subtitle={playerOfMonth && playerOfMonth.total_points_scored > 0
-            ? `${playerOfMonth.total_points_scored} pts scored`
+          subtitle={playerOfMonth && playerOfMonth.league_points > 0
+            ? `${playerOfMonth.league_points} pts`
             : 'No matches yet'}
-          gradient="linear-gradient(135deg, #1a3a24 0%, #2B4F37 100%)"
+          accentColor="#D4AF37"
         />
         <AwardCard
           icon="👑"
           title="Digu King of the Month"
           name={diguKing && diguKing.gin_count > 0 ? diguKing.name : '—'}
           subtitle={diguKing && diguKing.gin_count > 0
-            ? `${diguKing.gin_count} digu${diguKing.gin_count !== 1 ? 's' : ''}`
-            : 'No digus yet'}
-          gradient="linear-gradient(135deg, #4a1508 0%, #78270D 100%)"
+            ? `${diguKing.gin_count} DIGU`
+            : 'No DIGU yet'}
+          accentColor="#C8102E"
         />
       </div>
     </div>
@@ -237,13 +464,15 @@ export default function LeaderboardTable() {
                 <thead>
                   <tr>
                     <th style={{ width: 32 }}>#</th>
-                    <th style={{ textAlign: 'left' }}>Player</th>
-                    {PLAYER_COLS.map(c => (
+                    <th style={{ textAlign: 'left', paddingRight: '0.25rem' }}>Player</th>
+                    <th style={{ textAlign: 'left', paddingRight: '2rem' }}>Nickname</th>
+                    {PLAYER_COLS.map((c, ci) => (
                       <th
                         key={c.key}
                         className={`sortable ${sortKey === c.key ? 'active-sort' : ''}`}
                         onClick={() => handleSort(c.key)}
                         title={c.label}
+                        style={ci === 0 ? { paddingLeft: '1rem' } : undefined}
                       >
                         {c.short}
                         {sortKey === c.key && <span style={{ marginLeft: 2 }}>{sortDesc ? '↓' : '↑'}</span>}
@@ -252,30 +481,56 @@ export default function LeaderboardTable() {
                   </tr>
                 </thead>
                 <tbody>
-                  {sorted.map((s, i) => (
-                    <tr key={s.player_id} className={i === 0 ? 'top-row' : ''}>
-                      <td className="rank">
-                        {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}
-                      </td>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <Avatar name={s.name} avatar_b64={s.avatar_b64} size={30} />
-                          <span style={{ fontFamily: "'Quicksand', sans-serif", fontWeight: 500, fontSize: '0.9375rem' }}>{s.name}</span>
-                        </div>
-                      </td>
-                      <td className={sortKey === 'matches_played' ? 'active-col' : ''}>{s.matches_played}</td>
-                      <td className={sortKey === 'matches_won' ? 'active-col' : ''} style={{ color: 'var(--felt-light)' }}>{s.matches_won}</td>
-                      <td className={sortKey === 'matches_lost' ? 'active-col' : ''} style={{ color: 'var(--ember)' }}>{s.matches_lost}</td>
-                      <td className={sortKey === 'league_points' ? 'active-col' : ''} style={{ color: 'var(--gold)', fontWeight: 700 }}>{s.league_points}</td>
-                      <td className={sortKey === 'gin_count' ? 'active-col' : ''} style={{ color: 'var(--gold)' }}>{s.gin_count}</td>
-                      <td className={sortKey === 'total_points_scored' ? 'active-col' : ''}>{s.total_points_scored}</td>
-                      <td className={sortKey === 'win_rate' ? 'active-col' : ''}>
-                        <span style={{ color: s.win_rate >= 50 ? 'var(--felt-light)' : 'var(--text-secondary)' }}>
-                          {s.matches_played > 0 ? `${s.win_rate}%` : '—'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                  {sorted.map((s, i) => {
+                    const colCount = PLAYER_COLS.length + 3;
+                    const isRelegated = sorted.length >= 3 && i >= sorted.length - 2;
+                    const isRelegationStart = sorted.length >= 3 && i === sorted.length - 2;
+                    return (
+                      <>
+                        {isRelegationStart && (
+                          <tr key="relegation-divider" className="relegation-divider-row">
+                            <td colSpan={colCount} style={{ padding: 0 }}>
+                              <div style={{
+                                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                padding: '0.375rem 0.5rem',
+                                background: 'rgba(200,16,46,0.12)',
+                                borderTop: '1px dashed rgba(200,16,46,0.5)',
+                                borderBottom: '1px dashed rgba(200,16,46,0.5)',
+                              }}>
+                                <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#FF6B8A', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                                  ▼ Relegation Zone
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                        <tr key={s.player_id} className={i === 0 ? 'top-row' : isRelegated ? 'relegation-row' : ''}>
+                          <td className="rank" style={isRelegated ? { color: '#FF4A6A', fontWeight: 800 } : undefined}>
+                            {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : isRelegated ? '⬇' : i + 1}
+                          </td>
+                          <td style={{ paddingRight: '0.25rem' }}>
+                            <a href={`/players/${s.player_id}`} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: 'inherit' }}>
+                              <Avatar name={s.name} avatar_b64={s.avatar_b64} size={30} />
+                              <span style={{ fontFamily: "'Quicksand', sans-serif", fontWeight: 500, fontSize: '0.9375rem' }}>{s.name}</span>
+                            </a>
+                          </td>
+                          <td style={{ color: 'var(--felt-light)', fontWeight: 600, fontSize: '0.8125rem', fontFamily: "'Quicksand', sans-serif", paddingRight: '2rem' }}>
+                            {s.nickname ?? '—'}
+                          </td>
+                          <td className={sortKey === 'matches_played' ? 'active-col' : ''} style={{ paddingLeft: '1rem' }}>{s.matches_played}</td>
+                          <td className={sortKey === 'matches_won' ? 'active-col' : ''} style={{ color: 'var(--felt-light)' }}>{s.matches_won}</td>
+                          <td className={sortKey === 'matches_lost' ? 'active-col' : ''} style={{ color: 'var(--ember)' }}>{s.matches_lost}</td>
+                          <td className={sortKey === 'gin_count' ? 'active-col' : ''} style={{ color: 'var(--gold)' }}>{s.gin_count}</td>
+                          <td className={sortKey === 'league_points' ? 'active-col' : ''} style={{ color: 'var(--gold)', fontWeight: 700 }}>{s.league_points}</td>
+                          <td className={sortKey === 'win_rate' ? 'active-col' : ''}>
+                            <span style={{ color: s.win_rate >= 50 ? 'var(--felt-light)' : 'var(--text-secondary)' }}>
+                              {s.matches_played > 0 ? `${s.win_rate}%` : '—'}
+                            </span>
+                          </td>
+                        </tr>
+                      </>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -354,8 +609,43 @@ export default function LeaderboardTable() {
         .lb-table td.active-col { font-weight: 700; }
         .lb-table .rank { font-weight: 700; color: var(--text-muted); font-size: 0.9375rem; }
         .lb-table .top-row td { background: rgba(212,175,55,0.05); }
+        .lb-table .relegation-row td {
+          background: rgba(200,16,46,0.14);
+          border-bottom: 1px solid rgba(200,16,46,0.2);
+        }
+        .lb-table .relegation-row td:first-child {
+          border-left: 3px solid #C8102E;
+        }
+        .lb-table .relegation-divider-row td { border-bottom: none; }
         .lb-table tbody tr:last-child td { border-bottom: none; }
       `}</style>
+
+      {/* Season modal */}
+      {showSeasonModal && (
+        <div className="modal-overlay centered">
+          <div className="modal-sheet" style={{ textAlign: 'center' }}>
+            <h2 style={{ marginBottom: '0.5rem' }}>Start New Season</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1rem' }}>
+              All completed matches will be archived into the current season. Rankings reset to zero.
+            </p>
+            <div className="form-group" style={{ marginBottom: '1rem', textAlign: 'left' }}>
+              <label className="form-label">Season Name</label>
+              <input
+                className="form-input"
+                value={newSeasonName}
+                onChange={e => setNewSeasonName(e.target.value)}
+                placeholder="e.g. Season 1"
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '0.625rem' }}>
+              <button className="btn btn-ghost btn-block" onClick={() => setShowSeasonModal(false)}>Cancel</button>
+              <button className="btn btn-primary btn-block" onClick={handleStartSeason} disabled={savingSeason || !newSeasonName.trim()}>
+                {savingSeason ? 'Starting…' : 'Start Season'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

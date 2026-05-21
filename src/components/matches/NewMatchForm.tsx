@@ -9,6 +9,7 @@ export default function NewMatchForm() {
   const [p1b, setP1b] = useState('');
   const [p2a, setP2a] = useState('');
   const [p2b, setP2b] = useState('');
+  const [matchType, setMatchType] = useState<'single' | 'team'>('single');
   const [targetMode, setTargetMode] = useState<'pts' | 'rounds'>('pts');
   const [target, setTarget] = useState<number>(100);
   const [customTarget, setCustomTarget] = useState('');
@@ -49,10 +50,10 @@ export default function NewMatchForm() {
           player2_id: p2a,
           target_score: finalTarget,
           max_rounds: maxRounds,
-          team1_name: team1Name.trim() || null,
-          team2_name: team2Name.trim() || null,
-          team1_player2_id: p1b || null,
-          team2_player2_id: p2b || null,
+          team1_name: matchType === 'team' ? (team1Name.trim() || null) : null,
+          team2_name: matchType === 'team' ? (team2Name.trim() || null) : null,
+          team1_player2_id: matchType === 'team' ? (p1b || null) : null,
+          team2_player2_id: matchType === 'team' ? (p2b || null) : null,
         }),
       });
       const data = await res.json() as { id?: string; error?: string };
@@ -79,67 +80,90 @@ export default function NewMatchForm() {
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
-      {/* Team A */}
+      {/* Match type toggle */}
+      <div style={{ display: 'flex', gap: 4, background: 'var(--card)', borderRadius: 8, padding: 4, border: '1px solid var(--border)' }}>
+        {(['single', 'team'] as const).map(t => (
+          <button key={t} type="button" onClick={() => { setMatchType(t); if (t === 'single') { setP1b(''); setP2b(''); } }} style={{
+            flex: 1, padding: '0.5rem', borderRadius: 6, border: 'none', cursor: 'pointer',
+            fontWeight: 700, fontSize: '0.875rem',
+            background: matchType === t ? 'var(--felt)' : 'transparent',
+            color: matchType === t ? 'var(--cream)' : 'var(--text-muted)',
+            transition: 'all 0.15s',
+          }}>
+            {t === 'single' ? '👤 Single (1v1)' : '👥 Team (2v2)'}
+          </button>
+        ))}
+      </div>
+
+      {/* Side A */}
       <div className="card">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.875rem' }}>
-          <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'var(--team-a)', flexShrink: 0 }} />
-          <input
-            className="form-input"
-            style={{ fontWeight: 700, fontSize: '1rem', padding: '0.375rem 0.625rem', height: 'auto', minHeight: 'auto' }}
-            value={team1Name}
-            onChange={e => setTeam1Name(e.target.value)}
-            placeholder="Team A name"
-            maxLength={30}
-          />
-        </div>
+        {matchType === 'team' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.875rem' }}>
+            <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'var(--team-a)', flexShrink: 0 }} />
+            <input
+              className="form-input"
+              style={{ fontWeight: 700, fontSize: '1rem', padding: '0.375rem 0.625rem', height: 'auto', minHeight: 'auto' }}
+              value={team1Name}
+              onChange={e => setTeam1Name(e.target.value)}
+              placeholder="Team A name"
+              maxLength={30}
+            />
+          </div>
+        )}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
           <div className="form-group">
-            <label className="form-label">Player 1</label>
+            <label className="form-label">{matchType === 'team' ? 'Player 1' : 'Player A'}</label>
             <select className="form-input" value={p1a} onChange={e => setP1a(e.target.value)} required>
               <option value="">Select player…</option>
               {players.filter(p => !taken.has(p.id) || p.id === p1a).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </div>
-          <div className="form-group">
-            <label className="form-label">Player 2 <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(optional)</span></label>
-            <select className="form-input" value={p1b} onChange={e => setP1b(e.target.value)}>
-              <option value="">None (1v1)</option>
-              {players.filter(p => (!taken.has(p.id) || p.id === p1b) && p.id !== p1a).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
-          </div>
+          {matchType === 'team' && (
+            <div className="form-group">
+              <label className="form-label">Player 2 <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(optional)</span></label>
+              <select className="form-input" value={p1b} onChange={e => setP1b(e.target.value)}>
+                <option value="">Select Player</option>
+                {players.filter(p => (!taken.has(p.id) || p.id === p1b) && p.id !== p1a).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            </div>
+          )}
         </div>
       </div>
 
       <div style={{ textAlign: 'center', fontWeight: 700, color: 'var(--text-muted)', fontSize: '0.9375rem' }}>vs</div>
 
-      {/* Team B */}
+      {/* Side B */}
       <div className="card">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.875rem' }}>
-          <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'var(--team-b)', flexShrink: 0 }} />
-          <input
-            className="form-input"
-            style={{ fontWeight: 700, fontSize: '1rem', padding: '0.375rem 0.625rem', height: 'auto', minHeight: 'auto' }}
-            value={team2Name}
-            onChange={e => setTeam2Name(e.target.value)}
-            placeholder="Team B name"
-            maxLength={30}
-          />
-        </div>
+        {matchType === 'team' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.875rem' }}>
+            <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'var(--team-b)', flexShrink: 0 }} />
+            <input
+              className="form-input"
+              style={{ fontWeight: 700, fontSize: '1rem', padding: '0.375rem 0.625rem', height: 'auto', minHeight: 'auto' }}
+              value={team2Name}
+              onChange={e => setTeam2Name(e.target.value)}
+              placeholder="Team B name"
+              maxLength={30}
+            />
+          </div>
+        )}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
           <div className="form-group">
-            <label className="form-label">Player 1</label>
+            <label className="form-label">{matchType === 'team' ? 'Player 1' : 'Player B'}</label>
             <select className="form-input" value={p2a} onChange={e => setP2a(e.target.value)} required>
               <option value="">Select player…</option>
               {players.filter(p => (!taken.has(p.id) || p.id === p2a) && p.id !== p1a && p.id !== p1b).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </div>
-          <div className="form-group">
-            <label className="form-label">Player 2 <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(optional)</span></label>
-            <select className="form-input" value={p2b} onChange={e => setP2b(e.target.value)}>
-              <option value="">None (1v1)</option>
-              {players.filter(p => (!taken.has(p.id) || p.id === p2b) && p.id !== p1a && p.id !== p1b && p.id !== p2a).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
-          </div>
+          {matchType === 'team' && (
+            <div className="form-group">
+              <label className="form-label">Player 2 <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(optional)</span></label>
+              <select className="form-input" value={p2b} onChange={e => setP2b(e.target.value)}>
+                <option value="">Select Player</option>
+                {players.filter(p => (!taken.has(p.id) || p.id === p2b) && p.id !== p1a && p.id !== p1b && p.id !== p2a).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            </div>
+          )}
         </div>
       </div>
 

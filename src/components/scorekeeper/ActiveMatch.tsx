@@ -26,6 +26,7 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
   const [finishing, setFinishing] = useState(false);
   const [showFinishConfirm, setShowFinishConfirm] = useState(false);
   const [showCompletion, setShowCompletion] = useState(false);
+  const [allowExtraRounds, setAllowExtraRounds] = useState(false);
   const [completionData, setCompletionData] = useState<{ winnerId: string | null; isDraw: boolean; p1Score: number; p2Score: number } | null>(null);
 
   // 1v1 form state
@@ -34,14 +35,24 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
   const [isGin, setIsGin] = useState(false);
 
   // 2v2 form state
-  const [t1Score, setT1Score] = useState(0);
-  const [t2Score, setT2Score] = useState(0);
+  const [t1Score, setT1Score] = useState('');
+  const [t2Score, setT2Score] = useState('');
   const [teamGin, setTeamGin] = useState(false);
   const [ginPlayerId, setGinPlayerId] = useState('');
 
   // Scoresheet gin edits
   const [ginEdits, setGinEdits] = useState<Record<string, string>>({});
   const [savingGin, setSavingGin] = useState<Record<string, boolean>>({});
+
+  // Inline row editing
+  const [editingGame, setEditingGame] = useState<string | null>(null);
+  const [editT1, setEditT1] = useState('');
+  const [editT2, setEditT2] = useState('');
+  const [editGin, setEditGin] = useState(false);
+  const [editGinPlayer, setEditGinPlayer] = useState('');
+  const [editWinner, setEditWinner] = useState('');
+  const [editScore, setEditScore] = useState('');
+  const [savingEdit, setSavingEdit] = useState(false);
 
   useEffect(() => {
     fetch(`/api/matches/${matchId}`)
@@ -64,7 +75,7 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
       .catch(() => { setError('Failed to load match'); setLoading(false); });
   }, [matchId]);
 
-  if (loading) return <div className="loading" style={{ paddingTop: '3rem' }}>Loading matchâ€¦</div>;
+  if (loading) return <div className="loading" style={{ paddingTop: '3rem' }}>Loading match...</div>;
   if (error || !match) return <div className="error-message">{error || 'Match not found'}</div>;
 
   const isTeam = !!match.team1_player2_id;
@@ -77,29 +88,54 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
   const p2Name = match.player2_name ?? 'Team 2';
   const t1p2Name = match.team1_player2_name ?? '';
   const t2p2Name = match.team2_player2_name ?? '';
-  const team1Label = isTeam ? (match.team1_name || `${p1Name} / ${t1p2Name}`) : p1Name;
-  const team2Label = isTeam ? (match.team2_name || `${p2Name} / ${t2p2Name}`) : p2Name;
+  const p1Nick = match.player1_nickname || p1Name.split(' ')[0];
+  const p2Nick = match.player2_nickname || p2Name.split(' ')[0];
+  const t1p2Nick = match.team1_player2_nickname || (t1p2Name ? t1p2Name.split(' ')[0] : '');
+  const t2p2Nick = match.team2_player2_nickname || (t2p2Name ? t2p2Name.split(' ')[0] : '');
+  const team1Label = isTeam ? (match.team1_name || `${p1Nick} / ${t1p2Nick}`) : p1Nick;
+  const team2Label = isTeam ? (match.team2_name || `${p2Nick} / ${t2p2Nick}`) : p2Nick;
 
   const p1Score = match.games.filter(g => g.winner_id === p1Id).reduce((s, g) => s + g.score_awarded, 0);
   const p2Score = match.games.filter(g => g.winner_id === p2Id).reduce((s, g) => s + g.score_awarded, 0);
-  const p1Pct = match.target_score > 0 ? Math.min(100, (p1Score / match.target_score) * 100) : 0;
-  const p2Pct = match.target_score > 0 ? Math.min(100, (p2Score / match.target_score) * 100) : 0;
+  const p1InputTotal = isTeam
+    ? match.games.reduce((s, g) => s + (g.t1_p1_cards ?? 0) + (g.t1_p2_cards ?? 0), 0)
+    : p1Score;
+  const p2InputTotal = isTeam
+    ? match.games.reduce((s, g) => s + (g.t2_p1_cards ?? 0) + (g.t2_p2_cards ?? 0), 0)
+    : p2Score;
+  const totalRoundsPlayed = match.games.length;
+  const p1RoundsWon = match.games.filter(g => g.winner_id === p1Id).length;
+  const p2RoundsWon = match.games.filter(g => g.winner_id === p2Id).length;
+  const p1WinPct = totalRoundsPlayed > 0 ? Math.round((p1RoundsWon / totalRoundsPlayed) * 100) : 0;
+  const p2WinPct = totalRoundsPlayed > 0 ? Math.round((p2RoundsWon / totalRoundsPlayed) * 100) : 0;
+  const maxScore = Math.max(p1InputTotal, p2InputTotal, 1);
+  const p1Pct = match.target_score > 0
+    ? Math.min(100, (p1InputTotal / match.target_score) * 100)
+    : match.max_rounds > 0
+      ? p1WinPct
+      : Math.round((p1InputTotal / maxScore) * 100);
+  const p2Pct = match.target_score > 0
+    ? Math.min(100, (p2InputTotal / match.target_score) * 100)
+    : match.max_rounds > 0
+      ? p2WinPct
+      : Math.round((p2InputTotal / maxScore) * 100);
+  const scoreDiff = Math.abs(p1InputTotal - p2InputTotal);
 
   // 2v2 live calc
-  const team1Total = t1Score;
-  const team2Total = t2Score;
-  const team1Wins2v2 = team1Total <= team2Total;
-  const losingTotal2v2 = team1Wins2v2 ? team2Total : team1Total;
+  const team1Total = parseInt(t1Score as string) || 0;
+  const team2Total = parseInt(t2Score as string) || 0;
+  const team1Wins2v2 = team1Total >= team2Total;
   const winningTotal2v2 = team1Wins2v2 ? team1Total : team2Total;
-  const teamScore2v2 = teamGin ? losingTotal2v2 + 25 : Math.max(0, losingTotal2v2 - winningTotal2v2);
+  const losingTotal2v2 = team1Wins2v2 ? team2Total : team1Total;
+  const teamScore2v2 = teamGin ? winningTotal2v2 + 25 : Math.max(0, winningTotal2v2 - losingTotal2v2);
   const teamWinnerLabel = team1Wins2v2 ? team1Label : team2Label;
 
   // All 4 players for gin selector (2v2)
   const allPlayers = isTeam ? [
-    { id: p1Id, name: p1Name },
-    { id: match.team1_player2_id!, name: t1p2Name },
-    { id: p2Id, name: p2Name },
-    { id: match.team2_player2_id!, name: t2p2Name },
+    { id: p1Id, name: p1Nick },
+    { id: match.team1_player2_id!, name: t1p2Nick },
+    { id: p2Id, name: p2Nick },
+    { id: match.team2_player2_id!, name: t2p2Nick },
   ] : [];
 
   async function handleAddRound(e: React.FormEvent) {
@@ -108,7 +144,7 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
     setSubmitting(true);
     setError('');
     const body = isTeam
-      ? { t1_p1_cards: t1Score, t1_p2_cards: 0, t2_p1_cards: t2Score, t2_p2_cards: 0, is_gin: teamGin, gin_player_id: teamGin ? ginPlayerId || null : null }
+      ? { t1_p1_cards: team1Total, t1_p2_cards: 0, t2_p1_cards: team2Total, t2_p2_cards: 0, is_gin: false, gin_player_id: null }
       : { winner_id: winnerId, score: parseInt(score) || 0, is_gin: isGin, gin_player_id: isGin ? winnerId : null };
     try {
       const res = await fetch(`/api/matches/${matchId}/games`, {
@@ -121,7 +157,7 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
       setMatch(prev => prev ? { ...prev, games: [...prev.games, data.game] } : prev);
       setGinEdits(prev => ({ ...prev, [data.game.id]: data.game.gin_player_id ?? '' }));
       setScore(''); setIsGin(false);
-      setT1Score(0); setT2Score(0);
+      setT1Score(''); setT2Score('');
       setTeamGin(false); setGinPlayerId('');
     } catch { setError('Network error. Try again.'); }
     finally { setSubmitting(false); }
@@ -156,6 +192,63 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
     }
   }
 
+  function startEdit(g: Game) {
+    setEditingGame(g.id);
+    if (isTeam) {
+      setEditT1(String((g.t1_p1_cards ?? 0) + (g.t1_p2_cards ?? 0)));
+      setEditT2(String((g.t2_p1_cards ?? 0) + (g.t2_p2_cards ?? 0)));
+      setEditGin(g.is_gin === 1);
+      setEditGinPlayer(g.gin_player_id ?? '');
+    } else {
+      setEditWinner(g.winner_id);
+      setEditScore(String(g.score_awarded));
+      setEditGin(g.is_gin === 1);
+    }
+  }
+
+  async function handleSaveEdit(gameId: string) {
+    setSavingEdit(true);
+    let body: Record<string, unknown>;
+    let updatedProps: Partial<Game>;
+    if (isTeam) {
+      const t1 = parseInt(editT1) || 0;
+      const t2 = parseInt(editT2) || 0;
+      const team1Wins = t1 >= t2;
+      const newWinnerId = team1Wins ? p1Id : p2Id;
+      const newLoserId = team1Wins ? p2Id : p1Id;
+      const winningTotal = team1Wins ? t1 : t2;
+      const losingTotal = team1Wins ? t2 : t1;
+      const scoreAwarded = editGin ? winningTotal + 25 : Math.max(0, winningTotal - losingTotal);
+      const ginPId = editGin ? editGinPlayer || null : null;
+      body = { winner_id: newWinnerId, loser_id: newLoserId, score_awarded: scoreAwarded,
+               is_gin: editGin ? 1 : 0, gin_player_id: ginPId,
+               t1_p1_cards: t1, t1_p2_cards: 0, t2_p1_cards: t2, t2_p2_cards: 0 };
+      updatedProps = { winner_id: newWinnerId, loser_id: newLoserId, score_awarded: scoreAwarded,
+                       is_gin: editGin ? 1 : 0, gin_player_id: ginPId,
+                       t1_p1_cards: t1, t1_p2_cards: 0, t2_p1_cards: t2, t2_p2_cards: 0 };
+    } else {
+      const newLoserId = editWinner === p1Id ? p2Id : p1Id;
+      const scoreAwarded = Math.max(0, parseInt(editScore) || 0);
+      const ginPId = editGin ? editWinner : null;
+      body = { winner_id: editWinner, loser_id: newLoserId, score_awarded: scoreAwarded,
+               is_gin: editGin ? 1 : 0, gin_player_id: ginPId };
+      updatedProps = { winner_id: editWinner, loser_id: newLoserId, score_awarded: scoreAwarded,
+                       is_gin: editGin ? 1 : 0, gin_player_id: ginPId };
+    }
+    try {
+      await fetch(`/api/games/${gameId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      setMatch(prev => prev ? { ...prev, games: prev.games.map(g => g.id === gameId ? { ...g, ...updatedProps } : g) } : prev);
+      setGinEdits(prev => ({ ...prev, [gameId]: (updatedProps.gin_player_id as string) ?? '' }));
+      setEditingGame(null);
+    } finally {
+      setSavingEdit(false);
+    }
+  }
+
   const winnerName = completionData?.winnerId === p1Id ? team1Label : completionData?.winnerId === p2Id ? team2Label : '';
 
   return (
@@ -165,17 +258,38 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
         {isTeam ? (
           <div style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
             <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.375rem' }}>
-              {isRoundsMode ? `Round ${match.games.length + 1} of ${match.max_rounds}` : `Round ${match.games.length + 1}`}
+              {isRoundsMode
+                ? roundsDone
+                  ? `${match.max_rounds} Rounds Complete!`
+                  : `Round ${match.games.length + 1} of ${match.max_rounds}`
+                : `Round ${match.games.length + 1}`}
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', gap: '0.5rem' }}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--team-a)' }}>{team1Label}</div>
-                <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--team-a)' }}>{p1Score}</div>
+                <div style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--team-a)' }}>Team A</div>
+                <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--team-a)' }}>{p1InputTotal}</div>
+                {totalRoundsPlayed > 0 && (
+                  <div style={{ fontSize: '0.6875rem', color: 'var(--team-a)', opacity: 0.8 }}>
+                    {p1RoundsWon}W · {p1WinPct}%
+                  </div>
+                )}
               </div>
-              <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>vs</div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--team-b)' }}>{team2Label}</div>
-                <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--team-b)' }}>{p2Score}</div>
+                <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>vs</div>
+                {totalRoundsPlayed > 0 && scoreDiff > 0 && (
+                  <div style={{ fontSize: '0.6875rem', color: 'var(--gold)', fontWeight: 700, marginTop: '0.25rem' }}>
+                    +{scoreDiff}
+                  </div>
+                )}
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--team-b)' }}>Team B</div>
+                <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--team-b)' }}>{p2InputTotal}</div>
+                {totalRoundsPlayed > 0 && (
+                  <div style={{ fontSize: '0.6875rem', color: 'var(--team-b)', opacity: 0.8 }}>
+                    {p2RoundsWon}W · {p2WinPct}%
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -184,12 +298,13 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
             <div style={{ textAlign: 'center', flex: 1 }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
                 <Avatar name={p1Name} b64={match.player1_avatar} size={40} />
-                <div style={{ fontSize: '0.8125rem', fontWeight: 600 }}>{p1Name}</div>
+                <div style={{ fontSize: '0.8125rem', fontWeight: 600 }}>{p1Nick}</div>
                 <div style={{ fontSize: '2.25rem', fontWeight: 800, color: 'var(--team-a)' }}>{p1Score}</div>
+                {totalRoundsPlayed > 0 && <div style={{ fontSize: '0.6875rem', color: 'var(--team-a)', opacity: 0.8 }}>{p1RoundsWon}W · {p1WinPct}%</div>}
               </div>
             </div>
             <div style={{ textAlign: 'center', padding: '0 0.5rem' }}>
-              <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Round {match.games.length + 1}</div>
+              <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{roundsDone ? 'Done' : `Round ${match.games.length + 1}`}</div>
               <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', margin: '0.2rem 0' }}>vs</div>
               {isRoundsMode
                 ? <div style={{ fontSize: '0.625rem', color: roundsDone ? 'var(--gold)' : 'var(--text-muted)', fontWeight: roundsDone ? 700 : 400 }}>
@@ -197,19 +312,23 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
                   </div>
                 : <div style={{ fontSize: '0.625rem', color: 'var(--text-muted)' }}>to {match.target_score}</div>
               }
+              {totalRoundsPlayed > 0 && scoreDiff > 0 && (
+                <div style={{ fontSize: '0.6875rem', color: 'var(--gold)', fontWeight: 700, marginTop: '0.2rem' }}>+{scoreDiff}</div>
+              )}
             </div>
             <div style={{ textAlign: 'center', flex: 1 }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
                 <Avatar name={p2Name} b64={match.player2_avatar} size={40} />
-                <div style={{ fontSize: '0.8125rem', fontWeight: 600 }}>{p2Name}</div>
+                <div style={{ fontSize: '0.8125rem', fontWeight: 600 }}>{p2Nick}</div>
                 <div style={{ fontSize: '2.25rem', fontWeight: 800, color: 'var(--team-b)' }}>{p2Score}</div>
+                {totalRoundsPlayed > 0 && <div style={{ fontSize: '0.6875rem', color: 'var(--team-b)', opacity: 0.8 }}>{p2RoundsWon}W · {p2WinPct}%</div>}
               </div>
             </div>
           </div>
         )}
         {/* Progress bars */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {[{ label: p1Name.split(' ')[0], pct: p1Pct, color: 'var(--team-a)' }, { label: p2Name.split(' ')[0], pct: p2Pct, color: 'var(--team-b)' }].map(b => (
+          {[{ label: isTeam ? 'Team A' : p1Nick, pct: p1Pct, color: 'var(--team-a)' }, { label: isTeam ? 'Team B' : p2Nick, pct: p2Pct, color: 'var(--team-b)' }].map(b => (
             <div key={b.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <div style={{ width: 36, fontSize: '0.625rem', color: 'var(--text-muted)', textAlign: 'right', flexShrink: 0 }}>{b.label}</div>
               <div style={{ flex: 1, height: 6, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
@@ -231,22 +350,62 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
                 <tr>
                   <th style={thStyle}>#</th>
                   <th style={thStyle}>WINNER</th>
-                  <th style={thStyle}>DIGU</th>
-                  <th style={{ ...thStyle, color: 'var(--team-a)' }}>{p1Name.split(' ')[0]} / {t1p2Name.split(' ')[0]}</th>
-                  <th style={{ ...thStyle, color: 'var(--team-b)' }}>{p2Name.split(' ')[0]} / {t2p2Name.split(' ')[0]}</th>
+                  <th style={{ ...thStyle, width: 70 }}>DIGU</th>
+                  <th style={{ ...thStyle, color: 'var(--team-a)' }}>{p1Nick} / {t1p2Nick}</th>
+                  <th style={{ ...thStyle, color: 'var(--team-b)' }}>{p2Nick} / {t2p2Nick}</th>
                 </tr>
               </thead>
               <tbody>
                 {match.games.map((g) => {
+                  if (editingGame === g.id) {
+                    return (
+                      <tr key={g.id} style={{ borderTop: '1px solid var(--border)', background: 'rgba(43,79,55,0.06)' }}>
+                        <td style={{ ...tdStyle, color: 'var(--text-muted)', fontWeight: 600 }}>{g.round_number}</td>
+                        <td colSpan={4}>
+                          <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center', flexWrap: 'wrap', padding: '0.25rem 0.25rem' }}>
+                            <input type="text" inputMode="decimal" value={editT1}
+                              onChange={e => { if (/^-?\d*$/.test(e.target.value)) setEditT1(e.target.value); }}
+                              style={{ width: 44, textAlign: 'center', padding: '0.25rem 0', borderRadius: 4, border: '1px solid var(--team-a)', color: 'var(--team-a)', fontWeight: 700, fontSize: '0.875rem', background: 'var(--card)' }} />
+                            <span style={{ color: 'var(--text-muted)', fontSize: '0.625rem' }}>vs</span>
+                            <input type="text" inputMode="decimal" value={editT2}
+                              onChange={e => { if (/^-?\d*$/.test(e.target.value)) setEditT2(e.target.value); }}
+                              style={{ width: 44, textAlign: 'center', padding: '0.25rem 0', borderRadius: 4, border: '1px solid var(--team-b)', color: 'var(--team-b)', fontWeight: 700, fontSize: '0.875rem', background: 'var(--card)' }} />
+                            <label style={{ display: 'flex', alignItems: 'center', gap: 3, cursor: 'pointer', fontSize: '0.6875rem' }}>
+                              <input type="checkbox" checked={editGin} onChange={e => { setEditGin(e.target.checked); if (!e.target.checked) setEditGinPlayer(''); }} />
+                              <span style={{ color: 'var(--gold)', fontWeight: 600 }}>DIGU</span>
+                            </label>
+                            {editGin && (
+                              <select value={editGinPlayer} onChange={e => setEditGinPlayer(e.target.value)}
+                                style={{ fontSize: '0.6875rem', padding: '0.2rem', borderRadius: 4, border: '1px solid var(--border)', background: 'var(--card)' }}>
+                                <option value="">Who?</option>
+                                {allPlayers.map(pl => <option key={pl.id} value={pl.id}>{pl.name}</option>)}
+                              </select>
+                            )}
+                            <button onClick={() => handleSaveEdit(g.id)} disabled={savingEdit}
+                              style={{ padding: '0.25rem 0.5rem', borderRadius: 4, border: 'none', background: 'var(--felt)', color: 'white', cursor: 'pointer', fontWeight: 700, fontSize: '0.75rem' }}>
+                              {savingEdit ? '…' : '✓'}
+                            </button>
+                            <button onClick={() => setEditingGame(null)}
+                              style={{ padding: '0.25rem 0.5rem', borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', fontSize: '0.75rem' }}>
+                              ✗
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  }
                   const t1Cards = (g.t1_p1_cards ?? 0) + (g.t1_p2_cards ?? 0);
                   const t2Cards = (g.t2_p1_cards ?? 0) + (g.t2_p2_cards ?? 0);
-                  // winner = team with higher score_awarded; 0-point rounds show no winner
                   const hasWinner = g.score_awarded > 0;
                   const t1Won = hasWinner && g.winner_id === p1Id;
                   const t2Won = hasWinner && g.winner_id === p2Id;
                   return (
                     <tr key={g.id} style={{ borderTop: '1px solid var(--border)' }}>
-                      <td style={{ ...tdStyle, color: 'var(--text-muted)', fontWeight: 600 }}>{g.round_number}</td>
+                      <td style={{ ...tdStyle, color: 'var(--text-muted)', fontWeight: 600 }}>
+                        <button onClick={() => startEdit(g)} title="Edit round"
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '0 2px', fontSize: '0.7rem', opacity: 0.5 }}>✎</button>
+                        {g.round_number}
+                      </td>
                       <td style={tdStyle}>
                         {hasWinner ? (
                           <span style={{
@@ -259,7 +418,7 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
                           </span>
                         ) : <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>—</span>}
                       </td>
-                      <td style={{ ...tdStyle, padding: '0.25rem' }}>
+                      <td style={{ ...tdStyle, padding: '0.25rem', width: 70 }}>
                         <select
                           value={ginEdits[g.id] ?? ''}
                           onChange={e => handleGinEdit(g.id, e.target.value)}
@@ -276,19 +435,19 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
                           ))}
                         </select>
                       </td>
-                      <td style={{ ...tdStyle, fontWeight: 500, color: t1Won ? 'var(--team-a)' : 'var(--text-muted)' }}>
-                        {t1Cards > 0 ? t1Cards : '0'}{t1Won ? ` (+${g.score_awarded})` : ''}
+                      <td style={{ ...tdStyle, fontWeight: 800, color: 'var(--team-a)' }}>
+                        {(g.t1_p1_cards ?? 0) + (g.t1_p2_cards ?? 0)}
                       </td>
-                      <td style={{ ...tdStyle, fontWeight: 500, color: t2Won ? 'var(--team-b)' : 'var(--text-muted)' }}>
-                        {t2Cards > 0 ? t2Cards : '0'}{t2Won ? ` (+${g.score_awarded})` : ''}
+                      <td style={{ ...tdStyle, fontWeight: 800, color: 'var(--team-b)' }}>
+                        {(g.t2_p1_cards ?? 0) + (g.t2_p2_cards ?? 0)}
                       </td>
                     </tr>
                   );
                 })}
                 <tr style={{ borderTop: '2px solid var(--border)', background: 'rgba(255,255,255,0.03)' }}>
                   <td style={{ ...tdStyle, fontWeight: 700, color: 'var(--text-muted)' }} colSpan={3}>TOTAL</td>
-                  <td style={{ ...tdStyle, fontWeight: 800, fontSize: '1rem', color: 'var(--team-a)' }}>{p1Score}</td>
-                  <td style={{ ...tdStyle, fontWeight: 800, fontSize: '1rem', color: 'var(--team-b)' }}>{p2Score}</td>
+                  <td style={{ ...tdStyle, fontWeight: 800, fontSize: '1rem', color: 'var(--gold)' }}>{p1InputTotal}</td>
+                  <td style={{ ...tdStyle, fontWeight: 800, fontSize: '1rem', color: 'var(--gold)' }}>{p2InputTotal}</td>
                 </tr>
               </tbody>
             </table>
@@ -304,14 +463,52 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
               </thead>
               <tbody>
                 {match.games.map((g) => {
+                  if (editingGame === g.id) {
+                    return (
+                      <tr key={g.id} style={{ borderTop: '1px solid var(--border)', background: 'rgba(43,79,55,0.06)' }}>
+                        <td style={tdStyle}>{g.round_number}</td>
+                        <td colSpan={3}>
+                          <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center', flexWrap: 'wrap', padding: '0.25rem 0.25rem' }}>
+                            {[{ id: p1Id, name: p1Nick, color: 'var(--team-a)' }, { id: p2Id, name: p2Nick, color: 'var(--team-b)' }].map(p => (
+                              <button key={p.id} type="button" onClick={() => setEditWinner(p.id)}
+                                style={{ padding: '0.2rem 0.5rem', borderRadius: 4, fontWeight: 600, fontSize: '0.6875rem', cursor: 'pointer',
+                                  border: `2px solid ${editWinner === p.id ? p.color : 'var(--border)'}`,
+                                  background: 'transparent', color: editWinner === p.id ? p.color : 'var(--text-muted)' }}>
+                                {p.name}
+                              </button>
+                            ))}
+                            <input type="text" inputMode="decimal" value={editScore}
+                              onChange={e => { if (/^-?\d*$/.test(e.target.value)) setEditScore(e.target.value); }}
+                              style={{ width: 52, textAlign: 'center', padding: '0.2rem', borderRadius: 4, border: '1px solid var(--border)', fontWeight: 700, fontSize: '0.875rem', background: 'var(--card)' }} />
+                            <label style={{ display: 'flex', alignItems: 'center', gap: 3, cursor: 'pointer', fontSize: '0.6875rem' }}>
+                              <input type="checkbox" checked={editGin} onChange={e => setEditGin(e.target.checked)} />
+                              <span style={{ color: 'var(--gold)', fontWeight: 600 }}>DIGU</span>
+                            </label>
+                            <button onClick={() => handleSaveEdit(g.id)} disabled={savingEdit}
+                              style={{ padding: '0.25rem 0.5rem', borderRadius: 4, border: 'none', background: 'var(--felt)', color: 'white', cursor: 'pointer', fontWeight: 700, fontSize: '0.75rem' }}>
+                              {savingEdit ? '…' : '✓'}
+                            </button>
+                            <button onClick={() => setEditingGame(null)}
+                              style={{ padding: '0.25rem 0.5rem', borderRadius: 4, border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', fontSize: '0.75rem' }}>
+                              ✗
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  }
                   const hasWinner = g.score_awarded > 0;
                   const p1Won = hasWinner && g.winner_id === p1Id;
                   const p2Won = hasWinner && g.winner_id === p2Id;
                   return (
                     <tr key={g.id} style={{ borderTop: '1px solid var(--border)' }}>
-                      <td style={tdStyle}>{g.round_number}</td>
-                      <td style={{ ...tdStyle, textAlign: 'center', fontWeight: 500, color: p1Won ? 'var(--team-a)' : 'var(--text-muted)' }}>
-                        {p1Won ? `+${g.score_awarded}` : ''}
+                      <td style={{ ...tdStyle, color: 'var(--text-muted)' }}>
+                        <button onClick={() => startEdit(g)} title="Edit round"
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '0 2px', fontSize: '0.7rem', opacity: 0.5 }}>✎</button>
+                        {g.round_number}
+                      </td>
+                      <td style={{ ...tdStyle, textAlign: 'center', fontWeight: 800, color: 'var(--team-a)' }}>
+                        {p1Won ? g.score_awarded : ''}
                       </td>
                       <td style={{ ...tdStyle, padding: '0.25rem' }}>
                         <select
@@ -325,22 +522,22 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
                           }}
                         >
                           <option value="">—</option>
-                          {[{ id: p1Id, name: p1Name }, { id: p2Id, name: p2Name }].map(pl => (
+                          {[{ id: p1Id, name: p1Nick }, { id: p2Id, name: p2Nick }].map(pl => (
                             <option key={pl.id} value={pl.id}>{pl.name}</option>
                           ))}
                         </select>
                       </td>
-                      <td style={{ ...tdStyle, textAlign: 'center', fontWeight: 500, color: p2Won ? 'var(--team-b)' : 'var(--text-muted)' }}>
-                        {p2Won ? `+${g.score_awarded}` : ''}
+                      <td style={{ ...tdStyle, textAlign: 'center', fontWeight: 800, color: 'var(--team-b)' }}>
+                        {p2Won ? g.score_awarded : ''}
                       </td>
                     </tr>
                   );
                 })}
                 <tr style={{ borderTop: '2px solid var(--border)', background: 'rgba(255,255,255,0.03)' }}>
                   <td style={{ ...tdStyle, fontWeight: 700, color: 'var(--text-muted)' }}>Total</td>
-                  <td style={{ ...tdStyle, textAlign: 'center', fontWeight: 800, color: 'var(--team-a)' }}>{p1Score}</td>
+                  <td style={{ ...tdStyle, textAlign: 'center', fontWeight: 800, color: 'var(--gold)' }}>{p1Score}</td>
                   <td style={tdStyle}></td>
-                  <td style={{ ...tdStyle, textAlign: 'center', fontWeight: 800, color: 'var(--team-b)' }}>{p2Score}</td>
+                  <td style={{ ...tdStyle, textAlign: 'center', fontWeight: 800, color: 'var(--gold)' }}>{p2Score}</td>
                 </tr>
               </tbody>
             </table>
@@ -351,20 +548,41 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
       {/* Rounds complete banner */}
       {!match.completed_at && roundsDone && (
         <div className="card" style={{ marginBottom: '1rem', padding: '1.25rem', textAlign: 'center', border: '1px solid var(--gold)', background: 'rgba(212,175,55,0.08)' }}>
-          <div style={{ fontSize: '1.5rem', marginBottom: '0.375rem' }}>ðŸ</div>
-          <div style={{ fontWeight: 700, color: 'var(--gold)', marginBottom: '0.25rem' }}>All {match.max_rounds} rounds complete!</div>
-          <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-            {p1Score === p2Score ? 'Scores are tied â€” this will be a Draw.' : `${p1Score > p2Score ? team1Label : team2Label} leads ${Math.max(p1Score, p2Score)}â€“${Math.min(p1Score, p2Score)}`}
+          <div style={{ fontWeight: 700, color: 'var(--gold)', fontSize: '1.125rem', marginBottom: '0.25rem' }}>
+            {match.games.length} Rounds Complete!
           </div>
-          <button className="btn btn-primary btn-block" onClick={handleFinish} disabled={finishing}>
-            {finishing ? 'Finishingâ€¦' : 'ðŸ† Finish Match'}
-          </button>
+          <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+            {(() => {
+              const t1 = isTeam ? p1InputTotal : p1Score;
+              const t2 = isTeam ? p2InputTotal : p2Score;
+              if (t1 === t2) return 'Scores are tied — this will be a Draw.';
+              return `${t1 > t2 ? team1Label : team2Label} wins with ${Math.max(t1, t2)} — ${Math.min(t1, t2)}`;
+            })()}
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            {!allowExtraRounds && (
+              <button
+                className="btn btn-secondary btn-block"
+                style={{ flex: 1, borderColor: 'var(--accent)', color: 'var(--accent)' }}
+                onClick={() => setAllowExtraRounds(true)}
+              >
+                + Add More Rounds
+              </button>
+            )}
+            <button
+              className="btn btn-primary btn-block"
+              style={{ flex: 1 }}
+              onClick={() => setShowFinishConfirm(true)}
+              disabled={finishing}
+            >
+              {finishing ? 'Finishing...' : 'Finish Match'}
+            </button>
+          </div>
         </div>
       )}
-
       {/* Round Entry Form */}
-      {!match.completed_at && !roundsDone && (
-        <form onSubmit={handleAddRound} className="card" style={{ marginBottom: '1rem', padding: '1.25rem' }}>
+      {!match.completed_at && (!roundsDone || allowExtraRounds) && (
+        <form onSubmit={handleAddRound} noValidate className="card" style={{ marginBottom: '1rem', padding: '1.25rem' }}>
           <div style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: '0.875rem' }}>
             Add Round {match.games.length + 1}
           </div>
@@ -376,18 +594,30 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
                 <div style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--team-a)', marginBottom: '0.125rem' }}>{team1Label}</div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.625rem' }}>{p1Name} / {t1p2Name}</div>
                 <input
-                  type="number"
+                  type="text"
                   inputMode="numeric"
-                  min={0}
-                  max={99}
+                  pattern="[0-9]*"
                   value={t1Score}
-                  onChange={e => { const n = parseInt(e.target.value, 10); setT1Score(isNaN(n) ? 0 : Math.max(0, Math.min(99, n))); }}
+                  onChange={e => { if (/^-?\d*$/.test(e.target.value)) setT1Score(e.target.value); }}
                   style={{
                     width: '100%', textAlign: 'center', fontSize: '1.75rem', fontWeight: 800,
                     background: 'var(--card-raised)', border: '1px solid rgba(230,57,70,0.3)',
                     borderRadius: 8, padding: '0.5rem', color: 'var(--team-a)',
                   }}
                 />
+                <button
+                  type="button"
+                  onClick={() => setT1Score(s => s.startsWith('-') ? s.slice(1) : s ? '-' + s : s)}
+                  style={{
+                    marginTop: '0.5rem', width: '100%', padding: '0.35rem', borderRadius: 6,
+                    border: `1px solid ${t1Score.startsWith('-') ? 'var(--team-a)' : 'var(--border)'}`,
+                    background: t1Score.startsWith('-') ? 'rgba(230,57,70,0.15)' : 'var(--card-raised)',
+                    color: t1Score.startsWith('-') ? 'var(--team-a)' : 'var(--text-muted)',
+                    fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', letterSpacing: '0.06em',
+                  }}
+                >
+                  {t1Score.startsWith('-') ? '− Negative ON' : '± Toggle Negative'}
+                </button>
               </div>
 
               {/* Team 2 score */}
@@ -395,49 +625,32 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
                 <div style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--team-b)', marginBottom: '0.125rem' }}>{team2Label}</div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.625rem' }}>{p2Name} / {t2p2Name}</div>
                 <input
-                  type="number"
+                  type="text"
                   inputMode="numeric"
-                  min={0}
-                  max={99}
+                  pattern="[0-9]*"
                   value={t2Score}
-                  onChange={e => { const n = parseInt(e.target.value, 10); setT2Score(isNaN(n) ? 0 : Math.max(0, Math.min(99, n))); }}
+                  onChange={e => { if (/^-?\d*$/.test(e.target.value)) setT2Score(e.target.value); }}
                   style={{
                     width: '100%', textAlign: 'center', fontSize: '1.75rem', fontWeight: 800,
                     background: 'var(--card-raised)', border: '1px solid rgba(74,85,104,0.3)',
                     borderRadius: 8, padding: '0.5rem', color: 'var(--team-b)',
                   }}
                 />
+                <button
+                  type="button"
+                  onClick={() => setT2Score(s => s.startsWith('-') ? s.slice(1) : s ? '-' + s : s)}
+                  style={{
+                    marginTop: '0.5rem', width: '100%', padding: '0.35rem', borderRadius: 6,
+                    border: `1px solid ${t2Score.startsWith('-') ? 'var(--team-b)' : 'var(--border)'}`,
+                    background: t2Score.startsWith('-') ? 'rgba(74,85,104,0.25)' : 'var(--card-raised)',
+                    color: t2Score.startsWith('-') ? 'var(--team-b)' : 'var(--text-muted)',
+                    fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', letterSpacing: '0.06em',
+                  }}
+                >
+                  {t2Score.startsWith('-') ? '− Negative ON' : '± Toggle Negative'}
+                </button>
               </div>
 
-              {/* Gin toggle + gin player */}
-              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', userSelect: 'none' }}>
-                  <input type="checkbox" checked={teamGin} onChange={e => { setTeamGin(e.target.checked); if (!e.target.checked) setGinPlayerId(''); }} />
-                  <span style={{ fontWeight: 600, color: 'var(--gold)' }}>â˜… DIGU</span>
-                </label>
-                {teamGin && (
-                  <select
-                    className="form-input"
-                    value={ginPlayerId}
-                    onChange={e => setGinPlayerId(e.target.value)}
-                    style={{ flex: 1, fontSize: '0.8125rem', padding: '0.25rem 0.5rem', minHeight: 'auto' }}
-                  >
-                    <option value="">Who ginned?</option>
-                    {allPlayers.map(pl => <option key={pl.id} value={pl.id}>{pl.name}</option>)}
-                  </select>
-                )}
-              </div>
-
-              {/* Preview */}
-              <div style={{ background: 'rgba(43,79,55,0.2)', border: '1px solid rgba(99,141,111,0.3)', borderRadius: 8, padding: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                  {team1Total === team2Total ? 'Tied â€” score 0' : `${teamWinnerLabel} wins`}
-                </span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  {teamGin && <span className="badge badge-gin">DIGU +25</span>}
-                  <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--gold)' }}>+{teamScore2v2}</span>
-                </div>
-              </div>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
@@ -445,7 +658,7 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
               <div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Who won this round?</div>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  {[{ id: p1Id, name: p1Name, color: 'var(--team-a)' }, { id: p2Id, name: p2Name, color: 'var(--team-b)' }].map(p => (
+                  {[{ id: p1Id, name: p1Nick, color: 'var(--team-a)' }, { id: p2Id, name: p2Nick, color: 'var(--team-b)' }].map(p => (
                     <button
                       key={p.id}
                       type="button"
@@ -469,16 +682,28 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 4 }}>Score (points)</div>
                   <input
-                    type="number"
+                    type="text"
                     inputMode="numeric"
-                    min={0}
                     placeholder="e.g. 15"
                     value={score}
-                    onChange={e => setScore(e.target.value)}
+                    onChange={e => { if (/^-?\d*$/.test(e.target.value)) setScore(e.target.value); }}
                     required
                     className="form-input"
                     style={{ fontSize: '1.25rem', fontWeight: 700, textAlign: 'center', padding: '0.5rem' }}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setScore(s => s.startsWith('-') ? s.slice(1) : s ? '-' + s : s)}
+                    style={{
+                      marginTop: '0.375rem', width: '100%', padding: '0.3rem', borderRadius: 6,
+                      border: `1px solid ${score.startsWith('-') ? 'var(--cream)' : 'var(--border)'}`,
+                      background: score.startsWith('-') ? 'rgba(212,175,55,0.15)' : 'var(--card-raised)',
+                      color: score.startsWith('-') ? 'var(--gold)' : 'var(--text-muted)',
+                      fontSize: '0.6875rem', fontWeight: 700, cursor: 'pointer', letterSpacing: '0.06em',
+                    }}
+                  >
+                    {score.startsWith('-') ? '− Negative ON' : '± Toggle Negative'}
+                  </button>
                 </div>
                 <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', paddingBottom: '0.5rem', userSelect: 'none' }}>
                   <span style={{ fontSize: '0.625rem', color: 'var(--text-muted)' }}>DIGU?</span>
@@ -497,7 +722,7 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
                 ? `+ Add Round ${match.games.length + 1} of ${match.max_rounds}`
                 : `+ Add Round ${match.games.length + 1}`}
             </button>
-            {match.games.length > 0 && !isRoundsMode && (
+            {(match.games.length >= 5 || allowExtraRounds) && (
               <button
                 type="button"
                 className="btn btn-secondary"
@@ -517,14 +742,14 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
           <div className="modal-sheet" style={{ textAlign: 'center' }}>
             <h2 style={{ marginBottom: '0.5rem' }}>Finish Match?</h2>
             <p style={{ color: 'var(--text-muted)', marginBottom: '1rem', fontSize: '0.875rem' }}>
-              {p1Score === p2Score
-                ? 'Scores are tied â€” this will be recorded as a Draw (1 league point each).'
-                : `${p1Score > p2Score ? team1Label : team2Label} leads ${Math.max(p1Score, p2Score)}â€“${Math.min(p1Score, p2Score)}. Winner gets 3 league points.`}
+              {p1InputTotal === p2InputTotal
+                ? 'Scores are tied — this will be a Draw (1 league point each).'
+                : `${p1InputTotal > p2InputTotal ? team1Label : team2Label} leads ${Math.max(p1InputTotal, p2InputTotal)} — ${Math.min(p1InputTotal, p2InputTotal)}. Winner gets 3 league points.`}
             </p>
             <div style={{ display: 'flex', gap: '0.625rem' }}>
               <button className="btn btn-ghost btn-block" onClick={() => setShowFinishConfirm(false)}>Cancel</button>
               <button className="btn btn-primary btn-block" onClick={handleFinish} disabled={finishing}>
-                {finishing ? 'Finishingâ€¦' : 'Finish Match'}
+                {finishing ? 'Finishing...' : 'Finish Match'}
               </button>
             </div>
           </div>
@@ -535,25 +760,24 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
       {showCompletion && completionData && (
         <div className="modal-overlay centered" style={{ zIndex: 300 }}>
           <div className="modal-sheet" style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>{completionData.isDraw ? 'ðŸ¤' : 'ðŸ†'}</div>
             <h2 style={{ marginBottom: '0.25rem' }}>{completionData.isDraw ? 'Draw!' : 'Match Complete!'}</h2>
             {completionData.isDraw
-              ? <p>Both teams get 1 league point</p>
-              : <p><strong style={{ color: 'var(--gold)' }}>{winnerName}</strong> wins Â· 3 league points</p>
+              ? <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Both teams get 1 league point</p>
+              : <p style={{ marginBottom: '0.5rem' }}><strong style={{ color: 'var(--gold)' }}>{winnerName}</strong> wins — 3 league points</p>
             }
             <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem', margin: '1rem 0', padding: '0.875rem', background: 'var(--card-raised)', borderRadius: 8 }}>
               <div>
                 <div style={{ fontSize: '0.625rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{team1Label}</div>
-                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--team-a)' }}>{completionData.p1Score}</div>
+                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--team-a)' }}>{p1InputTotal}</div>
               </div>
               <div>
                 <div style={{ fontSize: '0.625rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{team2Label}</div>
-                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--team-b)' }}>{completionData.p2Score}</div>
+                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--team-b)' }}>{p2InputTotal}</div>
               </div>
             </div>
             <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>{match.games.length} rounds played</p>
             <div style={{ display: 'flex', gap: '0.625rem', flexDirection: 'column' }}>
-              <a href="/new-match" className="btn btn-primary btn-block">â–¶ New Match</a>
+              <a href="/new-match" className="btn btn-primary btn-block">New Match</a>
               <button type="button" className="btn btn-ghost btn-block" onClick={() => setShowCompletion(false)}>View Scoresheet</button>
             </div>
           </div>

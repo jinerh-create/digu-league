@@ -1,0 +1,13 @@
+---
+export const prerender = false;
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HeadToHead from '../components/h2h/HeadToHead';
+---
+<BaseLayout title="Head to Head" activeTab="leaderboard">
+  <div class="container">
+    <div class="page-header">
+      <h1>&#9876; Head to Head</h1>
+    </div>
+    <HeadToHead client:load />
+  </div>
+</BaseLayout>

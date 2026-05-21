@@ -1,25 +1,26 @@
 :root {
-  --felt: #2B4F37;
-  --felt-light: #638D6F;
-  --cream: #DDD1BF;
-  --ember: #78270D;
-  --heart: #C8102E;
-  --gold: #D4AF37;
-  --surface: #F5F5F5;
-  --card: #FFFFFF;
-  --card-raised: #F0F0F0;
-  --border: #E0E0E0;
-  --text-primary: #1A1A1A;
-  --text-secondary: #555555;
-  --text-muted: #999999;
-  --team-a: #E63946;
-  --team-a-dim: rgba(230,57,70,0.12);
-  --team-b: #4A5568;
-  --team-b-dim: rgba(74,85,104,0.15);
+  --felt: #00A862;
+  --felt-light: #00D47E;
+  --cream: #E8F0FF;
+  --ember: #FF4A6A;
+  --heart: #FF3D5A;
+  --gold: #FFD700;
+  --surface: #0B0F1A;
+  --card: #141B2D;
+  --card-raised: #1C2438;
+  --border: #2A3550;
+  --text-primary: #E8F0FF;
+  --text-secondary: #8899BB;
+  --text-muted: #4A5A78;
+  --team-a: #FF4A6A;
+  --team-a-dim: rgba(255,74,106,0.12);
+  --team-b: #4D9FFF;
+  --team-b-dim: rgba(77,159,255,0.12);
   --radius: 10px;
   --radius-sm: 6px;
   --radius-lg: 16px;
-  --shadow: 0 2px 12px rgba(0,0,0,0.4);
+  --shadow: 0 4px 24px rgba(0,0,0,0.6);
+  --accent: #00D47E;
 }
 
 *, *::before, *::after {
@@ -39,7 +40,7 @@ body {
   font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   line-height: 1.5;
   min-height: 100dvh;
-  padding-bottom: 5rem; /* bottom nav clearance */
+  padding-bottom: 5rem;
 }
 
 a {
@@ -66,25 +67,14 @@ img {
 }
 
 /* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: var(--surface);
-}
-::-webkit-scrollbar-thumb {
-  background: #CCCCCC;
-  border-radius: 3px;
-}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: #2A3550; border-radius: 3px; }
 
 /* Utility */
 .visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0,0,0,0);
-  white-space: nowrap;
+  position: absolute; width: 1px; height: 1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap;
 }
 
 .container {
@@ -104,33 +94,19 @@ img {
   font-size: 1.375rem;
   font-weight: 700;
   letter-spacing: -0.01em;
+  color: var(--text-primary);
 }
 
 /* Avatar */
 .avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  background: var(--felt);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: var(--cream);
-  flex-shrink: 0;
-  overflow: hidden;
+  width: 40px; height: 40px;
+  border-radius: 50%; object-fit: cover;
+  background: #1C2438;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.875rem; font-weight: 700;
+  color: var(--accent);
+  flex-shrink: 0; overflow: hidden;
+  border: 1px solid var(--border);
 }
-
-.avatar-sm {
-  width: 32px;
-  height: 32px;
-  font-size: 0.75rem;
-}
-
-.avatar-lg {
-  width: 56px;
-  height: 56px;
-  font-size: 1.125rem;
-}
+.avatar-sm { width: 32px; height: 32px; font-size: 0.75rem; }
+.avatar-lg { width: 56px; height: 56px; font-size: 1.125rem; }

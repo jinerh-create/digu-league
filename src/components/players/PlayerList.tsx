@@ -44,7 +44,11 @@ export default function PlayerList() {
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
+  const [editNickname, setEditNickname] = useState('');
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [nickEditId, setNickEditId] = useState<string | null>(null);
+  const [nickDraft, setNickDraft] = useState('');
+  const [savingNickId, setSavingNickId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadTargetId = useRef<string | null>(null);
 
@@ -88,11 +92,13 @@ export default function PlayerList() {
   function startEdit(p: Player) {
     setEditingId(p.id);
     setEditName(p.name);
+    setEditNickname(p.nickname ?? '');
   }
 
   function cancelEdit() {
     setEditingId(null);
     setEditName('');
+    setEditNickname('');
   }
 
   async function handleSaveName(id: string) {
@@ -102,13 +108,28 @@ export default function PlayerList() {
       const res = await fetch(`/api/players/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: editName.trim() }),
+        body: JSON.stringify({ name: editName.trim(), nickname: editNickname.trim() || null }),
       });
       const updated = await res.json() as Player;
       setPlayers(prev => prev.map(p => p.id === id ? updated : p));
       setEditingId(null);
     } catch { /* silent */ }
     finally { setSavingId(null); }
+  }
+
+  async function handleSaveNickname(id: string) {
+    setSavingNickId(id);
+    try {
+      const res = await fetch(`/api/players/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nickname: nickDraft.trim() || null }),
+      });
+      const updated = await res.json() as Player;
+      setPlayers(prev => prev.map(p => p.id === id ? updated : p));
+      setNickEditId(null);
+    } catch { /* silent */ }
+    finally { setSavingNickId(null); }
   }
 
   function handleAvatarClick(playerId: string) {
@@ -189,27 +210,65 @@ export default function PlayerList() {
 
             <div style={{ flex: 1, minWidth: 0 }}>
               {editingId === p.id ? (
-                <form onSubmit={e => { e.preventDefault(); handleSaveName(p.id); }} style={{ display: 'flex', gap: '0.375rem', alignItems: 'center' }}>
+                <form onSubmit={e => { e.preventDefault(); handleSaveName(p.id); }} style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
                   <input
                     className="form-input"
                     value={editName}
                     onChange={e => setEditName(e.target.value)}
                     maxLength={50}
                     autoFocus
-                    style={{ fontSize: '0.875rem', padding: '0.25rem 0.5rem', minHeight: 'auto', flex: 1 }}
+                    placeholder="Full name"
+                    style={{ fontSize: '0.875rem', padding: '0.25rem 0.5rem', minHeight: 'auto' }}
                   />
-                  <button type="submit" className="btn btn-primary" disabled={savingId === p.id} style={{ fontSize: '0.75rem', padding: '0.25rem 0.625rem', minHeight: 'auto' }}>
-                    {savingId === p.id ? '…' : 'Save'}
-                  </button>
-                  <button type="button" className="btn btn-ghost" onClick={cancelEdit} style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem', minHeight: 'auto' }}>
-                    Cancel
-                  </button>
+                  <input
+                    className="form-input"
+                    value={editNickname}
+                    onChange={e => setEditNickname(e.target.value)}
+                    maxLength={20}
+                    placeholder="Nickname (optional)"
+                    style={{ fontSize: '0.875rem', padding: '0.25rem 0.5rem', minHeight: 'auto' }}
+                  />
+                  <div style={{ display: 'flex', gap: '0.375rem' }}>
+                    <button type="submit" className="btn btn-primary" disabled={savingId === p.id} style={{ fontSize: '0.75rem', padding: '0.25rem 0.625rem', minHeight: 'auto' }}>
+                      {savingId === p.id ? '…' : 'Save'}
+                    </button>
+                    <button type="button" className="btn btn-ghost" onClick={cancelEdit} style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem', minHeight: 'auto' }}>
+                      Cancel
+                    </button>
+                  </div>
                 </form>
               ) : (
                 <>
-                  <div style={{ fontWeight: 600, fontSize: '0.9375rem' }}>{p.name}</div>
-                  <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
-                    Joined {new Date(p.joined_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                  <div style={{ fontWeight: 700, fontSize: '0.9375rem' }}>{p.name}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginTop: '0.15rem', flexWrap: 'wrap' }}>
+                    {nickEditId === p.id ? (
+                      <form onSubmit={e => { e.preventDefault(); handleSaveNickname(p.id); }} style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+                        <input
+                          autoFocus
+                          className="form-input"
+                          value={nickDraft}
+                          onChange={e => setNickDraft(e.target.value)}
+                          placeholder="Nickname"
+                          maxLength={20}
+                          style={{ fontSize: '0.75rem', padding: '0.15rem 0.4rem', minHeight: 'auto', width: 100 }}
+                        />
+                        <button type="submit" className="btn btn-primary" disabled={savingNickId === p.id} style={{ fontSize: '0.6875rem', padding: '0.15rem 0.5rem', minHeight: 'auto' }}>
+                          {savingNickId === p.id ? '…' : 'Save'}
+                        </button>
+                        <button type="button" className="btn btn-ghost" onClick={() => setNickEditId(null)} style={{ fontSize: '0.6875rem', padding: '0.15rem 0.4rem', minHeight: 'auto' }}>✕</button>
+                      </form>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => { setNickEditId(p.id); setNickDraft(p.nickname ?? ''); }}
+                        style={{ background: 'none', border: '1px dashed var(--border)', borderRadius: 4, padding: '0.1rem 0.4rem', cursor: 'pointer', fontSize: '0.6875rem', color: p.nickname ? 'var(--felt-light)' : 'var(--text-muted)', fontWeight: p.nickname ? 600 : 400 }}
+                      >
+                        {p.nickname ? `"${p.nickname}"` : '+ nickname'}
+                      </button>
+                    )}
+                    <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
+                      Joined {new Date(p.joined_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                    </span>
                   </div>
                 </>
               )}

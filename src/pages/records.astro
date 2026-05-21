@@ -1,0 +1,13 @@
+---
+export const prerender = false;
+import BaseLayout from '../layouts/BaseLayout.astro';
+import RecordsBoard from '../components/records/RecordsBoard';
+---
+<BaseLayout title="Records" activeTab="home">
+  <div class="container">
+    <div class="page-header">
+      <h1>&#127942; All-Time Records</h1>
+    </div>
+    <RecordsBoard client:load />
+  </div>
+</BaseLayout>

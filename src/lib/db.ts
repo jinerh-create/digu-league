@@ -1,4 +1,4 @@
-import type { Player, Match, Game, PlayerStats, TeamStats } from './types';
+import type { Player, Match, Game, PlayerStats, TeamStats, Season, MatchReaction, ScheduledMatch } from './types';
 
 export async function getPlayers(db: D1Database): Promise<Player[]> {
   const result = await db
@@ -49,6 +49,14 @@ export async function updatePlayerName(
   await db.prepare('UPDATE players SET name = ? WHERE id = ?').bind(name, id).run();
 }
 
+export async function updatePlayerNickname(
+  db: D1Database,
+  id: string,
+  nickname: string | null
+): Promise<void> {
+  await db.prepare('UPDATE players SET nickname = ? WHERE id = ?').bind(nickname, id).run();
+}
+
 export async function updatePlayerActive(
   db: D1Database,
   id: string,
@@ -57,15 +65,25 @@ export async function updatePlayerActive(
   await db.prepare('UPDATE players SET active = ? WHERE id = ?').bind(active, id).run();
 }
 
+export async function getTotalMatchCount(db: D1Database): Promise<number> {
+  const r = await db.prepare('SELECT COUNT(*) AS n FROM matches WHERE completed_at IS NOT NULL').first<{ n: number }>();
+  return r?.n ?? 0;
+}
+
+export async function getTotalGamesCount(db: D1Database): Promise<number> {
+  const r = await db.prepare('SELECT COUNT(*) AS n FROM games').first<{ n: number }>();
+  return r?.n ?? 0;
+}
+
 export async function getMatches(db: D1Database, limit = 50): Promise<Match[]> {
   const result = await db
     .prepare(
       `SELECT m.*,
-        p1.name AS player1_name, p1.avatar_b64 AS player1_avatar,
-        p2.name AS player2_name, p2.avatar_b64 AS player2_avatar,
+        p1.name AS player1_name, p1.avatar_b64 AS player1_avatar, p1.nickname AS player1_nickname,
+        p2.name AS player2_name, p2.avatar_b64 AS player2_avatar, p2.nickname AS player2_nickname,
         pw.name AS winner_name,
-        p3.name AS team1_player2_name,
-        p4.name AS team2_player2_name
+        p3.name AS team1_player2_name, p3.nickname AS team1_player2_nickname,
+        p4.name AS team2_player2_name, p4.nickname AS team2_player2_nickname
        FROM matches m
        JOIN players p1 ON p1.id = m.player1_id
        JOIN players p2 ON p2.id = m.player2_id
@@ -84,11 +102,11 @@ export async function getMatch(db: D1Database, id: string): Promise<Match | null
   return db
     .prepare(
       `SELECT m.*,
-        p1.name AS player1_name, p1.avatar_b64 AS player1_avatar,
-        p2.name AS player2_name, p2.avatar_b64 AS player2_avatar,
+        p1.name AS player1_name, p1.avatar_b64 AS player1_avatar, p1.nickname AS player1_nickname,
+        p2.name AS player2_name, p2.avatar_b64 AS player2_avatar, p2.nickname AS player2_nickname,
         pw.name AS winner_name,
-        p3.name AS team1_player2_name,
-        p4.name AS team2_player2_name
+        p3.name AS team1_player2_name, p3.nickname AS team1_player2_nickname,
+        p4.name AS team2_player2_name, p4.nickname AS team2_player2_nickname
        FROM matches m
        JOIN players p1 ON p1.id = m.player1_id
        JOIN players p2 ON p2.id = m.player2_id
@@ -105,10 +123,10 @@ export async function getActiveMatch(db: D1Database): Promise<Match | null> {
   return db
     .prepare(
       `SELECT m.*,
-        p1.name AS player1_name, p1.avatar_b64 AS player1_avatar,
-        p2.name AS player2_name, p2.avatar_b64 AS player2_avatar,
-        p3.name AS team1_player2_name,
-        p4.name AS team2_player2_name
+        p1.name AS player1_name, p1.avatar_b64 AS player1_avatar, p1.nickname AS player1_nickname,
+        p2.name AS player2_name, p2.avatar_b64 AS player2_avatar, p2.nickname AS player2_nickname,
+        p3.name AS team1_player2_name, p3.nickname AS team1_player2_nickname,
+        p4.name AS team2_player2_name, p4.nickname AS team2_player2_nickname
        FROM matches m
        JOIN players p1 ON p1.id = m.player1_id
        JOIN players p2 ON p2.id = m.player2_id
@@ -148,6 +166,55 @@ export async function createMatch(
       max_rounds ?? 0
     )
     .run();
+}
+
+export async function updateMatchDate(
+  db: D1Database,
+  id: string,
+  started_at: string
+): Promise<void> {
+  await db.prepare('UPDATE matches SET started_at = ? WHERE id = ?').bind(started_at, id).run();
+}
+
+export async function deleteMatch(db: D1Database, id: string): Promise<void> {
+  await db.prepare('DELETE FROM games WHERE match_id = ?').bind(id).run();
+  await db.prepare('DELETE FROM matches WHERE id = ?').bind(id).run();
+}
+
+export async function updateMatchComment(db: D1Database, id: string, comment: string | null): Promise<void> {
+  await db.prepare('UPDATE matches SET comment = ? WHERE id = ?').bind(comment || null, id).run();
+}
+
+export async function getSeasons(db: D1Database): Promise<Season[]> {
+  const result = await db.prepare('SELECT * FROM seasons ORDER BY started_at DESC').all<Season>();
+  return result.results;
+}
+
+export async function createSeason(db: D1Database, id: string, name: string, started_at: string): Promise<void> {
+  await db.prepare('INSERT INTO seasons (id, name, started_at) VALUES (?, ?, ?)').bind(id, name, started_at).run();
+  // Archive all current completed matches into this season
+  await db.prepare('UPDATE matches SET season_id = ? WHERE season_id IS NULL AND completed_at IS NOT NULL').bind(id).run();
+}
+
+export async function getPlayerMatches(db: D1Database, playerId: string): Promise<Match[]> {
+  const result = await db.prepare(
+    `SELECT m.*,
+      p1.name AS player1_name, p1.avatar_b64 AS player1_avatar, p1.nickname AS player1_nickname,
+      p2.name AS player2_name, p2.avatar_b64 AS player2_avatar, p2.nickname AS player2_nickname,
+      pw.name AS winner_name,
+      p3.name AS team1_player2_name, p3.nickname AS team1_player2_nickname,
+      p4.name AS team2_player2_name, p4.nickname AS team2_player2_nickname
+     FROM matches m
+     JOIN players p1 ON p1.id = m.player1_id
+     JOIN players p2 ON p2.id = m.player2_id
+     LEFT JOIN players pw ON pw.id = m.winner_id
+     LEFT JOIN players p3 ON p3.id = m.team1_player2_id
+     LEFT JOIN players p4 ON p4.id = m.team2_player2_id
+     WHERE m.completed_at IS NOT NULL
+       AND (m.player1_id = ? OR m.player2_id = ? OR m.team1_player2_id = ? OR m.team2_player2_id = ?)
+     ORDER BY m.started_at DESC`
+  ).bind(playerId, playerId, playerId, playerId).all<Match>();
+  return result.results;
 }
 
 export async function completeMatch(
@@ -191,11 +258,13 @@ export async function addGame(db: D1Database, game: Game): Promise<void> {
     .run();
 }
 
-export async function computePlayerStats(db: D1Database, month?: string, matchType?: 'single' | 'team'): Promise<PlayerStats[]> {
-  const players = await getPlayers(db);
+export async function computePlayerStats(db: D1Database, month?: string, matchType?: 'single' | 'team', season?: string): Promise<PlayerStats[]> {
+  const players = await getActivePlayers(db);
   let baseWhere = 'completed_at IS NOT NULL';
   if (matchType === 'single') baseWhere += ' AND team1_player2_id IS NULL';
   else if (matchType === 'team') baseWhere += ' AND team1_player2_id IS NOT NULL';
+  if (season === 'current') baseWhere += ' AND season_id IS NULL';
+  else if (season) baseWhere += ` AND season_id = '${season.replace(/'/g, '')}'`;
 
   const matchesResult = month
     ? await db.prepare(`SELECT * FROM matches WHERE ${baseWhere} AND strftime('%Y-%m', started_at) = ?`).bind(month).all<Match>()
@@ -261,6 +330,7 @@ export async function computePlayerStats(db: D1Database, month?: string, matchTy
     return {
       player_id: p.id,
       name: p.name,
+      nickname: p.nickname,
       avatar_b64: p.avatar_b64,
       matches_played: playerMatches.length,
       matches_won: wonMatches.length,
@@ -283,6 +353,35 @@ export async function computePlayerStats(db: D1Database, month?: string, matchTy
   });
 }
 
+export async function updateGame(
+  db: D1Database,
+  gameId: string,
+  winner_id: string,
+  loser_id: string,
+  score_awarded: number,
+  is_gin: number,
+  gin_player_id: string | null,
+  t1_p1_cards?: number | null,
+  t1_p2_cards?: number | null,
+  t2_p1_cards?: number | null,
+  t2_p2_cards?: number | null,
+): Promise<void> {
+  await db
+    .prepare(
+      `UPDATE games SET winner_id = ?, loser_id = ?, knocker_id = ?, score_awarded = ?,
+       is_gin = ?, gin_player_id = ?,
+       t1_p1_cards = ?, t1_p2_cards = ?, t2_p1_cards = ?, t2_p2_cards = ?
+       WHERE id = ?`
+    )
+    .bind(
+      winner_id, loser_id, winner_id, score_awarded,
+      is_gin, gin_player_id,
+      t1_p1_cards ?? null, t1_p2_cards ?? null, t2_p1_cards ?? null, t2_p2_cards ?? null,
+      gameId
+    )
+    .run();
+}
+
 export async function updateGameGin(
   db: D1Database,
   gameId: string,
@@ -293,6 +392,58 @@ export async function updateGameGin(
     .prepare('UPDATE games SET is_gin = ?, gin_player_id = ? WHERE id = ?')
     .bind(is_gin, gin_player_id, gameId)
     .run();
+}
+
+// ─── Reactions ────────────────────────────────────────────────────────────────
+
+export async function getReactions(db: D1Database, matchId: string): Promise<MatchReaction[]> {
+  const r = await db.prepare('SELECT * FROM match_reactions WHERE match_id = ? ORDER BY created_at ASC').bind(matchId).all<MatchReaction>();
+  return r.results;
+}
+
+export async function addReaction(db: D1Database, id: string, matchId: string, emoji: string, createdAt: string): Promise<void> {
+  await db.prepare('INSERT INTO match_reactions (id, match_id, emoji, created_at) VALUES (?, ?, ?, ?)').bind(id, matchId, emoji, createdAt).run();
+}
+
+export async function removeReaction(db: D1Database, id: string): Promise<void> {
+  await db.prepare('DELETE FROM match_reactions WHERE id = ?').bind(id).run();
+}
+
+// ─── Scheduled Matches ────────────────────────────────────────────────────────
+
+export async function getScheduledMatches(db: D1Database): Promise<ScheduledMatch[]> {
+  const r = await db.prepare(
+    `SELECT s.*,
+      p1.name AS player1_name, p1.nickname AS player1_nickname,
+      p2.name AS player2_name, p2.nickname AS player2_nickname,
+      p3.name AS team1_player2_name, p3.nickname AS team1_player2_nickname,
+      p4.name AS team2_player2_name, p4.nickname AS team2_player2_nickname
+     FROM scheduled_matches s
+     JOIN players p1 ON p1.id = s.player1_id
+     JOIN players p2 ON p2.id = s.player2_id
+     LEFT JOIN players p3 ON p3.id = s.team1_player2_id
+     LEFT JOIN players p4 ON p4.id = s.team2_player2_id
+     WHERE s.scheduled_at >= datetime('now', '-1 day')
+     ORDER BY s.scheduled_at ASC`
+  ).all<ScheduledMatch>();
+  return r.results;
+}
+
+export async function createScheduledMatch(db: D1Database, m: {
+  id: string; player1_id: string; player2_id: string;
+  team1_player2_id?: string | null; team2_player2_id?: string | null;
+  team1_name?: string | null; team2_name?: string | null;
+  scheduled_at: string; note?: string | null; created_at: string;
+}): Promise<void> {
+  await db.prepare(
+    `INSERT INTO scheduled_matches (id, player1_id, player2_id, team1_player2_id, team2_player2_id, team1_name, team2_name, scheduled_at, note, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(m.id, m.player1_id, m.player2_id, m.team1_player2_id ?? null, m.team2_player2_id ?? null,
+    m.team1_name ?? null, m.team2_name ?? null, m.scheduled_at, m.note ?? null, m.created_at).run();
+}
+
+export async function deleteScheduledMatch(db: D1Database, id: string): Promise<void> {
+  await db.prepare('DELETE FROM scheduled_matches WHERE id = ?').bind(id).run();
 }
 
 export async function computeTeamStats(db: D1Database, month?: string): Promise<TeamStats[]> {

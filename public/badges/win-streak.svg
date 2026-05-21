@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#FF8C00"/>
+      <stop offset="50%" stop-color="#CC4400"/>
+      <stop offset="100%" stop-color="#7A1A00"/>
+    </radialGradient>
+    <radialGradient id="rim" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#FFB347"/>
+      <stop offset="50%" stop-color="#FF6600"/>
+      <stop offset="100%" stop-color="#8B2500"/>
+    </radialGradient>
+    <linearGradient id="fire" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#FF0000"/>
+      <stop offset="40%" stop-color="#FF6600"/>
+      <stop offset="70%" stop-color="#FFAA00"/>
+      <stop offset="100%" stop-color="#FFFF00"/>
+    </linearGradient>
+    <linearGradient id="txt" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFF4A0"/>
+      <stop offset="100%" stop-color="#FFB347"/>
+    </linearGradient>
+    <filter id="glow"><feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#FF6600" flood-opacity="0.8"/></filter>
+    <filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.6"/></filter>
+  </defs>
+  <circle cx="100" cy="103" r="90" fill="#000" opacity="0.4"/>
+  <circle cx="100" cy="100" r="90" fill="url(#rim)"/>
+  <circle cx="100" cy="100" r="83" fill="url(#bg)"/>
+  <circle cx="100" cy="100" r="78" fill="none" stroke="#FF8C00" stroke-width="1" opacity="0.4"/>
+  <!-- Flame shape -->
+  <g filter="url(#glow)">
+    <path d="M100,155 C70,155 50,135 50,110 C50,90 65,78 72,65 C76,57 74,47 70,38 C80,45 85,58 83,70 C90,58 88,42 82,32 C96,42 102,62 96,78 C102,68 104,55 100,44 C112,56 115,75 108,90 C114,82 118,70 115,58 C126,72 128,92 120,107 C125,100 128,90 125,80 C133,92 132,112 122,125 C118,130 120,140 122,148 C112,145 108,135 110,125 C105,132 105,145 100,155 Z" fill="url(#fire)"/>
+  </g>
+  <!-- "5x" text -->
+  <text x="100" y="130" font-family="Georgia,serif" font-size="28" font-weight="900" text-anchor="middle" fill="url(#txt)" filter="url(#shadow)">5×</text>
+  <!-- STREAK label -->
+  <text x="100" y="168" font-family="Georgia,serif" font-size="13" font-weight="900" text-anchor="middle" fill="url(#txt)" letter-spacing="3">STREAK</text>
+  <circle cx="100" cy="100" r="90" fill="none" stroke="#FFB347" stroke-width="0.8" opacity="0.3"/>
+</svg>

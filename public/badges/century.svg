@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <radialGradient id="bg3" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#CE93D8"/>
+      <stop offset="50%" stop-color="#7B1FA2"/>
+      <stop offset="100%" stop-color="#4A148C"/>
+    </radialGradient>
+    <radialGradient id="rim3" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#E1BEE7"/>
+      <stop offset="50%" stop-color="#AB47BC"/>
+      <stop offset="100%" stop-color="#6A1B9A"/>
+    </radialGradient>
+    <linearGradient id="bolt" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFF176"/>
+      <stop offset="50%" stop-color="#FFD600"/>
+      <stop offset="100%" stop-color="#FF8F00"/>
+    </linearGradient>
+    <linearGradient id="txt3" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#CE93D8"/>
+    </linearGradient>
+    <filter id="glow3"><feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#FFD600" flood-opacity="0.8"/></filter>
+    <filter id="shadow3"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.5"/></filter>
+  </defs>
+  <circle cx="100" cy="103" r="90" fill="#000" opacity="0.4"/>
+  <circle cx="100" cy="100" r="90" fill="url(#rim3)"/>
+  <circle cx="100" cy="100" r="83" fill="url(#bg3)"/>
+  <!-- Lightning bolt -->
+  <g filter="url(#glow3)">
+    <path d="M112,42 L82,102 L100,102 L88,158 L130,90 L110,90 Z" fill="url(#bolt)"/>
+  </g>
+  <!-- 100+ label -->
+  <text x="100" y="178" font-family="Georgia,serif" font-size="13" font-weight="900" text-anchor="middle" fill="url(#txt3)" letter-spacing="2" filter="url(#shadow3)">CENTURY</text>
+  <circle cx="100" cy="100" r="90" fill="none" stroke="#E1BEE7" stroke-width="0.8" opacity="0.3"/>
+</svg>
