@@ -8,6 +8,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     | undefined;
 
   const adminPassword = (runtime?.env.ADMIN_PASSWORD ?? import.meta.env.ADMIN_PASSWORD)?.trim();
+  const playerPassword = (runtime?.env.PLAYER_PASSWORD ?? import.meta.env.PLAYER_PASSWORD)?.trim();
   const sessionSecret = (runtime?.env.SESSION_SECRET ?? import.meta.env.SESSION_SECRET)?.trim();
 
   if (!adminPassword || !sessionSecret) {
@@ -24,16 +25,28 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400 });
   }
 
-  if (!body.password || body.password !== adminPassword) {
+  const pw = body.password;
+  if (!pw) {
+    return new Response(JSON.stringify({ error: 'Password required' }), { status: 400 });
+  }
+
+  let role: 'admin' | 'player' | null = null;
+  if (pw === adminPassword) {
+    role = 'admin';
+  } else if (playerPassword && pw === playerPassword) {
+    role = 'player';
+  }
+
+  if (!role) {
     return new Response(JSON.stringify({ error: 'Invalid password' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
     });
   }
 
-  const cookie = await createSessionCookie(sessionSecret);
+  const cookie = await createSessionCookie(sessionSecret, role);
 
-  return new Response(JSON.stringify({ ok: true }), {
+  return new Response(JSON.stringify({ ok: true, role }), {
     status: 200,
     headers: {
       'Content-Type': 'application/json',

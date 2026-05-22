@@ -100,7 +100,7 @@ function monthLabel(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 }
 
-export default function Scoresheet({ matchId }: { matchId: string }) {
+export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false }: { matchId: string; isAdmin?: boolean; isAuthed?: boolean }) {
   const [match, setMatch] = useState<MatchWithGames | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -108,6 +108,7 @@ export default function Scoresheet({ matchId }: { matchId: string }) {
   const [savingGin, setSavingGin] = useState<Record<string, boolean>>({});
   const [editingScore, setEditingScore] = useState<{ gameId: string; side: 'p1' | 'p2' } | null>(null);
   const [scoreDraft, setScoreDraft] = useState('');
+  const [deletingRound, setDeletingRound] = useState<string | null>(null);
   const scoreSaving = useRef(false);
 
   useEffect(() => {
@@ -190,6 +191,29 @@ export default function Scoresheet({ matchId }: { matchId: string }) {
     }
     scoreSaving.current = false;
   }
+
+  async function handleDeleteRound(gameId: string) {
+    if (!confirm('Delete this round? This cannot be undone.')) return;
+    setDeletingRound(gameId);
+    try {
+      const res = await fetch(`/api/games/${gameId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const d = await res.json() as { error?: string };
+        alert(d.error ?? 'Failed to delete round');
+        return;
+      }
+      const data = await fetch(`/api/matches/${matchId}`).then(r => r.json()) as MatchWithGames;
+      setMatch(data);
+      const init: Record<string, string> = {};
+      data.games.forEach((g: any) => { init[g.id] = g.gin_player_id ?? ''; });
+      setGinSelections(init);
+    } finally {
+      setDeletingRound(null);
+    }
+  }
+
+  const matchCompleted = !!match.completed_at;
+  const canDeleteRound = isAuthed && (!matchCompleted || isAdmin);
 
   let p1Running = 0;
   let p2Running = 0;
@@ -549,6 +573,7 @@ export default function Scoresheet({ matchId }: { matchId: string }) {
                 <th className="ss-gin-header" rowSpan={2}>DIGU</th>
                 <th className="ss-team-header team-a">{team1Label}</th>
                 <th className="ss-team-header team-b">{team2Label}</th>
+                {canDeleteRound && <th className="ss-del-col" rowSpan={2}></th>}
               </tr>
               <tr>
                 <th className="ss-sub-col" style={{ color: '#ffffff' }}>{team1Players}</th>
@@ -574,8 +599,8 @@ export default function Scoresheet({ matchId }: { matchId: string }) {
                     </select>
                     {r.hasUndercut && <span className="undercut-mark" title="Undercut">⟲</span>}
                   </td>
-                  <td className="ss-score-cell" style={{ color: 'var(--team-a)', cursor: match.completed_at ? 'default' : 'pointer' }}
-                    onClick={() => { if (match.completed_at) return; setEditingScore({ gameId: r.id, side: 'p1' }); setScoreDraft(String(isTeam ? r.t1Score : (r.p1Pts ?? 0))); }}>
+                  <td className="ss-score-cell" style={{ color: 'var(--team-a)', cursor: matchCompleted ? 'default' : 'pointer' }}
+                    onClick={() => { if (matchCompleted) return; setEditingScore({ gameId: r.id, side: 'p1' }); setScoreDraft(String(isTeam ? r.t1Score : (r.p1Pts ?? 0))); }}>
                     {editingScore?.gameId === r.id && editingScore.side === 'p1' ? (
                       <input
                         autoFocus type="number" inputMode="numeric"
@@ -588,8 +613,8 @@ export default function Scoresheet({ matchId }: { matchId: string }) {
                       />
                     ) : (isTeam ? r.t1Score : (r.p1Pts ?? ''))}
                   </td>
-                  <td className="ss-score-cell" style={{ color: 'var(--team-b)', cursor: match.completed_at ? 'default' : 'pointer' }}
-                    onClick={() => { if (match.completed_at) return; setEditingScore({ gameId: r.id, side: 'p2' }); setScoreDraft(String(isTeam ? r.t2Score : (r.p2Pts ?? 0))); }}>
+                  <td className="ss-score-cell" style={{ color: 'var(--team-b)', cursor: matchCompleted ? 'default' : 'pointer' }}
+                    onClick={() => { if (matchCompleted) return; setEditingScore({ gameId: r.id, side: 'p2' }); setScoreDraft(String(isTeam ? r.t2Score : (r.p2Pts ?? 0))); }}>
                     {editingScore?.gameId === r.id && editingScore.side === 'p2' ? (
                       <input
                         autoFocus type="number" inputMode="numeric"
@@ -602,6 +627,18 @@ export default function Scoresheet({ matchId }: { matchId: string }) {
                       />
                     ) : (isTeam ? r.t2Score : (r.p2Pts ?? ''))}
                   </td>
+                  {canDeleteRound && (
+                    <td className="ss-del-cell">
+                      <button
+                        className="del-round-btn"
+                        onClick={() => handleDeleteRound(r.id)}
+                        disabled={deletingRound === r.id}
+                        title="Delete round"
+                      >
+                        {deletingRound === r.id ? '…' : '✕'}
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))}
 
@@ -612,6 +649,7 @@ export default function Scoresheet({ matchId }: { matchId: string }) {
                   <td className="ss-gin-cell"></td>
                   <td className="ss-score-cell"></td>
                   <td className="ss-score-cell"></td>
+                  {canDeleteRound && <td className="ss-del-cell"></td>}
                 </tr>
               ))}
 
@@ -625,6 +663,7 @@ export default function Scoresheet({ matchId }: { matchId: string }) {
                 <td className="ss-score-cell" style={{ fontWeight: 800, fontSize: '1.25rem', color: 'var(--gold)' }}>
                   {p2DisplayTotal}
                 </td>
+                {canDeleteRound && <td className="ss-del-cell"></td>}
               </tr>
             </tbody>
           </table>
@@ -698,6 +737,25 @@ export default function Scoresheet({ matchId }: { matchId: string }) {
           margin-top: 0.875rem; padding-top: 0.75rem;
           border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-muted);
         }
+
+        /* Delete round button */
+        .ss-del-col { width: 32px; padding: 0; border-color: transparent !important; background: transparent !important; }
+        .ss-del-cell { padding: 0.25rem 0.25rem; text-align: center; border-color: var(--border); }
+        .del-round-btn {
+          width: 26px; height: 26px;
+          border-radius: 6px;
+          border: 1px solid rgba(239,68,68,0.3);
+          background: rgba(239,68,68,0.08);
+          color: #EF4444;
+          font-size: 0.7rem;
+          font-weight: 800;
+          cursor: pointer;
+          display: inline-flex; align-items: center; justify-content: center;
+          transition: all 0.15s;
+          line-height: 1;
+        }
+        .del-round-btn:hover:not(:disabled) { background: rgba(239,68,68,0.2); border-color: #EF4444; }
+        .del-round-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
         /* Gin select dropdown */
         .gin-select {

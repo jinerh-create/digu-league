@@ -5,12 +5,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 const next = Astro.url.searchParams.get('next') ?? '/';
 ---
 
-<BaseLayout title="Admin Login" activeTab="home">
+<BaseLayout title="Sign In" activeTab="home">
   <div class="container">
     <div class="login-wrap">
       <img src="/logo.png" alt="Digu League" class="login-logo" />
-      <h1>Admin Access</h1>
-      <p>Enter the league password to record scores.</p>
+      <h1>Sign In</h1>
+      <p>Enter your password to access the scoresheet.</p>
 
       <form id="login-form" class="login-form">
         <input type="hidden" id="next-url" value={next} />

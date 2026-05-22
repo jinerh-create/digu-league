@@ -258,6 +258,24 @@ export async function addGame(db: D1Database, game: Game): Promise<void> {
     .run();
 }
 
+export async function getGame(db: D1Database, id: string): Promise<Game | null> {
+  return db.prepare('SELECT * FROM games WHERE id = ?').bind(id).first<Game>();
+}
+
+export async function deleteGame(db: D1Database, id: string): Promise<void> {
+  const game = await getGame(db, id);
+  if (!game) return;
+  await db.prepare('DELETE FROM games WHERE id = ?').bind(id).run();
+  // Renumber remaining rounds in this match
+  const remaining = await getGames(db, game.match_id);
+  for (let i = 0; i < remaining.length; i++) {
+    await db
+      .prepare('UPDATE games SET round_number = ? WHERE id = ?')
+      .bind(i + 1, remaining[i].id)
+      .run();
+  }
+}
+
 export async function computePlayerStats(db: D1Database, month?: string, matchType?: 'single' | 'team', season?: string): Promise<PlayerStats[]> {
   const players = await getActivePlayers(db);
   let baseWhere = 'completed_at IS NOT NULL';
