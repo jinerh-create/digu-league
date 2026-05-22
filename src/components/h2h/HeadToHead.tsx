@@ -58,6 +58,7 @@ function drawAvatarCircle(ctx: CanvasRenderingContext2D, name: string, b64: stri
 
 export default function HeadToHead() {
   const [players, setPlayers] = useState<any[]>([]);
+  const [teammates, setTeammates] = useState<[string, string][]>([]);
   const [p1, setP1] = useState('');
   const [p2, setP2] = useState('');
   const [data, setData] = useState<any>(null);
@@ -65,9 +66,13 @@ export default function HeadToHead() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    fetch('/api/players').then(r => r.json()).then((d: any) => {
-      const list = d.players ?? d ?? [];
+    Promise.all([
+      fetch('/api/players').then(r => r.json()),
+      fetch('/api/teammates').then(r => r.json()),
+    ]).then(([pd, td]: [any, any]) => {
+      const list = pd.players ?? pd ?? [];
       setPlayers(list);
+      setTeammates((td ?? []).map((p: any) => [p.a, p.b] as [string, string]));
       const params = new URLSearchParams(window.location.search);
       const qp1 = params.get('p1') ?? '';
       const qp2 = params.get('p2') ?? '';
@@ -285,6 +290,10 @@ export default function HeadToHead() {
 
   const activePlayers = players.filter(p => p.active !== 0);
 
+  function isTeammate(a: string, b: string) {
+    return teammates.some(([x, y]) => (x === a && y === b) || (x === b && y === a));
+  }
+
   return (
     <div style={{ paddingBottom: '2rem' }}>
       {/* Selector */}
@@ -302,7 +311,7 @@ export default function HeadToHead() {
             <label style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Player 2</label>
             <select value={p2} onChange={e => setP2(e.target.value)} style={{ width: '100%', background: 'var(--card-raised)', color: 'var(--text-primary)', border: '1px solid var(--border)', borderRadius: 8, padding: '0.625rem 0.75rem', fontSize: '0.9375rem', outline: 'none' }}>
               <option value="">Select player…</option>
-              {activePlayers.filter(p => p.id !== p1).map(p => <option key={p.id} value={p.id}>{p.nickname || p.name}</option>)}
+              {activePlayers.filter(p => p.id !== p1 && !isTeammate(p1, p.id)).map(p => <option key={p.id} value={p.id}>{p.nickname || p.name}</option>)}
             </select>
           </div>
         </div>
