@@ -487,22 +487,22 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
   return (
     <div>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-        <a href={`/match/${matchId}`} style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>← Back</a>
+      <div style={{ marginBottom: '0.75rem' }}>
+        <a href={`/match/${matchId}`} style={{ color: 'var(--text-muted)', fontSize: '0.875rem', display: 'inline-block', marginBottom: '0.625rem' }}>← Back</a>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button
             onClick={handleShare}
             className="btn btn-secondary"
-            style={{ fontSize: '0.8125rem', padding: '0.375rem 0.75rem', minHeight: 'auto' }}
+            style={{ flex: 1, fontSize: '0.875rem', padding: '0.625rem 0.75rem' }}
           >
-            Share
+            🔗 Share
           </button>
           <button
             onClick={() => window.print()}
             className="btn btn-secondary"
-            style={{ fontSize: '0.8125rem', padding: '0.375rem 0.75rem', minHeight: 'auto' }}
+            style={{ flex: 1, fontSize: '0.875rem', padding: '0.625rem 0.75rem' }}
           >
-            Print
+            🖨️ Print
           </button>
         </div>
       </div>
