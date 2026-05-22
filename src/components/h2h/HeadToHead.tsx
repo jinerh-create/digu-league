@@ -3,15 +3,57 @@ import { useState, useEffect } from 'react';
 function nick(name: string, nickname?: string) { return nickname || name.split(' ')[0]; }
 function fmt(d: string) { return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); }
 
+const AVATAR_COLORS = ['#2B4F37', '#78270D', '#1a3a5c', '#4a2060', '#2c4a1a'];
+
 function Avatar({ name, b64, size = 56 }: { name: string; b64?: string; size?: number }) {
-  const colors = ['#2B4F37', '#78270D', '#1a3a5c', '#4a2060', '#2c4a1a'];
-  const color = colors[name.charCodeAt(0) % colors.length];
+  const color = AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
   if (b64) return <img src={`data:image/jpeg;base64,${b64}`} alt={name} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border)' }} />;
   return (
     <div style={{ width: size, height: size, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.33, fontWeight: 700, color: '#DDD1BF', border: '2px solid var(--border)' }}>
       {name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
     </div>
   );
+}
+
+function rrect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function loadImg(src: string): Promise<HTMLImageElement> {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => res(img);
+    img.onerror = rej;
+    img.src = src;
+  });
+}
+
+function drawAvatarCircle(ctx: CanvasRenderingContext2D, name: string, b64: string | undefined, cx: number, cy: number, r: number, img: HTMLImageElement | null) {
+  ctx.save();
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.closePath();
+  if (img) {
+    ctx.clip();
+    ctx.drawImage(img, cx - r, cy - r, r * 2, r * 2);
+  } else {
+    const color = AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
+    ctx.fillStyle = color; ctx.fill();
+    ctx.fillStyle = '#DDD1BF';
+    ctx.font = `bold ${r * 0.75}px system-ui, sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(), cx, cy + 1);
+  }
+  ctx.restore();
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.strokeStyle = '#263048'; ctx.lineWidth = 2; ctx.stroke();
 }
 
 export default function HeadToHead() {
@@ -44,12 +86,196 @@ export default function HeadToHead() {
     fetch(`/api/h2h?p1=${p1}&p2=${p2}`).then(r => r.json()).then((d: any) => { setData(d); setLoading(false); });
   }
 
-  function share() {
-    const url = `${window.location.origin}/h2h?p1=${p1}&p2=${p2}`;
-    if (navigator.share) {
-      navigator.share({ title: 'Head to Head', url });
-    } else {
-      navigator.clipboard.writeText(url).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+  async function generateShareImage(): Promise<Blob> {
+    const dpr = 2;
+    const W = 560, PAD = 20;
+    const HEADER_H = 72;
+    const AVATAR_R = 44;
+    const VS_SECTION_H = AVATAR_R * 2 + 24;
+    const BAR_SECTION_H = 52;
+    const STATS_H = 72;
+    const HISTORY_H = Math.min(data.matches.length, 5) * 44 + (data.matches.length > 0 ? 32 : 0);
+    const FOOTER_H = 28;
+    const TOTAL_H = PAD + HEADER_H + 12 + VS_SECTION_H + 12 + BAR_SECTION_H + 12 + STATS_H + (HISTORY_H > 0 ? 16 + HISTORY_H : 0) + 16 + FOOTER_H + PAD;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = W * dpr; canvas.height = TOTAL_H * dpr;
+    const ctx = canvas.getContext('2d')!;
+    ctx.scale(dpr, dpr);
+
+    // Background
+    const bg = ctx.createLinearGradient(0, 0, 0, TOTAL_H);
+    bg.addColorStop(0, '#0e1525'); bg.addColorStop(1, '#080e1a');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, TOTAL_H);
+
+    // Card
+    ctx.fillStyle = '#141e30';
+    rrect(ctx, PAD / 2, PAD / 2, W - PAD, TOTAL_H - PAD, 16); ctx.fill();
+    ctx.strokeStyle = '#263048'; ctx.lineWidth = 1;
+    rrect(ctx, PAD / 2, PAD / 2, W - PAD, TOTAL_H - PAD, 16); ctx.stroke();
+
+    let y = PAD + 16;
+
+    // Logo badge
+    const logoR = 18, logoX = PAD + logoR + 14, logoY = y + logoR;
+    ctx.save();
+    ctx.beginPath(); ctx.arc(logoX, logoY, logoR, 0, Math.PI * 2);
+    ctx.fillStyle = '#1E2A44'; ctx.fill();
+    ctx.strokeStyle = '#D4AF37'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.fillStyle = '#D4AF37'; ctx.font = `bold ${logoR}px serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('♠', logoX, logoY + 1);
+    ctx.restore();
+
+    ctx.fillStyle = '#DDD1BF'; ctx.font = 'bold 19px system-ui, sans-serif';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText('Digu League', logoX + logoR + 12, y + 2);
+    ctx.fillStyle = '#6b7a96'; ctx.font = '600 10px system-ui, sans-serif';
+    ctx.fillText('HEAD TO HEAD', logoX + logoR + 12, y + 24);
+
+    y += HEADER_H - 8;
+    ctx.strokeStyle = '#263048'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(PAD + 8, y); ctx.lineTo(W - PAD - 8, y); ctx.stroke();
+    y += 14;
+
+    // Load avatars
+    let img1: HTMLImageElement | null = null, img2: HTMLImageElement | null = null;
+    try { if (data.p1.avatar_b64) img1 = await loadImg(`data:image/jpeg;base64,${data.p1.avatar_b64}`); } catch { /**/ }
+    try { if (data.p2.avatar_b64) img2 = await loadImg(`data:image/jpeg;base64,${data.p2.avatar_b64}`); } catch { /**/ }
+
+    // Avatars
+    const cx1 = PAD + 14 + AVATAR_R, cx2 = W - PAD - 14 - AVATAR_R, midX = W / 2;
+    const avatarCY = y + AVATAR_R;
+    drawAvatarCircle(ctx, data.p1.name, data.p1.avatar_b64, cx1, avatarCY, AVATAR_R, img1);
+    drawAvatarCircle(ctx, data.p2.name, data.p2.avatar_b64, cx2, avatarCY, AVATAR_R, img2);
+
+    // VS
+    ctx.fillStyle = '#3a4a60'; ctx.font = 'bold 28px system-ui, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('⚔', midX, avatarCY);
+
+    // Names
+    const nameY = y + AVATAR_R * 2 + 10;
+    ctx.font = 'bold 15px system-ui, sans-serif'; ctx.textBaseline = 'top';
+    ctx.fillStyle = '#C8102E'; ctx.textAlign = 'center';
+    ctx.fillText(nick(data.p1.name, data.p1.nickname), cx1, nameY);
+    ctx.fillStyle = '#3B82F6';
+    ctx.fillText(nick(data.p2.name, data.p2.nickname), cx2, nameY);
+
+    y += VS_SECTION_H + 14;
+
+    // W/L bar section
+    const barX = PAD + 14, barW = W - (PAD + 14) * 2, barH = 12, barY = y + 18;
+    const total = data.matches.length;
+    const p1pct = total > 0 ? data.p1Wins / total : 0.5;
+    const p2pct = total > 0 ? data.p2Wins / total : 0.5;
+
+    ctx.fillStyle = '#6b7a96'; ctx.font = 'bold 11px system-ui, sans-serif';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText(`${data.p1Wins}W`, barX, y);
+    ctx.fillStyle = '#6b7a96'; ctx.textAlign = 'right';
+    ctx.fillText(`${data.p2Wins}W`, barX + barW, y);
+    ctx.fillStyle = '#6b7a96'; ctx.textAlign = 'center';
+    ctx.fillText(`${total} Matches`, midX, y);
+
+    // Bar track
+    ctx.fillStyle = '#1c2535';
+    rrect(ctx, barX, barY, barW, barH, barH / 2); ctx.fill();
+    if (p1pct > 0) {
+      ctx.fillStyle = '#C8102E';
+      rrect(ctx, barX, barY, barW * p1pct, barH, barH / 2); ctx.fill();
+    }
+    if (p2pct > 0) {
+      ctx.fillStyle = '#3B82F6';
+      rrect(ctx, barX + barW * (1 - p2pct), barY, barW * p2pct, barH, barH / 2); ctx.fill();
+    }
+
+    y += BAR_SECTION_H + 10;
+
+    // Stats row
+    const statsData = [
+      { label: 'Wins', v1: String(data.p1Wins), v2: String(data.p2Wins) },
+      { label: 'Win %', v1: total ? `${Math.round((data.p1Wins / total) * 100)}%` : '—', v2: total ? `${Math.round((data.p2Wins / total) * 100)}%` : '—' },
+      { label: 'Avg Score', v1: String(data.p1AvgScore), v2: String(data.p2AvgScore) },
+    ];
+    const colW = (W - (PAD + 14) * 2) / statsData.length;
+    statsData.forEach((s, i) => {
+      const sx = PAD + 14 + i * colW + colW / 2;
+      ctx.font = '600 9px system-ui, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillStyle = '#6b7a96'; ctx.textBaseline = 'top';
+      ctx.fillText(s.label.toUpperCase(), sx, y);
+      ctx.font = 'bold 20px system-ui, sans-serif'; ctx.textBaseline = 'top';
+      ctx.fillStyle = '#C8102E'; ctx.fillText(s.v1, sx - colW * 0.22, y + 14);
+      ctx.fillStyle = '#3a4a60'; ctx.font = '600 11px system-ui, sans-serif'; ctx.fillText('vs', sx, y + 18);
+      ctx.fillStyle = '#3B82F6'; ctx.font = 'bold 20px system-ui, sans-serif'; ctx.fillText(s.v2, sx + colW * 0.22, y + 14);
+    });
+
+    y += STATS_H + 12;
+
+    // Match history (up to 5)
+    if (data.matches.length > 0) {
+      ctx.fillStyle = '#6b7a96'; ctx.font = '700 9px system-ui, sans-serif';
+      ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+      ctx.fillText('RECENT MATCHES', PAD + 14, y);
+      y += 18;
+      const shown = data.matches.slice(0, 5);
+      shown.forEach((m: any) => {
+        const rowH = 36, rx = PAD + 10, rw = W - (PAD + 10) * 2;
+        ctx.fillStyle = 'rgba(255,255,255,0.02)';
+        rrect(ctx, rx, y, rw, rowH, 6); ctx.fill();
+        ctx.strokeStyle = '#1c2535'; ctx.lineWidth = 1;
+        rrect(ctx, rx, y, rw, rowH, 6); ctx.stroke();
+
+        const p1OnLeft = m.player1_id === p1 || m.team1_player2_id === p1;
+        const myScore = p1OnLeft ? m.t1_score : m.t2_score;
+        const theirScore = p1OnLeft ? m.t2_score : m.t1_score;
+        const won = m.winner_id && ((p1OnLeft && m.winner_id === m.player1_id) || (!p1OnLeft && m.winner_id === m.player2_id));
+        const resultColor = won ? '#638D6F' : m.winner_id ? '#78270D' : '#6b7a96';
+        const rowMid = y + rowH / 2;
+
+        ctx.font = 'bold 11px system-ui, sans-serif'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = resultColor; ctx.textAlign = 'left';
+        ctx.fillText(won ? 'WIN' : m.winner_id ? 'LOSS' : 'DRAW', rx + 10, rowMid);
+        ctx.fillStyle = '#3a4a60'; ctx.font = '600 9px system-ui, sans-serif';
+        ctx.fillText(fmt(m.started_at), rx + 10, rowMid + 11);
+
+        ctx.font = 'bold 16px system-ui, sans-serif'; ctx.textAlign = 'right';
+        ctx.fillStyle = '#C8102E'; ctx.fillText(String(myScore ?? ''), rx + rw - 10, rowMid);
+
+        ctx.fillStyle = '#3a4a60'; ctx.font = '600 11px system-ui, sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('–', rx + rw / 2, rowMid);
+
+        ctx.fillStyle = '#3B82F6'; ctx.font = 'bold 16px system-ui, sans-serif'; ctx.textAlign = 'left';
+        ctx.fillText(String(theirScore ?? ''), rx + rw / 2 + 14, rowMid);
+
+        y += rowH + 6;
+      });
+    }
+
+    // Footer
+    y += 4;
+    ctx.fillStyle = 'rgba(107,122,150,0.4)'; ctx.font = '10px system-ui, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.fillText('digu-league.pages.dev', W / 2, y);
+
+    return new Promise(resolve => canvas.toBlob(b => resolve(b!), 'image/png'));
+  }
+
+  async function share() {
+    try {
+      const blob = await generateShareImage();
+      const file = new File([blob], 'digu-h2h.png', { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'Digu League H2H' });
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'digu-h2h.png'; a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      const shareUrl = `${window.location.origin}/h2h?p1=${p1}&p2=${p2}`;
+      navigator.clipboard?.writeText(shareUrl).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
     }
   }
 
