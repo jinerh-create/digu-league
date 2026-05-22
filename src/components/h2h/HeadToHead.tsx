@@ -311,7 +311,7 @@ export default function HeadToHead() {
             <label style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', display: 'block', marginBottom: '0.4rem' }}>Player 2</label>
             <select value={p2} onChange={e => setP2(e.target.value)} style={{ width: '100%', background: 'var(--card-raised)', color: 'var(--text-primary)', border: '1px solid var(--border)', borderRadius: 8, padding: '0.625rem 0.75rem', fontSize: '0.9375rem', outline: 'none' }}>
               <option value="">Select player…</option>
-              {activePlayers.filter(p => p.id !== p1 && !isTeammate(p1, p.id)).map(p => <option key={p.id} value={p.id}>{p.nickname || p.name}</option>)}
+              {activePlayers.filter(p => p.id !== p1).map(p => <option key={p.id} value={p.id}>{p.nickname || p.name}</option>)}
             </select>
           </div>
         </div>
