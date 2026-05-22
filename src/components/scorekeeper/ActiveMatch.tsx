@@ -18,7 +18,7 @@ function Avatar({ name, b64, size = 36 }: { name: string; b64?: string | null; s
 }
 
 
-export default function ActiveMatch({ matchId }: { matchId: string }) {
+export default function ActiveMatch({ matchId, isAdmin = false, isAuthed = false }: { matchId: string; isAdmin?: boolean; isAuthed?: boolean }) {
   const [match, setMatch] = useState<MatchWithGames | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -28,6 +28,7 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
   const [showCompletion, setShowCompletion] = useState(false);
   const [allowExtraRounds, setAllowExtraRounds] = useState(false);
   const [completionData, setCompletionData] = useState<{ winnerId: string | null; isDraw: boolean; p1Score: number; p2Score: number } | null>(null);
+  const [deletingRound, setDeletingRound] = useState<string | null>(null);
 
   // 1v1 form state
   const [winnerId, setWinnerId] = useState('');
@@ -249,6 +250,27 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
     }
   }
 
+  async function handleDeleteRound(gameId: string) {
+    if (!confirm('Delete this round?')) return;
+    setDeletingRound(gameId);
+    try {
+      const res = await fetch(`/api/games/${gameId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json() as { error?: string };
+        setError(data.error ?? 'Failed to delete round');
+        return;
+      }
+      const updated = await fetch(`/api/matches/${matchId}`).then(r => r.json()) as MatchWithGames;
+      setMatch(updated);
+      const newGin: Record<string, string> = {};
+      updated.games.forEach((g: Game) => { newGin[g.id] = g.gin_player_id ?? ''; });
+      setGinEdits(newGin);
+    } catch { setError('Network error. Try again.'); }
+    finally { setDeletingRound(null); }
+  }
+
+  const canDelete = isAuthed && (!match?.completed_at || isAdmin);
+
   const winnerName = completionData?.winnerId === p1Id ? team1Label : completionData?.winnerId === p2Id ? team2Label : '';
 
   return (
@@ -353,6 +375,7 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
                   <th style={{ ...thStyle, width: 70 }}>DIGU</th>
                   <th style={{ ...thStyle, color: 'var(--team-a)' }}>{p1Nick} / {t1p2Nick}</th>
                   <th style={{ ...thStyle, color: 'var(--team-b)' }}>{p2Nick} / {t2p2Nick}</th>
+                  {canDelete && <th style={{ ...thStyle, width: 28 }}></th>}
                 </tr>
               </thead>
               <tbody>
@@ -361,7 +384,7 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
                     return (
                       <tr key={g.id} style={{ borderTop: '1px solid var(--border)', background: 'rgba(43,79,55,0.06)' }}>
                         <td style={{ ...tdStyle, color: 'var(--text-muted)', fontWeight: 600 }}>{g.round_number}</td>
-                        <td colSpan={4}>
+                        <td colSpan={canDelete ? 5 : 4}>
                           <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center', flexWrap: 'wrap', padding: '0.25rem 0.25rem' }}>
                             <input type="text" inputMode="decimal" value={editT1}
                               onChange={e => { if (/^-?\d*$/.test(e.target.value)) setEditT1(e.target.value); }}
@@ -441,6 +464,18 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
                       <td style={{ ...tdStyle, fontWeight: 800, color: 'var(--team-b)' }}>
                         {(g.t2_p1_cards ?? 0) + (g.t2_p2_cards ?? 0)}
                       </td>
+                      {canDelete && (
+                        <td style={{ ...tdStyle, width: 28 }}>
+                          <button
+                            onClick={() => handleDeleteRound(g.id)}
+                            disabled={deletingRound === g.id}
+                            title="Delete round"
+                            style={{ width: 22, height: 22, borderRadius: 4, border: 'none', background: 'rgba(239,68,68,0.1)', color: '#EF4444', cursor: 'pointer', fontSize: '0.6875rem', lineHeight: 1, padding: 0 }}
+                          >
+                            {deletingRound === g.id ? '…' : '✕'}
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   );
                 })}
@@ -459,6 +494,7 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
                   <th style={{ ...thStyle, color: 'var(--team-a)', textAlign: 'center' }}>{p1Name}</th>
                   <th style={{ ...thStyle, textAlign: 'center' }}>DIGU</th>
                   <th style={{ ...thStyle, color: 'var(--team-b)', textAlign: 'center' }}>{p2Name}</th>
+                  {canDelete && <th style={{ ...thStyle, width: 28 }}></th>}
                 </tr>
               </thead>
               <tbody>
@@ -467,7 +503,7 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
                     return (
                       <tr key={g.id} style={{ borderTop: '1px solid var(--border)', background: 'rgba(43,79,55,0.06)' }}>
                         <td style={tdStyle}>{g.round_number}</td>
-                        <td colSpan={3}>
+                        <td colSpan={canDelete ? 4 : 3}>
                           <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center', flexWrap: 'wrap', padding: '0.25rem 0.25rem' }}>
                             {[{ id: p1Id, name: p1Nick, color: 'var(--team-a)' }, { id: p2Id, name: p2Nick, color: 'var(--team-b)' }].map(p => (
                               <button key={p.id} type="button" onClick={() => setEditWinner(p.id)}
@@ -530,6 +566,18 @@ export default function ActiveMatch({ matchId }: { matchId: string }) {
                       <td style={{ ...tdStyle, textAlign: 'center', fontWeight: 800, color: 'var(--team-b)' }}>
                         {p2Won ? g.score_awarded : ''}
                       </td>
+                      {canDelete && (
+                        <td style={{ ...tdStyle, width: 28 }}>
+                          <button
+                            onClick={() => handleDeleteRound(g.id)}
+                            disabled={deletingRound === g.id}
+                            title="Delete round"
+                            style={{ width: 22, height: 22, borderRadius: 4, border: 'none', background: 'rgba(239,68,68,0.1)', color: '#EF4444', cursor: 'pointer', fontSize: '0.6875rem', lineHeight: 1, padding: 0 }}
+                          >
+                            {deletingRound === g.id ? '…' : '✕'}
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   );
                 })}

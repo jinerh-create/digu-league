@@ -2,12 +2,26 @@
 export const prerender = false;
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ActiveMatch from '../../components/scorekeeper/ActiveMatch';
+import { verifySession } from '../../lib/auth';
 
 const { id } = Astro.params;
+
+const runtime = (Astro.locals as Record<string, unknown>).runtime as { env: Record<string, string> } | undefined;
+const secret = (runtime?.env.SESSION_SECRET ?? import.meta.env.SESSION_SECRET)?.trim();
+let isAdmin = false;
+let isAuthed = false;
+if (secret) {
+  const { valid, role } = await verifySession(Astro.request.headers.get('cookie'), secret);
+  isAuthed = valid;
+  isAdmin = role === 'admin';
+} else {
+  isAdmin = true;
+  isAuthed = true;
+}
 ---
 
 <BaseLayout title="Live Match" activeTab="matches">
   <div class="container" style="padding-top: 0.5rem;">
-    <ActiveMatch matchId={id!} client:load />
+    <ActiveMatch matchId={id!} isAdmin={isAdmin} isAuthed={isAuthed} client:load />
   </div>
 </BaseLayout>
