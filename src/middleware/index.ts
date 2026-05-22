@@ -2,12 +2,11 @@ import { defineMiddleware } from 'astro:middleware';
 import { verifySession } from '../lib/auth';
 
 // Pages only admins can reach
-const ADMIN_ONLY_PAGES = ['/players', '/new-match'];
+const ADMIN_ONLY_PAGES = ['/players'];
 
 // APIs only admins can call
 const ADMIN_ONLY_API_PREFIXES = [
   '/api/players',
-  '/api/matches',   // POST create match — players can't start matches
   '/api/seasons',
   '/api/scheduled',
 ];
@@ -66,11 +65,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const isPlayerApi = PLAYER_API_PREFIXES.some(p => pathname.startsWith(p)) &&
       PLAYER_API_METHODS.includes(method);
 
-    // Match games POST (add round) — players and admins allowed
+    // Match-related POSTs — players and admins allowed
+    const isCreateMatch = pathname === '/api/matches' && method === 'POST';
     const isAddGame = /^\/api\/matches\/[^/]+\/games$/.test(pathname) && method === 'POST';
     const isFinishMatch = /^\/api\/matches\/[^/]+\/finish$/.test(pathname) && method === 'POST';
 
-    if (isPlayerApi || isAddGame || isFinishMatch) {
+    if (isPlayerApi || isCreateMatch || isAddGame || isFinishMatch) {
       if (!valid) {
         return new Response(JSON.stringify({ error: 'Unauthorized' }), {
           status: 401,
