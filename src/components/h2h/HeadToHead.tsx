@@ -20,15 +20,37 @@ export default function HeadToHead() {
   const [p2, setP2] = useState('');
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    fetch('/api/players').then(r => r.json()).then(d => setPlayers(d.players ?? d ?? []));
+    fetch('/api/players').then(r => r.json()).then((d: any) => {
+      const list = d.players ?? d ?? [];
+      setPlayers(list);
+      const params = new URLSearchParams(window.location.search);
+      const qp1 = params.get('p1') ?? '';
+      const qp2 = params.get('p2') ?? '';
+      if (qp1 && qp2 && qp1 !== qp2) {
+        setP1(qp1); setP2(qp2);
+        setLoading(true);
+        fetch(`/api/h2h?p1=${qp1}&p2=${qp2}`).then(r => r.json()).then((d2: any) => { setData(d2); setLoading(false); });
+      }
+    });
   }, []);
 
   function search() {
     if (!p1 || !p2 || p1 === p2) return;
     setLoading(true); setData(null);
-    fetch(`/api/h2h?p1=${p1}&p2=${p2}`).then(r => r.json()).then(d => { setData(d); setLoading(false); });
+    history.pushState({}, '', `/h2h?p1=${p1}&p2=${p2}`);
+    fetch(`/api/h2h?p1=${p1}&p2=${p2}`).then(r => r.json()).then((d: any) => { setData(d); setLoading(false); });
+  }
+
+  function share() {
+    const url = `${window.location.origin}/h2h?p1=${p1}&p2=${p2}`;
+    if (navigator.share) {
+      navigator.share({ title: 'Head to Head', url });
+    } else {
+      navigator.clipboard.writeText(url).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+    }
   }
 
   const activePlayers = players.filter(p => p.active !== 0);
@@ -54,9 +76,16 @@ export default function HeadToHead() {
             </select>
           </div>
         </div>
-        <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }} onClick={search} disabled={!p1 || !p2 || p1 === p2 || loading}>
-          {loading ? 'Loading…' : '⚔ Compare'}
-        </button>
+        <div style={{ display: 'flex', gap: '0.625rem', marginTop: '1rem' }}>
+          <button className="btn btn-primary" style={{ flex: 1 }} onClick={search} disabled={!p1 || !p2 || p1 === p2 || loading}>
+            {loading ? 'Loading…' : '⚔ Compare'}
+          </button>
+          {data && !data.error && (
+            <button onClick={share} title="Share this matchup" style={{ padding: '0 1rem', background: copied ? 'var(--felt-light)' : 'var(--card-raised)', color: copied ? '#fff' : 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer', fontSize: '1rem', transition: 'background 0.2s, color 0.2s', whiteSpace: 'nowrap' }}>
+              {copied ? '✓ Copied!' : '🔗 Share'}
+            </button>
+          )}
+        </div>
       </div>
 
       {data && !data.error && (
