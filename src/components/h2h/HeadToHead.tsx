@@ -240,13 +240,17 @@ export default function HeadToHead() {
         ctx.fillText(fmt(m.started_at), rx + 10, rowMid + 11);
 
         ctx.font = 'bold 16px system-ui, sans-serif'; ctx.textAlign = 'right';
-        ctx.fillStyle = '#C8102E'; ctx.fillText(String(myScore ?? ''), rx + rw - 10, rowMid);
+        ctx.fillStyle = '#C8102E'; ctx.fillText(String(myScore ?? ''), rx + rw - 10, rowMid - 4);
 
         ctx.fillStyle = '#3a4a60'; ctx.font = '600 11px system-ui, sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText('–', rx + rw / 2, rowMid);
+        ctx.fillText('–', rx + rw / 2, rowMid - 4);
 
         ctx.fillStyle = '#3B82F6'; ctx.font = 'bold 16px system-ui, sans-serif'; ctx.textAlign = 'left';
-        ctx.fillText(String(theirScore ?? ''), rx + rw / 2 + 14, rowMid);
+        ctx.fillText(String(theirScore ?? ''), rx + rw / 2 + 14, rowMid - 4);
+
+        const total = (myScore ?? 0) + (theirScore ?? 0);
+        ctx.fillStyle = '#3a4a60'; ctx.font = '600 9px system-ui, sans-serif'; ctx.textAlign = 'right';
+        ctx.fillText(`${total} total`, rx + rw - 10, rowMid + 10);
 
         y += rowH + 6;
       });
@@ -385,10 +389,13 @@ export default function HeadToHead() {
                         </div>
                         <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginTop: '0.125rem' }}>{fmt(m.started_at)} · {m.rounds} rounds</div>
                       </div>
-                      <div style={{ fontSize: '1.25rem', fontWeight: 900, letterSpacing: '-0.02em' }}>
-                        <span style={{ color: 'var(--team-a)' }}>{myScore}</span>
-                        <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem', margin: '0 0.375rem' }}>–</span>
-                        <span style={{ color: 'var(--team-b)' }}>{theirScore}</span>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '1.25rem', fontWeight: 900, letterSpacing: '-0.02em' }}>
+                          <span style={{ color: 'var(--team-a)' }}>{myScore}</span>
+                          <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem', margin: '0 0.375rem' }}>–</span>
+                          <span style={{ color: 'var(--team-b)' }}>{theirScore}</span>
+                        </div>
+                        <div style={{ fontSize: '0.625rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>{(myScore ?? 0) + (theirScore ?? 0)} total</div>
                       </div>
                     </div>
                   </a>
