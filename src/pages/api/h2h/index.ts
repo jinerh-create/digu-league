@@ -40,13 +40,21 @@ export const GET: APIRoute = async ({ url, locals }) => {
       JOIN games g ON g.match_id = m.id
       WHERE m.completed_at IS NOT NULL
         AND (
-          (m.player1_id IN (?,?) AND m.player2_id IN (?,?))
-          OR (m.team1_player2_id IN (?,?) AND (m.player1_id IN (?,?) OR m.player2_id IN (?,?)))
-          OR (m.team2_player2_id IN (?,?) AND (m.player1_id IN (?,?) OR m.player2_id IN (?,?)))
+          -- p1 on team1 (captain or secondary), p2 on team2 (captain or secondary)
+          (
+            (m.player1_id = ? OR m.team1_player2_id = ?)
+            AND (m.player2_id = ? OR m.team2_player2_id = ?)
+          )
+          OR
+          -- p1 on team2, p2 on team1
+          (
+            (m.player2_id = ? OR m.team2_player2_id = ?)
+            AND (m.player1_id = ? OR m.team1_player2_id = ?)
+          )
         )
       GROUP BY m.id
       ORDER BY m.started_at DESC
-    `).bind(p1,p2,p1,p2, p1,p2,p1,p2,p1,p2, p1,p2,p1,p2,p1,p2).all<any>();
+    `).bind(p1,p1,p2,p2, p1,p1,p2,p2).all<any>();
 
     const rows = matches.results ?? [];
     let p1Wins = 0, p2Wins = 0, p1TotalScore = 0, p2TotalScore = 0;
