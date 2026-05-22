@@ -23,8 +23,18 @@ export const GET: APIRoute = async ({ url, locals }) => {
     // Matches between these two players (any combination of positions)
     const matches = await db.prepare(`
       SELECT m.*,
-        SUM(CASE WHEN g.winner_id = m.player1_id THEN g.score_awarded ELSE 0 END) as t1_score,
-        SUM(CASE WHEN g.winner_id = m.player2_id THEN g.score_awarded ELSE 0 END) as t2_score,
+        CASE
+          WHEN m.team1_player2_id IS NOT NULL THEN
+            SUM(COALESCE(g.t1_p1_cards, 0) + COALESCE(g.t1_p2_cards, 0))
+          ELSE
+            SUM(CASE WHEN g.winner_id = m.player1_id THEN g.score_awarded ELSE 0 END)
+        END as t1_score,
+        CASE
+          WHEN m.team1_player2_id IS NOT NULL THEN
+            SUM(COALESCE(g.t2_p1_cards, 0) + COALESCE(g.t2_p2_cards, 0))
+          ELSE
+            SUM(CASE WHEN g.winner_id = m.player2_id THEN g.score_awarded ELSE 0 END)
+        END as t2_score,
         COUNT(g.id) as rounds
       FROM matches m
       JOIN games g ON g.match_id = m.id
