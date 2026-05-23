@@ -93,143 +93,166 @@ function AwardCard({ icon, title, name, subtitle, accentColor }: {
 }
 
 async function generateRankingsImage(rows: PlayerStats[], label: string): Promise<Blob> {
-  const W = 640;
-  const HEADER_H = 90;
-  const ROW_H = 52;
-  const H = HEADER_H + rows.length * ROW_H;
+  const W = 680;
+  const HEADER_H = 108;
+  const COL_H = 30;
+  const ROW_H = 58;
+  const H = HEADER_H + COL_H + rows.length * ROW_H;
 
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d')!;
 
-  // Background
-  ctx.fillStyle = '#111111';
+  const MEDAL_COLORS = ['#D4AF37', '#A8A9AD', '#CD7F32'];
+  const MEDAL_BG     = ['rgba(212,175,55,0.13)', 'rgba(168,169,173,0.08)', 'rgba(205,127,50,0.09)'];
+  const COL = { rank: 32, avatar: 64, name: 90, gp: 332, w: 390, l: 446, digu: 504, pts: 562, wr: 638 };
+
+  // ── Background ────────────────────────────────────────────────
+  ctx.fillStyle = '#0e0e12';
   ctx.fillRect(0, 0, W, H);
 
-  // Header gold bar
-  const hg = ctx.createLinearGradient(0, 0, W, 0);
-  hg.addColorStop(0, '#2B4F37'); hg.addColorStop(0.5, '#1a1200'); hg.addColorStop(1, '#2B4F37');
+  // ── Header ────────────────────────────────────────────────────
+  const hg = ctx.createLinearGradient(0, 0, W, HEADER_H);
+  hg.addColorStop(0, '#192b1c');
+  hg.addColorStop(0.5, '#0d1510');
+  hg.addColorStop(1, '#192b1c');
   ctx.fillStyle = hg;
   ctx.fillRect(0, 0, W, HEADER_H);
 
-  // Header text
+  // Top gold bar
+  const topBar = ctx.createLinearGradient(0, 0, W, 0);
+  topBar.addColorStop(0, 'transparent');
+  topBar.addColorStop(0.25, '#D4AF37');
+  topBar.addColorStop(0.75, '#D4AF37');
+  topBar.addColorStop(1, 'transparent');
+  ctx.fillStyle = topBar;
+  ctx.fillRect(0, 0, W, 3);
+
   ctx.textAlign = 'center';
   ctx.fillStyle = '#D4AF37';
-  ctx.font = 'bold 26px system-ui';
-  ctx.fillText('DIGU LEAGUE', W / 2, 34);
-  ctx.fillStyle = '#DDD1BF';
-  ctx.font = '700 14px system-ui';
-  ctx.fillText(`Rankings · ${label}`, W / 2, 56);
+  ctx.font = 'bold 28px system-ui, sans-serif';
+  ctx.fillText('DIGU LEAGUE', W / 2, 44);
 
-  // Divider line
+  ctx.fillStyle = '#DDD1BF';
+  ctx.font = '600 14px system-ui, sans-serif';
+  ctx.fillText(`Rankings · ${label}`, W / 2, 68);
+
   ctx.strokeStyle = '#D4AF37';
-  ctx.globalAlpha = 0.4;
+  ctx.globalAlpha = 0.3;
   ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(40, 72); ctx.lineTo(W - 40, 72); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(60, 84); ctx.lineTo(W - 60, 84); ctx.stroke();
   ctx.globalAlpha = 1;
 
-  // Column headers
-  const COL = { rank: 36, name: 80, gp: 320, w: 370, l: 420, digu: 470, pts: 528, wr: 598 };
-  ctx.fillStyle = '#888';
-  ctx.font = '700 11px system-ui';
-  ctx.textAlign = 'center';
-  ctx.fillText('GP',    COL.gp,  80);
-  ctx.fillText('W',     COL.w,   80);
-  ctx.fillText('L',     COL.l,   80);
-  ctx.fillText('DIGU',  COL.digu, 80);
-  ctx.fillText('PTS',   COL.pts,  80);
-  ctx.fillText('WIN%',  COL.wr,  80);
+  // ── Column header strip ───────────────────────────────────────
+  ctx.fillStyle = 'rgba(255,255,255,0.04)';
+  ctx.fillRect(0, HEADER_H, W, COL_H);
+
+  ctx.fillStyle = '#666';
+  ctx.font = '700 10px system-ui, sans-serif';
   ctx.textAlign = 'left';
-  ctx.fillText('PLAYER', COL.name, 80);
+  ctx.fillText('PLAYER', COL.name, HEADER_H + 20);
+  ctx.textAlign = 'center';
+  for (const [label, x] of [['GP', COL.gp], ['W', COL.w], ['L', COL.l], ['DIGU', COL.digu], ['PTS', COL.pts], ['WIN%', COL.wr]] as [string, number][]) {
+    ctx.fillText(label, x, HEADER_H + 20);
+  }
 
-  // Rows
+  // ── Rows ──────────────────────────────────────────────────────
   rows.forEach((s, i) => {
-    const y = HEADER_H + i * ROW_H;
-    const isTop = i === 0;
-    const isRelStart = rows.length >= 3 && i === rows.length - 2;
+    const y = HEADER_H + COL_H + i * ROW_H;
+    const cy = y + ROW_H / 2;
+    const isTop3 = i < 3;
     const isRel = rows.length >= 3 && i >= rows.length - 2;
+    const isRelStart = rows.length >= 3 && i === rows.length - 2;
 
-    // Row background
-    if (isTop) {
-      ctx.fillStyle = 'rgba(212,175,55,0.08)';
-    } else if (isRel) {
-      ctx.fillStyle = 'rgba(200,16,46,0.12)';
-    } else {
-      ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent';
-    }
+    // Row bg
+    ctx.fillStyle = isTop3 ? MEDAL_BG[i] : isRel ? 'rgba(200,16,46,0.10)' : i % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent';
     ctx.fillRect(0, y, W, ROW_H);
+
+    // Left accent bar for top 3
+    if (isTop3) {
+      ctx.fillStyle = MEDAL_COLORS[i];
+      ctx.fillRect(0, y, 3, ROW_H);
+    }
 
     // Relegation divider
     if (isRelStart) {
       ctx.strokeStyle = 'rgba(200,16,46,0.5)';
-      ctx.setLineDash([4, 3]);
-      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 3]); ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
       ctx.setLineDash([]);
     }
 
     // Row divider
-    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(0, y + ROW_H - 1); ctx.lineTo(W, y + ROW_H - 1); ctx.stroke();
 
-    const cy = y + ROW_H / 2 + 5;
-
-    // Rank
-    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
+    // ── Rank medal circle ───────────────────────────────────────
     ctx.textAlign = 'center';
-    if (medal) {
-      ctx.font = '18px system-ui';
-      ctx.fillText(medal, COL.rank, cy);
+    if (isTop3) {
+      ctx.beginPath();
+      ctx.arc(COL.rank, cy, 15, 0, Math.PI * 2);
+      ctx.fillStyle = MEDAL_COLORS[i] + '33';
+      ctx.fill();
+      ctx.strokeStyle = MEDAL_COLORS[i]; ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = MEDAL_COLORS[i];
+      ctx.font = 'bold 14px system-ui, sans-serif';
+      ctx.fillText(String(i + 1), COL.rank, cy + 5);
     } else {
-      ctx.fillStyle = isRel ? '#FF4A6A' : '#666';
-      ctx.font = isRel ? 'bold 13px system-ui' : '700 13px system-ui';
-      ctx.fillText(isRel ? '⬇' : String(i + 1), COL.rank, cy);
+      ctx.fillStyle = isRel ? '#FF4A6A' : '#555';
+      ctx.font = isRel ? 'bold 12px system-ui, sans-serif' : '700 12px system-ui, sans-serif';
+      ctx.fillText(isRel ? '▼' : String(i + 1), COL.rank, cy + 4);
     }
 
-    // Avatar circle
-    const ax = 56, ay = y + ROW_H / 2;
+    // ── Avatar ──────────────────────────────────────────────────
+    const ax = COL.avatar, ay = cy, ar = 17;
     ctx.save();
-    ctx.beginPath();
-    ctx.arc(ax, ay, 16, 0, Math.PI * 2);
-    ctx.clip();
+    ctx.beginPath(); ctx.arc(ax, ay, ar, 0, Math.PI * 2); ctx.clip();
     const colors = ['#2B4F37', '#78270D', '#1a3a5c', '#4a2060', '#2c4a1a'];
     ctx.fillStyle = colors[s.name.charCodeAt(0) % colors.length];
-    ctx.fillRect(ax - 16, ay - 16, 32, 32);
+    ctx.fillRect(ax - ar, ay - ar, ar * 2, ar * 2);
     ctx.restore();
 
-    // Avatar initials
     ctx.fillStyle = '#DDD1BF';
-    ctx.font = 'bold 11px system-ui';
+    ctx.font = 'bold 11px system-ui, sans-serif';
     ctx.textAlign = 'center';
     const initials = s.name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
     ctx.fillText(initials, ax, ay + 4);
 
-    // Name
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#DDD1BF';
-    ctx.font = '600 14px system-ui';
-    ctx.fillText(s.nickname || s.name, COL.name, cy);
+    // Medal ring around avatar for top 3
+    if (isTop3) {
+      ctx.beginPath(); ctx.arc(ax, ay, ar + 2.5, 0, Math.PI * 2);
+      ctx.strokeStyle = MEDAL_COLORS[i]; ctx.lineWidth = 2;
+      ctx.stroke();
+    }
 
-    // Stats
+    // ── Name ────────────────────────────────────────────────────
+    ctx.textAlign = 'left';
+    ctx.fillStyle = isTop3 ? '#ffffff' : '#DDD1BF';
+    ctx.font = isTop3 ? '700 15px system-ui, sans-serif' : '600 14px system-ui, sans-serif';
+    ctx.fillText(s.nickname || s.name, COL.name, cy + 5);
+
+    // ── Stats ────────────────────────────────────────────────────
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#aaa';      ctx.font = '700 13px system-ui';
-    ctx.fillText(String(s.matches_played), COL.gp, cy);
+    ctx.fillStyle = '#aaa'; ctx.font = '700 13px system-ui, sans-serif';
+    ctx.fillText(String(s.matches_played), COL.gp, cy + 5);
 
     ctx.fillStyle = '#638D6F';
-    ctx.fillText(String(s.matches_won), COL.w, cy);
+    ctx.fillText(String(s.matches_won), COL.w, cy + 5);
 
     ctx.fillStyle = '#C8102E';
-    ctx.fillText(String(s.matches_lost), COL.l, cy);
+    ctx.fillText(String(s.matches_lost), COL.l, cy + 5);
 
     ctx.fillStyle = '#D4AF37';
-    ctx.fillText(String(s.gin_count), COL.digu, cy);
+    ctx.fillText(String(s.gin_count), COL.digu, cy + 5);
 
-    ctx.fillStyle = '#D4AF37'; ctx.font = 'bold 14px system-ui';
-    ctx.fillText(String(s.league_points), COL.pts, cy);
+    ctx.fillStyle = '#D4AF37';
+    ctx.font = isTop3 ? 'bold 16px system-ui, sans-serif' : 'bold 14px system-ui, sans-serif';
+    ctx.fillText(String(s.league_points), COL.pts, cy + 5);
 
-    ctx.fillStyle = s.win_rate >= 50 ? '#638D6F' : '#888'; ctx.font = '700 13px system-ui';
-    ctx.fillText(s.matches_played > 0 ? `${s.win_rate}%` : '—', COL.wr, cy);
+    ctx.fillStyle = s.win_rate >= 50 ? '#638D6F' : '#777';
+    ctx.font = '700 13px system-ui, sans-serif';
+    ctx.fillText(s.matches_played > 0 ? `${s.win_rate}%` : '—', COL.wr, cy + 5);
   });
 
   return new Promise(res => canvas.toBlob(b => res(b!), 'image/png'));
