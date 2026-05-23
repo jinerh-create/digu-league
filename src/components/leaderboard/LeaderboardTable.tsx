@@ -96,8 +96,7 @@ async function generateRankingsImage(rows: PlayerStats[], label: string): Promis
   const W = 640;
   const HEADER_H = 90;
   const ROW_H = 52;
-  const FOOTER_H = 36;
-  const H = HEADER_H + rows.length * ROW_H + FOOTER_H;
+  const H = HEADER_H + rows.length * ROW_H;
 
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
@@ -232,15 +231,6 @@ async function generateRankingsImage(rows: PlayerStats[], label: string): Promis
     ctx.fillStyle = s.win_rate >= 50 ? '#638D6F' : '#888'; ctx.font = '700 13px system-ui';
     ctx.fillText(s.matches_played > 0 ? `${s.win_rate}%` : '—', COL.wr, cy);
   });
-
-  // Footer
-  const fy = HEADER_H + rows.length * ROW_H;
-  ctx.fillStyle = 'rgba(212,175,55,0.06)';
-  ctx.fillRect(0, fy, W, FOOTER_H);
-  ctx.fillStyle = '#555';
-  ctx.font = '600 11px system-ui';
-  ctx.textAlign = 'center';
-  ctx.fillText('digu-league.pages.dev', W / 2, fy + 22);
 
   return new Promise(res => canvas.toBlob(b => res(b!), 'image/png'));
 }

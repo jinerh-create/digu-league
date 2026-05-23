@@ -261,12 +261,6 @@ export default function HeadToHead() {
       });
     }
 
-    // Footer
-    y += 4;
-    ctx.fillStyle = 'rgba(107,122,150,0.4)'; ctx.font = '10px system-ui, sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-    ctx.fillText('digu-league.pages.dev', W / 2, y);
-
     return new Promise(resolve => canvas.toBlob(b => resolve(b!), 'image/png'));
   }
 

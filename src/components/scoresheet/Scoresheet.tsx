@@ -453,12 +453,6 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
     ctx.fillText(String(p1DisplayTotal), x2 + COL_TEAM / 2, tmid);
     ctx.fillText(String(p2DisplayTotal), x3 + COL_TEAM / 2, tmid);
 
-    // Footer
-    y += ROW_H + 8;
-    ctx.fillStyle = 'rgba(107,122,150,0.35)';
-    ctx.font = '10px system-ui, sans-serif';
-    ctx.fillText('digu-league.pages.dev', W / 2, y + 10);
-
     return new Promise(resolve => canvas.toBlob(b => resolve(b!), 'image/png'));
   }
 
