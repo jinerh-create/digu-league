@@ -640,7 +640,7 @@ export default function ActiveMatch({ matchId, isAdmin = false, isAuthed = false
               {/* Team 1 score */}
               <div style={{ background: 'var(--team-a-dim)', border: '1px solid rgba(230,57,70,0.2)', borderRadius: 8, padding: '0.875rem' }}>
                 <div style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--team-a)', marginBottom: '0.125rem' }}>{team1Label}</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.625rem' }}>{p1Name} / {t1p2Name}</div>
+                <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--team-a)', marginBottom: '0.625rem' }}>{p1Name} / {t1p2Name}</div>
                 <input
                   type="text"
                   inputMode="numeric"
@@ -671,7 +671,7 @@ export default function ActiveMatch({ matchId, isAdmin = false, isAuthed = false
               {/* Team 2 score */}
               <div style={{ background: 'var(--team-b-dim)', border: '1px solid rgba(74,85,104,0.2)', borderRadius: 8, padding: '0.875rem' }}>
                 <div style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--team-b)', marginBottom: '0.125rem' }}>{team2Label}</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.625rem' }}>{p2Name} / {t2p2Name}</div>
+                <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--team-b)', marginBottom: '0.625rem' }}>{p2Name} / {t2p2Name}</div>
                 <input
                   type="text"
                   inputMode="numeric"
