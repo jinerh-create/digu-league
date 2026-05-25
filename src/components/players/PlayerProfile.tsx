@@ -68,6 +68,13 @@ function getLevel(score: number): { name: string; color: string; next: number; c
 function buildBadges(totalScore: number, ginCount: number, maxWinStreak: number, perfectMatches: number, centuryHands: number): Badge[] {
   return [
     {
+      id: 'oc_streak',
+      name: 'OC',
+      desc: 'Win 5 matches in a row without a single loss',
+      image: '/badges/oc-streak.png',
+      unlocked: maxWinStreak >= 5,
+    },
+    {
       id: 'three_streak',
       name: '3 Win Streak',
       desc: 'Win 3 matches in a row without a loss',
@@ -373,11 +380,11 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
         <span style={{ color: unlockedCount > 0 ? '#D4AF37' : 'var(--text-muted)' }}>{unlockedCount}/{badges.length} Unlocked</span>
       </div>
       <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '1.25rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '1.5rem' }}>
           {badges.map(b => (
-            <div key={b.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', position: 'relative' }}>
+            <div key={b.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.625rem', position: 'relative' }}>
               {/* Badge image */}
-              <div style={{ width: 100, height: 100, position: 'relative' }}>
+              <div style={{ width: 140, height: 140, position: 'relative' }}>
                 <img
                   src={b.image}
                   alt={b.name}
@@ -385,7 +392,7 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
                     width: '100%', height: '100%', objectFit: 'contain',
                     mixBlendMode: 'screen',
                     opacity: b.unlocked ? 1 : 0.22,
-                    transform: b.unlocked ? 'perspective(300px) rotateX(8deg) scale(1.05)' : 'none',
+                    transform: b.unlocked ? 'perspective(400px) rotateX(5deg) scale(1.03)' : 'none',
                     transition: 'opacity 0.3s, transform 0.3s',
                   }}
                 />
@@ -394,11 +401,11 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
               {/* Lock overlay when not unlocked */}
               {!b.unlocked && (
                 <div style={{
-                  position: 'absolute', top: 28, left: '50%', transform: 'translateX(-50%)',
-                  width: 32, height: 32, borderRadius: '50%',
+                  position: 'absolute', top: 48, left: '50%', transform: 'translateX(-50%)',
+                  width: 38, height: 38, borderRadius: '50%',
                   background: 'rgba(0,0,0,0.85)', border: '1.5px solid rgba(255,255,255,0.15)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '1rem',
+                  fontSize: '1.1rem',
                 }}>
                   🔒
                 </div>
@@ -408,8 +415,8 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
               {b.unlocked && (
                 <div style={{
                   position: 'absolute', top: 0,
-                  width: 100, height: 100,
-                  background: 'radial-gradient(ellipse, rgba(212,175,55,0.2) 0%, transparent 70%)',
+                  width: 140, height: 140,
+                  background: 'radial-gradient(ellipse, rgba(212,175,55,0.25) 0%, transparent 70%)',
                   pointerEvents: 'none',
                 }} />
               )}
