@@ -380,48 +380,59 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
         <span style={{ color: unlockedCount > 0 ? '#D4AF37' : 'var(--text-muted)' }}>{unlockedCount}/{badges.length} Unlocked</span>
       </div>
       <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.75rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1rem' }}>
           {badges.map(b => (
-            <div key={b.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem', position: 'relative' }}>
-              {/* Badge image */}
-              <div style={{ width: '100%', aspectRatio: '1', position: 'relative' }}>
+            <div key={b.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+              {/* Badge circle */}
+              <div style={{
+                width: '100%', aspectRatio: '1',
+                borderRadius: '50%',
+                overflow: 'hidden',
+                position: 'relative',
+                boxShadow: b.unlocked
+                  ? '0 0 0 2.5px #D4AF37, 0 0 16px rgba(212,175,55,0.7), 0 0 32px rgba(212,175,55,0.3)'
+                  : '0 0 0 1.5px rgba(255,255,255,0.08)',
+                transform: b.unlocked ? 'scale(1.06)' : 'scale(1)',
+                transition: 'transform 0.3s, box-shadow 0.3s',
+              }}>
                 <img
                   src={b.image}
                   alt={b.name}
                   style={{
-                    width: '100%', height: '100%', objectFit: 'contain',
-                    mixBlendMode: 'multiply',
-                    opacity: b.unlocked ? 1 : 0.4,
-                    filter: b.unlocked
-                      ? 'drop-shadow(0 0 8px rgba(212,175,55,0.55)) drop-shadow(0 0 20px rgba(212,175,55,0.25))'
-                      : 'grayscale(1)',
+                    width: '100%', height: '100%', objectFit: 'cover',
+                    filter: b.unlocked ? 'none' : 'grayscale(1) brightness(0.4)',
                     transition: 'filter 0.3s',
                   }}
                 />
+                {/* Lock overlay */}
+                {!b.unlocked && (
+                  <div style={{
+                    position: 'absolute', inset: 0,
+                    background: 'rgba(10,12,20,0.55)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '1.25rem',
+                  }}>🔒</div>
+                )}
+                {/* Unlocked shine sweep */}
+                {b.unlocked && (
+                  <div style={{
+                    position: 'absolute', inset: 0,
+                    background: 'linear-gradient(135deg, rgba(255,230,100,0.18) 0%, transparent 55%, rgba(255,200,60,0.1) 100%)',
+                    pointerEvents: 'none',
+                  }} />
+                )}
               </div>
 
-              {/* Lock overlay when not unlocked */}
-              {!b.unlocked && (
+              {/* Label */}
+              <div style={{ textAlign: 'center' }}>
                 <div style={{
-                  position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%, -50%)',
-                  width: 28, height: 28, borderRadius: '50%',
-                  background: 'rgba(0,0,0,0.9)', border: '1.5px solid rgba(255,255,255,0.12)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '0.875rem',
-                }}>
-                  🔒
-                </div>
-              )}
-
-              <div style={{ textAlign: 'center', width: '100%' }}>
-                <div style={{
-                  fontSize: '0.6rem', fontWeight: 800,
+                  fontSize: '0.6rem', fontWeight: 800, lineHeight: 1.2,
                   color: b.unlocked ? '#D4AF37' : 'var(--text-muted)',
-                  letterSpacing: '0.01em', lineHeight: 1.2,
                 }}>{b.name}</div>
-                <div style={{ fontSize: '0.5rem', color: b.unlocked ? 'var(--felt-light)' : 'var(--text-muted)', marginTop: '0.15rem', lineHeight: 1.2 }}>
-                  {b.unlocked ? '✓ Unlocked' : '🔒 Locked'}
-                </div>
+                <div style={{
+                  fontSize: '0.5rem', marginTop: '0.1rem', lineHeight: 1.2,
+                  color: b.unlocked ? '#00D47E' : 'var(--text-muted)',
+                }}>{b.unlocked ? '✓ Unlocked' : 'Locked'}</div>
               </div>
             </div>
           ))}
