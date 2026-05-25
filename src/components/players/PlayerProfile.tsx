@@ -71,9 +71,9 @@ function buildBadges(totalScore: number, ginCount: number, maxWinStreak: number,
     {
       id: 'streak_emperor',
       name: 'Streak Emperor',
-      desc: 'Win 4 matches in a row',
+      desc: 'Win 5 matches in a row',
       image: '/badges/streak-emperor.png',
-      unlocked: maxWinStreak >= 4,
+      unlocked: maxWinStreak >= 5,
       blend: 'lighten',
     },
     {
