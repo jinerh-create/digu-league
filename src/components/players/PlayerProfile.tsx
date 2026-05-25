@@ -389,6 +389,7 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
                 borderRadius: '50%',
                 overflow: 'hidden',
                 position: 'relative',
+                background: '#ffffff',
                 boxShadow: b.unlocked
                   ? '0 0 0 2.5px #D4AF37, 0 0 16px rgba(212,175,55,0.7), 0 0 32px rgba(212,175,55,0.3)'
                   : '0 0 0 1.5px rgba(255,255,255,0.08)',
@@ -400,7 +401,8 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
                   alt={b.name}
                   style={{
                     width: '100%', height: '100%', objectFit: 'cover',
-                    filter: b.unlocked ? 'none' : 'grayscale(1) brightness(0.4)',
+                    mixBlendMode: 'multiply',
+                    filter: b.unlocked ? 'none' : 'grayscale(1) brightness(0.6)',
                     transition: 'filter 0.3s',
                   }}
                 />
