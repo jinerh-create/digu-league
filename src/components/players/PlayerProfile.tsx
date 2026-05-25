@@ -40,6 +40,20 @@ function getLevel(score: number): { name: string; color: string; next: number; i
 function buildBadges(totalScore: number, ginCount: number, maxWinStreak: number, perfectMatches: number, centuryHands: number): Badge[] {
   return [
     {
+      id: 'oc_streak',
+      name: 'OC',
+      desc: 'Win 5 matches in a row without a single loss',
+      image: '/badges/oc-streak.png',
+      unlocked: maxWinStreak >= 5,
+    },
+    {
+      id: 'three_streak',
+      name: '3 Win Streak',
+      desc: 'Win 3 matches in a row without a loss',
+      image: '/badges/three-streak.png',
+      unlocked: maxWinStreak >= 3,
+    },
+    {
       id: 'hundred_club',
       name: 'The Hundred Club',
       desc: 'Achieve 100 Digu hands',
@@ -317,28 +331,62 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
       </div>
 
       {/* Trophy Case */}
-      <div style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '1rem' }}>
-        Trophy Case · {unlockedCount}/{badges.length} Unlocked
+      <div style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span>🏅 Trophy Case</span>
+        <span style={{ color: unlockedCount > 0 ? '#D4AF37' : 'var(--text-muted)' }}>{unlockedCount}/{badges.length} Unlocked</span>
       </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '1.5rem', paddingLeft: '0.25rem' }}>
-        {badges.map(b => (
-          <div key={b.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', width: 110 }}>
-            <div style={{
-              width: 110, height: 110,
-              filter: b.unlocked
-                ? 'drop-shadow(0 6px 12px rgba(0,0,0,0.9)) drop-shadow(0 0 20px rgba(212,175,55,0.7)) drop-shadow(0 -2px 4px rgba(255,220,80,0.3))'
-                : 'grayscale(1) brightness(0.25)',
-              transform: b.unlocked ? 'perspective(300px) rotateX(10deg) scale(1.05)' : 'none',
-              transition: 'filter 0.3s, transform 0.3s',
-            }}>
-              <img src={b.image} alt={b.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+      <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '1.25rem' }}>
+          {badges.map(b => (
+            <div key={b.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', position: 'relative' }}>
+              {/* Badge image */}
+              <div style={{
+                width: 100, height: 100, position: 'relative',
+                filter: b.unlocked
+                  ? 'drop-shadow(0 0 18px rgba(212,175,55,0.8)) drop-shadow(0 4px 12px rgba(0,0,0,0.9))'
+                  : 'grayscale(1) brightness(0.18)',
+                transform: b.unlocked ? 'perspective(300px) rotateX(8deg) scale(1.05)' : 'none',
+                transition: 'filter 0.3s, transform 0.3s',
+              }}>
+                <img src={b.image} alt={b.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              </div>
+
+              {/* Lock overlay when not unlocked */}
+              {!b.unlocked && (
+                <div style={{
+                  position: 'absolute', top: 28, left: '50%', transform: 'translateX(-50%)',
+                  width: 32, height: 32, borderRadius: '50%',
+                  background: 'rgba(0,0,0,0.85)', border: '1.5px solid rgba(255,255,255,0.15)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '1rem',
+                }}>
+                  🔒
+                </div>
+              )}
+
+              {/* Unlocked glow ring */}
+              {b.unlocked && (
+                <div style={{
+                  position: 'absolute', top: 24,
+                  width: 108, height: 108, borderRadius: '50%',
+                  background: 'radial-gradient(ellipse, rgba(212,175,55,0.15) 0%, transparent 70%)',
+                  pointerEvents: 'none',
+                }} />
+              )}
+
+              <div style={{ textAlign: 'center' }}>
+                <div style={{
+                  fontSize: '0.75rem', fontWeight: 800,
+                  color: b.unlocked ? '#D4AF37' : 'var(--text-muted)',
+                  letterSpacing: '0.01em',
+                }}>{b.name}</div>
+                <div style={{ fontSize: '0.5625rem', color: 'var(--text-muted)', marginTop: '0.2rem', lineHeight: 1.3 }}>
+                  {b.unlocked ? '✓ Unlocked' : b.desc}
+                </div>
+              </div>
             </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 800, color: b.unlocked ? '#D4AF37' : 'var(--text-muted)', letterSpacing: '0.01em' }}>{b.name}</div>
-              <div style={{ fontSize: '0.625rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>{b.desc}</div>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Card Collection */}
