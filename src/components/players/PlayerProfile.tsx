@@ -390,8 +390,8 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
                   alt={b.name}
                   style={{
                     width: '100%', height: '100%', objectFit: 'contain',
-                    mixBlendMode: b.unlocked ? 'lighten' : 'normal',
-                    opacity: b.unlocked ? 1 : 0.35,
+                    mixBlendMode: 'lighten',
+                    opacity: b.unlocked ? 1 : 0.4,
                     filter: b.unlocked
                       ? 'drop-shadow(0 0 8px rgba(212,175,55,0.55)) drop-shadow(0 0 20px rgba(212,175,55,0.25))'
                       : 'grayscale(1)',
