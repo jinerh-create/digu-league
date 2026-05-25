@@ -390,10 +390,10 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
                   alt={b.name}
                   style={{
                     width: '100%', height: '100%', objectFit: 'contain',
-                    mixBlendMode: 'screen',
+                    mixBlendMode: 'lighten',
                     filter: b.unlocked
-                      ? 'saturate(1.8) contrast(1.2) brightness(1.15) drop-shadow(0 0 12px rgba(212,175,55,0.9)) drop-shadow(0 0 24px rgba(212,175,55,0.5))'
-                      : 'grayscale(1) brightness(0.2) contrast(0.8)',
+                      ? 'drop-shadow(0 0 8px rgba(212,175,55,0.55)) drop-shadow(0 0 20px rgba(212,175,55,0.25))'
+                      : 'grayscale(1) brightness(0.12)',
                     transition: 'filter 0.3s',
                   }}
                 />
