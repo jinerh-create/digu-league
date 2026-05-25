@@ -179,6 +179,7 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
   const [centuryHands, setCenturyHands] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showAllMatches, setShowAllMatches] = useState(false);
 
   useEffect(() => {
     fetch(`/api/players/${playerId}/stats`)
@@ -340,15 +341,18 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
           {badges.map(b => (
             <div key={b.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', position: 'relative' }}>
               {/* Badge image */}
-              <div style={{
-                width: 100, height: 100, position: 'relative',
-                filter: b.unlocked
-                  ? 'drop-shadow(0 0 18px rgba(212,175,55,0.8)) drop-shadow(0 4px 12px rgba(0,0,0,0.9))'
-                  : 'grayscale(1) brightness(0.18)',
-                transform: b.unlocked ? 'perspective(300px) rotateX(8deg) scale(1.05)' : 'none',
-                transition: 'filter 0.3s, transform 0.3s',
-              }}>
-                <img src={b.image} alt={b.name} style={{ width: '100%', height: '100%', objectFit: 'contain', mixBlendMode: 'screen' }} />
+              <div style={{ width: 100, height: 100, position: 'relative' }}>
+                <img
+                  src={b.image}
+                  alt={b.name}
+                  style={{
+                    width: '100%', height: '100%', objectFit: 'contain',
+                    mixBlendMode: 'screen',
+                    opacity: b.unlocked ? 1 : 0.22,
+                    transform: b.unlocked ? 'perspective(300px) rotateX(8deg) scale(1.05)' : 'none',
+                    transition: 'opacity 0.3s, transform 0.3s',
+                  }}
+                />
               </div>
 
               {/* Lock overlay when not unlocked */}
@@ -367,9 +371,9 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
               {/* Unlocked glow ring */}
               {b.unlocked && (
                 <div style={{
-                  position: 'absolute', top: 24,
-                  width: 108, height: 108, borderRadius: '50%',
-                  background: 'radial-gradient(ellipse, rgba(212,175,55,0.15) 0%, transparent 70%)',
+                  position: 'absolute', top: 0,
+                  width: 100, height: 100,
+                  background: 'radial-gradient(ellipse, rgba(212,175,55,0.2) 0%, transparent 70%)',
                   pointerEvents: 'none',
                 }} />
               )}
@@ -390,67 +394,12 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
       </div>
 
       {/* Trophy Case */}
-      {(() => {
-        const TROPHIES = [
-          { id: 't1',  label: '1st Win',   desc: 'Win your first match',    req: 1  },
-          { id: 't5',  label: '5 Wins',    desc: 'Win 5 matches',           req: 5  },
-          { id: 't10', label: '10 Wins',   desc: 'Win 10 matches',          req: 10 },
-          { id: 't25', label: '25 Wins',   desc: 'Win 25 matches',          req: 25 },
-          { id: 't50', label: '50 Wins',   desc: 'Win 50 matches',          req: 50 },
-        ];
-        const unlockedTrophies = TROPHIES.filter(t => won >= t.req).length;
-        return (
-          <>
-            <div style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span>🏆 Trophy Case</span>
-              <span style={{ color: unlockedTrophies > 0 ? '#D4AF37' : 'var(--text-muted)' }}>{unlockedTrophies}/{TROPHIES.length} Unlocked</span>
-            </div>
-            <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '1.25rem' }}>
-                {TROPHIES.map(t => {
-                  const unlocked = won >= t.req;
-                  return (
-                    <div key={t.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', position: 'relative' }}>
-                      <div style={{
-                        width: 90, height: 110, position: 'relative',
-                        filter: unlocked
-                          ? 'drop-shadow(0 0 16px rgba(212,175,55,0.7)) drop-shadow(0 4px 10px rgba(0,0,0,0.8))'
-                          : 'grayscale(1) brightness(0.18)',
-                        transform: unlocked ? 'scale(1.05)' : 'none',
-                        transition: 'filter 0.3s, transform 0.3s',
-                      }}>
-                        <img src="/trophy.png" alt={t.label} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                      </div>
-                      {!unlocked && (
-                        <div style={{
-                          position: 'absolute', top: 32, left: '50%', transform: 'translateX(-50%)',
-                          width: 32, height: 32, borderRadius: '50%',
-                          background: 'rgba(0,0,0,0.85)', border: '1.5px solid rgba(255,255,255,0.15)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem',
-                        }}>🔒</div>
-                      )}
-                      {unlocked && (
-                        <div style={{
-                          position: 'absolute', top: 20,
-                          width: 100, height: 120, borderRadius: '50%',
-                          background: 'radial-gradient(ellipse, rgba(212,175,55,0.15) 0%, transparent 70%)',
-                          pointerEvents: 'none',
-                        }} />
-                      )}
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '0.75rem', fontWeight: 800, color: unlocked ? '#D4AF37' : 'var(--text-muted)' }}>{t.label}</div>
-                        <div style={{ fontSize: '0.5625rem', color: 'var(--text-muted)', marginTop: '0.2rem', lineHeight: 1.3 }}>
-                          {unlocked ? '✓ Unlocked' : t.desc}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </>
-        );
-      })()}
+      <div style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
+        🏆 Trophy Case
+      </div>
+      <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem', textAlign: 'center' }}>
+        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', padding: '1rem 0' }}>Trophies coming soon…</div>
+      </div>
 
       {/* Card Collection */}
       <CardCollection totalScore={totalScore} />
@@ -464,7 +413,7 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
         <div className="empty-state"><p>No completed matches yet.</p></div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          {matches.map(m => {
+          {(showAllMatches ? matches : matches.slice(0, 5)).map(m => {
             const onTeam1 = m.player1_id === playerId || m.team1_player2_id === playerId;
             const oppName = onTeam1
               ? nick(m.player2_name, m.player2_nickname) + (m.team2_player2_name ? ` / ${nick(m.team2_player2_name, m.team2_player2_nickname)}` : '')
@@ -493,6 +442,20 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
               </a>
             );
           })}
+          {matches.length > 5 && (
+            <button
+              onClick={() => setShowAllMatches(s => !s)}
+              style={{
+                marginTop: '0.25rem', padding: '0.625rem', width: '100%',
+                background: 'var(--card-raised)', border: '1px solid var(--border)',
+                borderRadius: 10, cursor: 'pointer',
+                fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)',
+                letterSpacing: '0.04em',
+              }}
+            >
+              {showAllMatches ? '▲ Show less' : `▼ Show ${matches.length - 5} more matches`}
+            </button>
+          )}
         </div>
       )}
     </div>
