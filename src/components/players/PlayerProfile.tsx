@@ -379,7 +379,7 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
         <span>🏅 Badge Collection</span>
         <span style={{ color: unlockedCount > 0 ? '#D4AF37' : 'var(--text-muted)' }}>{unlockedCount}/{badges.length} Unlocked</span>
       </div>
-      <div style={{ marginBottom: '1.5rem' }}>
+      <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.75rem' }}>
           {badges.map(b => (
             <div key={b.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem', position: 'relative' }}>
