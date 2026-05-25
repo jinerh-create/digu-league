@@ -332,7 +332,7 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
 
       {/* Trophy Case */}
       <div style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span>🏅 Trophy Case</span>
+        <span>🏅 Badge Collection</span>
         <span style={{ color: unlockedCount > 0 ? '#D4AF37' : 'var(--text-muted)' }}>{unlockedCount}/{badges.length} Unlocked</span>
       </div>
       <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
