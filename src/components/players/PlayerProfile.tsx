@@ -70,7 +70,7 @@ function buildBadges(totalScore: number, ginCount: number, maxWinStreak: number,
   return [
     {
       id: 'oc_streak',
-      name: 'OC',
+      name: 'Streak Emperor',
       desc: 'Win 5 matches in a row',
       image: '/badges/oc-streak.png',
       unlocked: maxWinStreak >= 5,
