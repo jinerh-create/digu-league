@@ -68,13 +68,6 @@ function getLevel(score: number): { name: string; color: string; next: number; c
 function buildBadges(totalScore: number, ginCount: number, maxWinStreak: number, perfectMatches: number, centuryHands: number): Badge[] {
   return [
     {
-      id: 'streak_emperor',
-      name: 'Streak Emperor',
-      desc: 'Win 5 matches in a row',
-      image: '/badges/streak-emperor.png',
-      unlocked: maxWinStreak >= 5,
-    },
-    {
       id: 'three_streak',
       name: '3 Win Streak',
       desc: 'Win 3 matches in a row without a loss',
