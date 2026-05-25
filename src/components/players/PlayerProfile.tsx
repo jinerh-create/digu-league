@@ -380,20 +380,30 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
         <span style={{ color: unlockedCount > 0 ? '#D4AF37' : 'var(--text-muted)' }}>{unlockedCount}/{badges.length} Unlocked</span>
       </div>
       <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '1.75rem' }}>
           {badges.map(b => (
-            <div key={b.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.625rem', position: 'relative' }}>
+            <div key={b.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', position: 'relative' }}>
               {/* Badge image */}
-              <div style={{ width: 140, height: 140, position: 'relative' }}>
+              <div style={{
+                width: 160, height: 160, position: 'relative', borderRadius: 16,
+                background: b.unlocked ? 'radial-gradient(circle, #1a1200 0%, #0a0800 100%)' : '#0a0a0a',
+                boxShadow: b.unlocked
+                  ? '0 0 40px rgba(212,175,55,0.55), 0 0 80px rgba(212,175,55,0.2), inset 0 0 20px rgba(212,175,55,0.08)'
+                  : 'none',
+                border: b.unlocked ? '1.5px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.05)',
+                transition: 'box-shadow 0.3s',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
                 <img
                   src={b.image}
                   alt={b.name}
                   style={{
-                    width: '100%', height: '100%', objectFit: 'contain',
-                    mixBlendMode: 'screen',
-                    opacity: b.unlocked ? 1 : 0.22,
-                    transform: b.unlocked ? 'perspective(400px) rotateX(5deg) scale(1.03)' : 'none',
-                    transition: 'opacity 0.3s, transform 0.3s',
+                    width: '92%', height: '92%', objectFit: 'contain',
+                    filter: b.unlocked
+                      ? 'saturate(1.6) contrast(1.15) brightness(1.12) drop-shadow(0 4px 16px rgba(212,175,55,0.7))'
+                      : 'grayscale(1) brightness(0.18) contrast(0.9)',
+                    transform: b.unlocked ? 'scale(1.02)' : 'none',
+                    transition: 'filter 0.3s, transform 0.3s',
                   }}
                 />
               </div>
@@ -401,22 +411,22 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
               {/* Lock overlay when not unlocked */}
               {!b.unlocked && (
                 <div style={{
-                  position: 'absolute', top: 48, left: '50%', transform: 'translateX(-50%)',
-                  width: 38, height: 38, borderRadius: '50%',
-                  background: 'rgba(0,0,0,0.85)', border: '1.5px solid rgba(255,255,255,0.15)',
+                  position: 'absolute', top: 58, left: '50%', transform: 'translateX(-50%)',
+                  width: 40, height: 40, borderRadius: '50%',
+                  background: 'rgba(0,0,0,0.9)', border: '1.5px solid rgba(255,255,255,0.12)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '1.1rem',
+                  fontSize: '1.2rem',
                 }}>
                   🔒
                 </div>
               )}
 
-              {/* Unlocked glow ring */}
+              {/* Unlocked shimmer */}
               {b.unlocked && (
                 <div style={{
-                  position: 'absolute', top: 0,
-                  width: 140, height: 140,
-                  background: 'radial-gradient(ellipse, rgba(212,175,55,0.25) 0%, transparent 70%)',
+                  position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+                  width: 160, height: 160, borderRadius: 16,
+                  background: 'linear-gradient(135deg, rgba(255,220,100,0.12) 0%, transparent 50%, rgba(255,180,50,0.08) 100%)',
                   pointerEvents: 'none',
                 }} />
               )}
