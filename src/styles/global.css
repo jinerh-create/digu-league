@@ -23,6 +23,11 @@
   --accent: #00D47E;
 }
 
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;

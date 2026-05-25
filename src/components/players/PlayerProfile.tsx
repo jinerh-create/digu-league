@@ -29,12 +29,40 @@ type Badge = {
   unlocked: boolean;
 };
 
-function getLevel(score: number): { name: string; color: string; next: number; icon: string } {
-  if (score >= 100000) return { name: 'Legend', color: '#FF6B6B', next: 0, icon: '👑' };
-  if (score >= 50000)  return { name: 'Diamond', color: '#67E8F9', next: 100000, icon: '💎' };
-  if (score >= 20000)  return { name: 'Gold',    color: '#D4AF37', next: 50000,  icon: '🥇' };
-  if (score >= 5000)   return { name: 'Silver',  color: '#B0B8C8', next: 20000,  icon: '🥈' };
-  return                        { name: 'Bronze', color: '#CD7F32', next: 5000,   icon: '🥉' };
+const LEVELS = [
+  { name: 'OC Grandmaster', icon: '🏆', color: '#FFD700', threshold: 3000000 },
+  { name: 'Legend',         icon: '🌟', color: '#FBBF24', threshold: 2000000 },
+  { name: 'Mythic II',      icon: '🔥', color: '#EF4444', threshold: 1500000 },
+  { name: 'Mythic I',       icon: '🔥', color: '#F87171', threshold: 1250000 },
+  { name: 'Titan II',       icon: '⚔️', color: '#F97316', threshold: 1000000 },
+  { name: 'Titan I',        icon: '⚔️', color: '#FB923C', threshold:  850000 },
+  { name: 'Royal II',       icon: '👑', color: '#E879F9', threshold:  700000 },
+  { name: 'Royal I',        icon: '👑', color: '#C026D3', threshold:  580000 },
+  { name: 'Ace II',         icon: '🃏', color: '#A78BFA', threshold:  470000 },
+  { name: 'Ace I',          icon: '🃏', color: '#8B5CF6', threshold:  380000 },
+  { name: 'Diamond II',     icon: '💎', color: '#38BDF8', threshold:  300000 },
+  { name: 'Diamond I',      icon: '💎', color: '#67E8F9', threshold:  230000 },
+  { name: 'Platinum II',    icon: '💠', color: '#22D3EE', threshold:  180000 },
+  { name: 'Platinum I',     icon: '💠', color: '#06B6D4', threshold:  140000 },
+  { name: 'Gold II',        icon: '🥇', color: '#D4AF37', threshold:  100000 },
+  { name: 'Gold I',         icon: '🥇', color: '#EAB308', threshold:   75000 },
+  { name: 'Silver II',      icon: '🥈', color: '#94A3B8', threshold:   50000 },
+  { name: 'Silver I',       icon: '🥈', color: '#B0B8C8', threshold:   35000 },
+  { name: 'Bronze II',      icon: '🥉', color: '#B87333', threshold:   20000 },
+  { name: 'Bronze I',       icon: '🥉', color: '#CD7F32', threshold:   10000 },
+  { name: 'Rookie',         icon: '🎴', color: '#6B7280', threshold:       0 },
+] as const;
+
+function getLevel(score: number): { name: string; color: string; next: number; current: number; icon: string; nextName: string } {
+  for (let i = 0; i < LEVELS.length; i++) {
+    if (score >= LEVELS[i].threshold) {
+      const next = i > 0 ? LEVELS[i - 1].threshold : 0;
+      const nextName = i > 0 ? LEVELS[i - 1].name : '';
+      return { name: LEVELS[i].name, icon: LEVELS[i].icon, color: LEVELS[i].color, current: LEVELS[i].threshold, next, nextName };
+    }
+  }
+  const last = LEVELS[LEVELS.length - 1];
+  return { name: last.name, icon: last.icon, color: last.color, current: 0, next: LEVELS[LEVELS.length - 2].threshold, nextName: LEVELS[LEVELS.length - 2].name };
 }
 
 function buildBadges(totalScore: number, ginCount: number, maxWinStreak: number, perfectMatches: number, centuryHands: number): Badge[] {
@@ -239,7 +267,22 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
       {/* Header card */}
       <div className="card" style={{ padding: '1.5rem', marginBottom: '1rem' }}>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <Avatar name={player.name} b64={player.avatar_b64} size={72} />
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <div style={{
+              position: 'absolute', inset: -4, borderRadius: '50%',
+              background: `conic-gradient(${level.color} 0%, ${level.color}88 60%, transparent 100%)`,
+              animation: 'spin 4s linear infinite',
+            }} />
+            <div style={{ position: 'absolute', inset: -4, borderRadius: '50%', background: `conic-gradient(transparent 60%, ${level.color}88 80%, ${level.color} 100%)` }} />
+            <div style={{ position: 'relative', borderRadius: '50%', padding: 3, background: 'var(--card)' }}>
+              <Avatar name={player.name} b64={player.avatar_b64} size={72} />
+            </div>
+            <div style={{
+              position: 'absolute', bottom: -2, left: '50%', transform: 'translateX(-50%)',
+              background: level.color, color: '#000', fontSize: '0.5rem', fontWeight: 900,
+              padding: '1px 6px', borderRadius: 10, whiteSpace: 'nowrap', letterSpacing: '0.03em',
+            }}>{level.icon} {level.name}</div>
+          </div>
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
               <div style={{ fontSize: '1.375rem', fontWeight: 800, color: 'var(--text-primary)' }}>
@@ -262,10 +305,10 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
             {level.next > 0 && (
               <div style={{ marginTop: '0.5rem' }}>
                 <div style={{ height: 4, background: 'var(--card-raised)', borderRadius: 2, overflow: 'hidden', width: 160 }}>
-                  <div style={{ height: '100%', borderRadius: 2, background: level.color, width: `${Math.min(100, (totalScore / level.next) * 100)}%`, transition: 'width 0.6s' }} />
+                  <div style={{ height: '100%', borderRadius: 2, background: level.color, width: `${Math.min(100, ((totalScore - level.current) / (level.next - level.current)) * 100)}%`, transition: 'width 0.6s' }} />
                 </div>
                 <div style={{ fontSize: '0.5rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-                  {totalScore.toLocaleString()} / {level.next.toLocaleString()} to {level.name === 'Bronze' ? 'Silver' : level.name === 'Silver' ? 'Gold' : level.name === 'Gold' ? 'Diamond' : 'Legend'}
+                  {totalScore.toLocaleString()} / {level.next.toLocaleString()} to {level.nextName}
                 </div>
               </div>
             )}
