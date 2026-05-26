@@ -28,6 +28,7 @@ type Badge = {
   image: string;
   unlocked: boolean;
   blend?: 'lighten' | 'normal';
+  removeWhite?: boolean;
 };
 
 const LEVELS = [
@@ -74,7 +75,7 @@ function buildBadges(totalScore: number, ginCount: number, maxWinStreak: number,
       desc: 'Win 5 matches in a row',
       image: '/badges/streak-emperor.png',
       unlocked: maxWinStreak >= 5,
-      blend: 'lighten',
+      removeWhite: true,
     },
     {
       id: 'three_streak',
@@ -418,6 +419,15 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
       </div>
 
       {/* Trophy Case */}
+      {/* SVG filter: removes white backgrounds by making bright pixels transparent */}
+      <svg style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }}>
+        <defs>
+          <filter id="remove-white-bg" colorInterpolationFilters="sRGB">
+            <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  -1 -1 -1 3 0" />
+          </filter>
+        </defs>
+      </svg>
+
       <div style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span>🏅 Badge Collection</span>
         <span style={{ color: unlockedCount > 0 ? '#D4AF37' : 'var(--text-muted)' }}>{unlockedCount}/{badges.length} Unlocked</span>
@@ -443,10 +453,17 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
                   src={b.image}
                   alt={b.name}
                   style={{
-                    width: '100%', height: '100%', objectFit: 'cover',
-                    mixBlendMode: b.blend === 'lighten' ? 'lighten' : 'normal',
-                    filter: b.unlocked ? 'none' : 'grayscale(1) brightness(0.4)',
+                    width: '84%', height: '84%',
+                    objectFit: 'contain',
+                    position: 'absolute',
+                    top: '50%', left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    mixBlendMode: b.removeWhite ? 'normal' : (b.blend === 'lighten' ? 'lighten' : 'normal'),
+                    filter: b.removeWhite
+                      ? (b.unlocked ? 'url(#remove-white-bg)' : 'url(#remove-white-bg) grayscale(1) brightness(0.4)')
+                      : (b.unlocked ? 'none' : 'grayscale(1) brightness(0.4)'),
                     transition: 'filter 0.3s',
+                    imageRendering: 'auto',
                   }}
                 />
                 {/* Lock overlay */}
