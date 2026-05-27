@@ -593,8 +593,8 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
                     </select>
                     {r.hasUndercut && <span className="undercut-mark" title="Undercut">⟲</span>}
                   </td>
-                  <td className="ss-score-cell" style={{ color: 'var(--team-a)', cursor: matchCompleted ? 'default' : 'pointer' }}
-                    onClick={() => { if (matchCompleted) return; setEditingScore({ gameId: r.id, side: 'p1' }); setScoreDraft(String(isTeam ? r.t1Score : (r.p1Pts ?? 0))); }}>
+                  <td className="ss-score-cell" style={{ color: 'var(--team-a)', cursor: (matchCompleted && !isAdmin) ? 'default' : 'pointer' }}
+                    onClick={() => { if (matchCompleted && !isAdmin) return; setEditingScore({ gameId: r.id, side: 'p1' }); setScoreDraft(String(isTeam ? r.t1Score : (r.p1Pts ?? 0))); }}>
                     {editingScore?.gameId === r.id && editingScore.side === 'p1' ? (
                       <input
                         autoFocus type="number" inputMode="numeric"
@@ -607,8 +607,8 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
                       />
                     ) : (isTeam ? r.t1Score : (r.p1Pts ?? ''))}
                   </td>
-                  <td className="ss-score-cell" style={{ color: 'var(--team-b)', cursor: matchCompleted ? 'default' : 'pointer' }}
-                    onClick={() => { if (matchCompleted) return; setEditingScore({ gameId: r.id, side: 'p2' }); setScoreDraft(String(isTeam ? r.t2Score : (r.p2Pts ?? 0))); }}>
+                  <td className="ss-score-cell" style={{ color: 'var(--team-b)', cursor: (matchCompleted && !isAdmin) ? 'default' : 'pointer' }}
+                    onClick={() => { if (matchCompleted && !isAdmin) return; setEditingScore({ gameId: r.id, side: 'p2' }); setScoreDraft(String(isTeam ? r.t2Score : (r.p2Pts ?? 0))); }}>
                     {editingScore?.gameId === r.id && editingScore.side === 'p2' ? (
                       <input
                         autoFocus type="number" inputMode="numeric"
