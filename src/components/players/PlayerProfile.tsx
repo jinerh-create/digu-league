@@ -29,6 +29,8 @@ type Badge = {
   unlocked: boolean;
   blend?: 'lighten' | 'normal';
   removeWhite?: boolean;
+  fullBleed?: boolean;
+  darkenWhite?: boolean;
 };
 
 const LEVELS = [
@@ -67,15 +69,15 @@ function getLevel(score: number): { name: string; color: string; next: number; c
   return { name: last.name, icon: last.icon, color: last.color, current: 0, next: LEVELS[LEVELS.length - 2].threshold, nextName: LEVELS[LEVELS.length - 2].name };
 }
 
-function buildBadges(totalScore: number, ginCount: number, maxWinStreak: number, perfectMatches: number, centuryHands: number): Badge[] {
+function buildBadges(totalScore: number, ginCount: number, maxWinStreak: number, perfectMatches: number, centuryHands: number, totalMatches: number): Badge[] {
   return [
     {
       id: 'streak_emperor',
       name: 'Streak Emperor',
       desc: 'Win 5 matches in a row',
-      image: '/badges/streak-emperor.png',
+      image: '/badges/streak-emperor.jpg',
       unlocked: maxWinStreak >= 5,
-      removeWhite: true,
+      fullBleed: true,
     },
     {
       id: 'three_streak',
@@ -83,7 +85,7 @@ function buildBadges(totalScore: number, ginCount: number, maxWinStreak: number,
       desc: 'Win 3 matches in a row',
       image: '/badges/three-streak.png',
       unlocked: maxWinStreak >= 3,
-      blend: 'lighten',
+      fullBleed: true,
     },
     {
       id: 'streak_10',
@@ -138,6 +140,14 @@ function buildBadges(totalScore: number, ginCount: number, maxWinStreak: number,
       desc: 'Achieve 200 Digu hands',
       image: '/badges/ace-titan.png',
       unlocked: ginCount >= 200,
+    },
+    {
+      id: 'loyal_fifty',
+      name: 'The Loyal Fifty',
+      desc: 'Play 50 games all time',
+      image: '/badges/loyal-fifty.png',
+      unlocked: totalMatches >= 50,
+      fullBleed: true,
     },
   ];
 }
@@ -298,7 +308,7 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
   }
 
   const level = getLevel(totalScore);
-  const badges = buildBadges(totalScore, ginCount, maxWinStreak, perfectMatches, centuryHands);
+  const badges = buildBadges(totalScore, ginCount, maxWinStreak, perfectMatches, centuryHands, matches.length);
   const unlockedCount = badges.filter(b => b.unlocked).length;
   const cardsCollected = Object.values(CARD_THRESHOLDS).filter(t => totalScore >= t).length;
 
@@ -425,6 +435,18 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
           <filter id="remove-white-bg" colorInterpolationFilters="sRGB">
             <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  -1 -1 -1 3 0" />
           </filter>
+          <filter id="darken-whites" colorInterpolationFilters="sRGB">
+            <feColorMatrix in="SourceGraphic" type="luminanceToAlpha" result="luma"/>
+            <feComponentTransfer in="luma" result="mask">
+              <feFuncA type="linear" slope="8" intercept="-7"/>
+            </feComponentTransfer>
+            <feFlood floodColor="#000000" result="black"/>
+            <feComposite in="black" in2="mask" operator="in" result="overlay"/>
+            <feMerge>
+              <feMergeNode in="SourceGraphic"/>
+              <feMergeNode in="overlay"/>
+            </feMerge>
+          </filter>
         </defs>
       </svg>
 
@@ -453,15 +475,18 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
                   src={b.image}
                   alt={b.name}
                   style={{
-                    width: '84%', height: '84%',
-                    objectFit: 'contain',
+                    width: b.fullBleed ? '100%' : '84%',
+                    height: b.fullBleed ? '100%' : '84%',
+                    objectFit: b.fullBleed ? 'cover' : 'contain',
                     position: 'absolute',
                     top: '50%', left: '50%',
                     transform: 'translate(-50%, -50%)',
                     mixBlendMode: b.removeWhite ? 'normal' : (b.blend === 'lighten' ? 'lighten' : 'normal'),
-                    filter: b.removeWhite
-                      ? (b.unlocked ? 'url(#remove-white-bg)' : 'url(#remove-white-bg) grayscale(1) brightness(0.4)')
-                      : (b.unlocked ? 'none' : 'grayscale(1) brightness(0.4)'),
+                    filter: b.darkenWhite
+                      ? (b.unlocked ? 'url(#darken-whites)' : 'url(#darken-whites) grayscale(1) brightness(0.4)')
+                      : b.removeWhite
+                        ? (b.unlocked ? 'url(#remove-white-bg)' : 'url(#remove-white-bg) grayscale(1) brightness(0.4)')
+                        : (b.unlocked ? 'none' : 'grayscale(1) brightness(0.4)'),
                     transition: 'filter 0.3s',
                     imageRendering: 'auto',
                   }}

@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <radialGradient id="rimGrad2" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="30%" stop-color="#D8D8D8"/>
+      <stop offset="65%" stop-color="#A0A0A0"/>
+      <stop offset="100%" stop-color="#606060"/>
+    </radialGradient>
+    <radialGradient id="faceGrad2" cx="40%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#E8E8E8"/>
+      <stop offset="40%" stop-color="#B8B8B8"/>
+      <stop offset="100%" stop-color="#787878"/>
+    </radialGradient>
+    <linearGradient id="textGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="25%" stop-color="#E8E8E8"/>
+      <stop offset="65%" stop-color="#C0C0C0"/>
+      <stop offset="100%" stop-color="#888888"/>
+    </linearGradient>
+    <linearGradient id="redGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FF4444"/>
+      <stop offset="100%" stop-color="#AA0000"/>
+    </linearGradient>
+    <linearGradient id="darkGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#333333"/>
+      <stop offset="100%" stop-color="#111111"/>
+    </linearGradient>
+    <filter id="emboss2">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="1" flood-color="#000000" flood-opacity="0.55"/>
+    </filter>
+    <filter id="outerGlow2" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#C0C0C0" flood-opacity="0.7"/>
+      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000000" flood-opacity="0.8"/>
+    </filter>
+  </defs>
+
+  <!-- Outer glow + shadow -->
+  <circle cx="100" cy="103" r="93" fill="#000000" opacity="0.45"/>
+  <circle cx="100" cy="100" r="93" fill="url(#rimGrad2)" filter="url(#outerGlow2)"/>
+
+  <!-- Rim highlight arc -->
+  <path d="M 28,58 A 78,78 0 0,1 172,58" stroke="#FFFFFF" stroke-width="3" fill="none" opacity="0.55"/>
+
+  <!-- Dotted inner ring -->
+  <circle cx="100" cy="100" r="87" fill="none" stroke="#A8A8A8" stroke-width="1.5" stroke-dasharray="2.5,2.5" opacity="0.7"/>
+
+  <!-- Inner face -->
+  <circle cx="100" cy="100" r="82" fill="url(#faceGrad2)"/>
+
+  <!-- Inner ring lines -->
+  <circle cx="100" cy="100" r="78" fill="none" stroke="#D8D8D8" stroke-width="0.8" opacity="0.45"/>
+  <circle cx="100" cy="100" r="75" fill="none" stroke="#D8D8D8" stroke-width="0.4" opacity="0.25"/>
+
+  <!-- CROWN -->
+  <g transform="translate(100,17)" filter="url(#emboss2)">
+    <rect x="-14" y="9" width="28" height="5" rx="1.5" fill="url(#textGrad2)"/>
+    <path d="M -14,9 L -14,2 L -9,6.5 L 0,-3 L 9,6.5 L 14,2 L 14,9 Z" fill="url(#textGrad2)"/>
+    <circle cx="-14" cy="2" r="2.2" fill="url(#textGrad2)"/>
+    <circle cx="0" cy="-3" r="2.8" fill="url(#textGrad2)"/>
+    <circle cx="14" cy="2" r="2.2" fill="url(#textGrad2)"/>
+  </g>
+
+  <!-- Number "2" -->
+  <text x="101" y="93" font-family="Georgia,'Times New Roman',serif" font-size="54" font-weight="900"
+    text-anchor="middle" fill="#303030" opacity="0.35" letter-spacing="-2">2</text>
+  <text x="100" y="92" font-family="Georgia,'Times New Roman',serif" font-size="54" font-weight="900"
+    text-anchor="middle" fill="url(#textGrad2)" filter="url(#emboss2)" letter-spacing="-2">2</text>
+
+  <!-- 2ND PLACE text with dashes -->
+  <line x1="20" y1="103" x2="40" y2="103" stroke="url(#textGrad2)" stroke-width="2"/>
+  <text x="100" y="106" font-family="Georgia,'Times New Roman',serif" font-size="10.5" font-weight="900"
+    text-anchor="middle" fill="url(#textGrad2)" letter-spacing="3" filter="url(#emboss2)">2ND PLACE</text>
+  <line x1="160" y1="103" x2="180" y2="103" stroke="url(#textGrad2)" stroke-width="2"/>
+
+  <!-- DIGU LEAGUE sub-label -->
+  <text x="100" y="118" font-family="Georgia,'Times New Roman',serif" font-size="8.5" font-weight="700"
+    text-anchor="middle" fill="url(#textGrad2)" letter-spacing="2.5" opacity="0.85">DIGU LEAGUE</text>
+
+  <!-- LEFT LAUREL -->
+  <g opacity="0.88" filter="url(#emboss2)">
+    <path d="M 36,68 Q 19,100 36,132" stroke="#909090" stroke-width="2" fill="none"/>
+    <ellipse cx="31" cy="76" rx="6.5" ry="3" fill="#B0B0B0" transform="rotate(-40,31,76)"/>
+    <ellipse cx="25" cy="86" rx="6.5" ry="3" fill="#B0B0B0" transform="rotate(-52,25,86)"/>
+    <ellipse cx="22" cy="97" rx="6.5" ry="3" fill="#B0B0B0" transform="rotate(-60,22,97)"/>
+    <ellipse cx="22" cy="108" rx="6.5" ry="3" fill="#B0B0B0" transform="rotate(60,22,108)"/>
+    <ellipse cx="25" cy="119" rx="6.5" ry="3" fill="#B0B0B0" transform="rotate(52,25,119)"/>
+    <ellipse cx="31" cy="129" rx="6.5" ry="3" fill="#B0B0B0" transform="rotate(40,31,129)"/>
+    <ellipse cx="37" cy="78" rx="5" ry="2.5" fill="#D0D0D0" transform="rotate(-35,37,78)"/>
+    <ellipse cx="33" cy="89" rx="5" ry="2.5" fill="#D0D0D0" transform="rotate(-50,33,89)"/>
+    <ellipse cx="32" cy="100" rx="5" ry="2.5" fill="#D0D0D0" transform="rotate(-55,32,100)"/>
+    <ellipse cx="33" cy="111" rx="5" ry="2.5" fill="#D0D0D0" transform="rotate(50,33,111)"/>
+    <ellipse cx="37" cy="122" rx="5" ry="2.5" fill="#D0D0D0" transform="rotate(35,37,122)"/>
+  </g>
+
+  <!-- RIGHT LAUREL -->
+  <g opacity="0.88" filter="url(#emboss2)">
+    <path d="M 164,68 Q 181,100 164,132" stroke="#909090" stroke-width="2" fill="none"/>
+    <ellipse cx="169" cy="76" rx="6.5" ry="3" fill="#B0B0B0" transform="rotate(40,169,76)"/>
+    <ellipse cx="175" cy="86" rx="6.5" ry="3" fill="#B0B0B0" transform="rotate(52,175,86)"/>
+    <ellipse cx="178" cy="97" rx="6.5" ry="3" fill="#B0B0B0" transform="rotate(60,178,97)"/>
+    <ellipse cx="178" cy="108" rx="6.5" ry="3" fill="#B0B0B0" transform="rotate(-60,178,108)"/>
+    <ellipse cx="175" cy="119" rx="6.5" ry="3" fill="#B0B0B0" transform="rotate(-52,175,119)"/>
+    <ellipse cx="169" cy="129" rx="6.5" ry="3" fill="#B0B0B0" transform="rotate(-40,169,129)"/>
+    <ellipse cx="163" cy="78" rx="5" ry="2.5" fill="#D0D0D0" transform="rotate(35,163,78)"/>
+    <ellipse cx="167" cy="89" rx="5" ry="2.5" fill="#D0D0D0" transform="rotate(50,167,89)"/>
+    <ellipse cx="168" cy="100" rx="5" ry="2.5" fill="#D0D0D0" transform="rotate(55,168,100)"/>
+    <ellipse cx="167" cy="111" rx="5" ry="2.5" fill="#D0D0D0" transform="rotate(-50,167,111)"/>
+    <ellipse cx="163" cy="122" rx="5" ry="2.5" fill="#D0D0D0" transform="rotate(-35,163,122)"/>
+  </g>
+
+  <!-- CARD SUITS -->
+  <g transform="translate(57,132)" filter="url(#emboss2)">
+    <path d="M 0,-10 C -8,0 -10,6 -4,8 C -6,10 -3,12 0,12 C 3,12 6,10 4,8 C 10,6 8,0 0,-10 Z" fill="url(#darkGrad2)" stroke="#555" stroke-width="0.5"/>
+    <rect x="-3" y="10" width="6" height="4" rx="1" fill="url(#darkGrad2)"/>
+  </g>
+  <g transform="translate(80,132)" filter="url(#emboss2)">
+    <path d="M 0,12 C -8,4 -12,-2 -8,-7 C -5,-11 0,-8 0,-5 C 0,-8 5,-11 8,-7 C 12,-2 8,4 0,12 Z" fill="url(#redGrad2)" stroke="#880000" stroke-width="0.5"/>
+  </g>
+  <g transform="translate(120,132)" filter="url(#emboss2)">
+    <path d="M 0,-11 L 8,0 L 0,11 L -8,0 Z" fill="url(#redGrad2)" stroke="#880000" stroke-width="0.5"/>
+  </g>
+  <g transform="translate(143,132)" filter="url(#emboss2)">
+    <circle cx="0" cy="-4" r="5.5" fill="url(#darkGrad2)" stroke="#555" stroke-width="0.5"/>
+    <circle cx="-5" cy="2" r="5" fill="url(#darkGrad2)" stroke="#555" stroke-width="0.5"/>
+    <circle cx="5" cy="2" r="5" fill="url(#darkGrad2)" stroke="#555" stroke-width="0.5"/>
+    <rect x="-3" y="6" width="6" height="5" rx="1" fill="url(#darkGrad2)"/>
+  </g>
+
+  <!-- Bottom star + lines -->
+  <line x1="52" y1="158" x2="82" y2="158" stroke="url(#textGrad2)" stroke-width="1.5" opacity="0.8"/>
+  <polygon points="100,151 102,156 108,156 103,160 105,165 100,161 95,165 97,160 92,156 98,156"
+    fill="url(#textGrad2)" filter="url(#emboss2)"/>
+  <line x1="118" y1="158" x2="148" y2="158" stroke="url(#textGrad2)" stroke-width="1.5" opacity="0.8"/>
+
+  <!-- Outer rim highlight -->
+  <circle cx="100" cy="100" r="93" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.3"/>
+</svg>
