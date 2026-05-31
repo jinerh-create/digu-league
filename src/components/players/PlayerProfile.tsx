@@ -527,12 +527,68 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
       </div>
 
       {/* Trophy Case */}
-      <div style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
-        🏆 Trophy Case
-      </div>
-      <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem', textAlign: 'center' }}>
-        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', padding: '1rem 0' }}>Trophies coming soon…</div>
-      </div>
+      {(() => {
+        const trophies: { id: string; name: string; period: string; image: string; desc: string }[] = [];
+        const nameLower = (player.name || '').toLowerCase();
+        if (nameLower.includes('shujau') || nameLower.includes('sjau')) {
+          trophies.push({
+            id: 'champion-may-2026',
+            name: 'OC Digu League Champion',
+            period: 'May 2026',
+            image: '/trophy.png',
+            desc: 'Monthly League Champion',
+          });
+        }
+        return (
+          <>
+            <div style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
+              🏆 Trophy Case
+            </div>
+            <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
+              {trophies.length === 0 ? (
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', padding: '1rem 0', textAlign: 'center' }}>No trophies yet…</div>
+              ) : (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.25rem', justifyContent: 'center' }}>
+                  {trophies.map(t => (
+                    <div key={t.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.625rem', width: 110 }}>
+                      <div style={{
+                        width: 110, height: 110,
+                        borderRadius: 16,
+                        overflow: 'hidden',
+                        position: 'relative',
+                        background: 'linear-gradient(145deg, #1a1200, #2a1e00)',
+                        boxShadow: '0 0 0 2px #D4AF37, 0 0 24px rgba(212,175,55,0.55), 0 0 48px rgba(212,175,55,0.2)',
+                      }}>
+                        <img
+                          src={t.image}
+                          alt={t.name}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                        {/* Gold shimmer overlay */}
+                        <div style={{
+                          position: 'absolute', inset: 0,
+                          background: 'linear-gradient(135deg, rgba(255,230,100,0.10) 0%, transparent 50%, rgba(255,200,60,0.08) 100%)',
+                          pointerEvents: 'none',
+                        }} />
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '0.625rem', fontWeight: 800, color: '#D4AF37', lineHeight: 1.25, letterSpacing: '0.02em' }}>{t.name}</div>
+                        <div style={{
+                          marginTop: '0.2rem', fontSize: '0.5625rem', fontWeight: 700,
+                          color: '#fff', background: 'rgba(212,175,55,0.18)',
+                          border: '1px solid rgba(212,175,55,0.35)',
+                          borderRadius: 6, padding: '1px 6px', display: 'inline-block',
+                        }}>{t.period}</div>
+                        <div style={{ fontSize: '0.5rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>{t.desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        );
+      })()}
 
       {/* Card Collection */}
       <CardCollection totalScore={totalScore} />

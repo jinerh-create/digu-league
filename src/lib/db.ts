@@ -266,107 +266,135 @@ export async function deleteGame(db: D1Database, id: string): Promise<void> {
   const game = await getGame(db, id);
   if (!game) return;
   await db.prepare('DELETE FROM games WHERE id = ?').bind(id).run();
-  // Renumber remaining rounds in this match
-  const remaining = await getGames(db, game.match_id);
-  for (let i = 0; i < remaining.length; i++) {
-    await db
-      .prepare('UPDATE games SET round_number = ? WHERE id = ?')
-      .bind(i + 1, remaining[i].id)
-      .run();
-  }
+  // Renumber remaining rounds in one query instead of one per row
+  await db.prepare(`
+    UPDATE games SET round_number = (
+      SELECT COUNT(*) FROM games g2
+      WHERE g2.match_id = games.match_id AND g2.timestamp <= games.timestamp
+    )
+    WHERE match_id = ?
+  `).bind(game.match_id).run();
 }
 
 export async function computePlayerStats(db: D1Database, month?: string, matchType?: 'single' | 'team', season?: string): Promise<PlayerStats[]> {
   const players = await getActivePlayers(db);
-  let baseWhere = 'completed_at IS NOT NULL';
-  if (matchType === 'single') baseWhere += ' AND team1_player2_id IS NULL';
-  else if (matchType === 'team') baseWhere += ' AND team1_player2_id IS NOT NULL';
-  if (season === 'current') baseWhere += ' AND season_id IS NULL';
-  else if (season) baseWhere += ` AND season_id = '${season.replace(/'/g, '')}'`;
 
-  const matchesResult = month
-    ? await db.prepare(`SELECT * FROM matches WHERE ${baseWhere} AND strftime('%Y-%m', started_at) = ?`).bind(month).all<Match>()
-    : await db.prepare(`SELECT * FROM matches WHERE ${baseWhere}`).all<Match>();
-  const matchIds = matchesResult.results.map(m => m.id);
-  const gamesResult = matchIds.length > 0
-    ? await db.prepare(`SELECT * FROM games WHERE match_id IN (${matchIds.map(() => '?').join(',')})`)
-        .bind(...matchIds).all<Game>()
-    : { results: [] as Game[] };
+  // Build WHERE clause with parameterized bindings (no string interpolation for user values)
+  const conditions: string[] = ['completed_at IS NOT NULL'];
+  const bindings: (string | number)[] = [];
+  if (matchType === 'single') conditions.push('team1_player2_id IS NULL');
+  else if (matchType === 'team') conditions.push('team1_player2_id IS NOT NULL');
+  if (season === 'current') conditions.push('season_id IS NULL');
+  else if (season) { conditions.push('season_id = ?'); bindings.push(season); }
+  if (month) { conditions.push("strftime('%Y-%m', started_at) = ?"); bindings.push(month); }
+
+  const whereClause = conditions.join(' AND ');
+  const matchStmt = db.prepare(`SELECT * FROM matches WHERE ${whereClause}`);
+  const matchesResult = bindings.length > 0
+    ? await matchStmt.bind(...bindings).all<Match>()
+    : await matchStmt.all<Match>();
 
   const matches = matchesResult.results;
+  if (matches.length === 0) {
+    return players.map(p => ({
+      player_id: p.id, name: p.name, nickname: p.nickname, avatar_b64: p.avatar_b64,
+      matches_played: 0, matches_won: 0, matches_drawn: 0, matches_lost: 0,
+      games_played: 0, games_won: 0, total_points_scored: 0, gin_count: 0,
+      undercut_count: 0, biggest_hand: 0, avg_points_per_game: 0, win_rate: 0, league_points: 0,
+    }));
+  }
+
+  const matchIds = matches.map(m => m.id);
+  const gamesResult = await db
+    .prepare(`SELECT * FROM games WHERE match_id IN (${matchIds.map(() => '?').join(',')})`)
+    .bind(...matchIds).all<Game>();
   const games = gamesResult.results;
-  // lookup to check team membership for any game
-  const matchById = new Map(matches.map(m => [m.id, m]));
 
-  return players.map((p) => {
-    // Include player whether they are captain or second player on a team
-    const playerMatches = matches.filter(
-      (m) => m.player1_id === p.id || m.player2_id === p.id ||
-             m.team1_player2_id === p.id || m.team2_player2_id === p.id
-    );
+  // ── Single-pass O(M) match stats accumulator ──────────────────────────────
+  type MS = { played: number; won: number; drawn: number };
+  const matchStats = new Map<string, MS>();
+  const ensure = (id: string): MS => {
+    if (!matchStats.has(id)) matchStats.set(id, { played: 0, won: 0, drawn: 0 });
+    return matchStats.get(id)!;
+  };
 
-    const wonMatches = playerMatches.filter((m) => {
-      if (!m.winner_id) return false;
-      const onTeam1 = m.player1_id === p.id || m.team1_player2_id === p.id;
-      // winner_id is always player1_id (team1 win) or player2_id (team2 win)
-      const team1Won = m.winner_id === m.player1_id;
-      return onTeam1 ? team1Won : !team1Won;
-    });
+  const matchById = new Map<string, Match>();
+  for (const m of matches) {
+    matchById.set(m.id, m);
+    const team1Won = m.winner_id ? m.winner_id === m.player1_id : null;
+    const applyMatch = (pid: string, onTeam1: boolean) => {
+      const s = ensure(pid);
+      s.played++;
+      if (team1Won === null) { s.drawn++; }
+      else if ((onTeam1 && team1Won) || (!onTeam1 && !team1Won)) { s.won++; }
+    };
+    applyMatch(m.player1_id, true);
+    applyMatch(m.player2_id, false);
+    if (m.team1_player2_id) applyMatch(m.team1_player2_id, true);
+    if (m.team2_player2_id) applyMatch(m.team2_player2_id, false);
+  }
 
-    const drawnMatches = playerMatches.filter((m) => m.completed_at && !m.winner_id);
+  // ── Single-pass O(G) game stats accumulator ───────────────────────────────
+  type GS = { played: number; won: number; totalPts: number; biggest: number; gins: number; undercuts: number };
+  const gameStats = new Map<string, GS>();
+  const ensureG = (id: string): GS => {
+    if (!gameStats.has(id)) gameStats.set(id, { played: 0, won: 0, totalPts: 0, biggest: 0, gins: 0, undercuts: 0 });
+    return gameStats.get(id)!;
+  };
 
-    // All games in matches this player participated in
-    const playerGames = games.filter(g => {
-      const m = matchById.get(g.match_id);
-      if (!m) return g.winner_id === p.id || g.loser_id === p.id;
-      return m.player1_id === p.id || m.player2_id === p.id ||
-             m.team1_player2_id === p.id || m.team2_player2_id === p.id;
-    });
+  for (const g of games) {
+    const m = matchById.get(g.match_id);
+    if (!m) continue;
 
-    // Game wins: credit both team members when their team wins a round
-    const wonGames = games.filter(g => {
-      const m = matchById.get(g.match_id);
-      if (!m) return g.winner_id === p.id;
-      const onTeam1 = m.player1_id === p.id || m.team1_player2_id === p.id;
-      const onTeam2 = m.player2_id === p.id || m.team2_player2_id === p.id;
-      const team1WonGame = g.winner_id === m.player1_id;
-      return (onTeam1 && team1WonGame) || (onTeam2 && !team1WonGame);
-    });
+    // Every participant gets games_played++
+    for (const pid of [m.player1_id, m.player2_id, m.team1_player2_id, m.team2_player2_id]) {
+      if (pid) ensureG(pid).played++;
+    }
 
-    // Gin count: only the player who personally ginned
-    const ginGames = games.filter(
-      (g) => g.is_gin === 1 && (
-        g.gin_player_id === p.id ||
-        (!g.gin_player_id && g.winner_id === p.id)
-      )
-    );
-    const undercutGames = games.filter((g) => g.winner_id === p.id && g.is_undercut === 1);
-    const totalPts = wonGames.reduce((sum, g) => sum + g.score_awarded, 0);
-    const biggest = wonGames.reduce((max, g) => Math.max(max, g.score_awarded), 0);
-    const leaguePoints = wonMatches.length * 3 + drawnMatches.length * 1;
+    // Credit the winning team (both members for team matches)
+    const team1WonGame = g.winner_id === m.player1_id;
+    const winnerIds = team1WonGame
+      ? [m.player1_id, m.team1_player2_id].filter(Boolean) as string[]
+      : [m.player2_id, m.team2_player2_id].filter(Boolean) as string[];
+    for (const pid of winnerIds) {
+      const gs = ensureG(pid);
+      gs.won++;
+      gs.totalPts += g.score_awarded;
+      if (g.score_awarded > gs.biggest) gs.biggest = g.score_awarded;
+    }
 
+    // Gin: only the player who personally ginned
+    if (g.is_gin === 1) {
+      const ginner = g.gin_player_id ?? g.winner_id;
+      ensureG(ginner).gins++;
+    }
+
+    // Undercut: only the game winner
+    if (g.is_undercut === 1) ensureG(g.winner_id).undercuts++;
+  }
+
+  // ── Assemble final stats per player (O(P) simple Map lookup) ─────────────
+  return players.map(p => {
+    const ms = matchStats.get(p.id) ?? { played: 0, won: 0, drawn: 0 };
+    const gs = gameStats.get(p.id) ?? { played: 0, won: 0, totalPts: 0, biggest: 0, gins: 0, undercuts: 0 };
     return {
       player_id: p.id,
       name: p.name,
       nickname: p.nickname,
       avatar_b64: p.avatar_b64,
-      matches_played: playerMatches.length,
-      matches_won: wonMatches.length,
-      matches_drawn: drawnMatches.length,
-      matches_lost: playerMatches.length - wonMatches.length - drawnMatches.length,
-      games_played: playerGames.length,
-      games_won: wonGames.length,
-      total_points_scored: totalPts,
-      gin_count: ginGames.length,
-      undercut_count: undercutGames.length,
-      biggest_hand: biggest,
-      avg_points_per_game:
-        wonGames.length > 0 ? Math.round(totalPts / wonGames.length) : 0,
-      win_rate:
-        playerMatches.length > 0
-          ? Math.round((wonMatches.length / playerMatches.length) * 1000) / 10
-          : 0,
-      league_points: leaguePoints,
+      matches_played: ms.played,
+      matches_won: ms.won,
+      matches_drawn: ms.drawn,
+      matches_lost: ms.played - ms.won - ms.drawn,
+      games_played: gs.played,
+      games_won: gs.won,
+      total_points_scored: gs.totalPts,
+      gin_count: gs.gins,
+      undercut_count: gs.undercuts,
+      biggest_hand: gs.biggest,
+      avg_points_per_game: gs.won > 0 ? Math.round(gs.totalPts / gs.won) : 0,
+      win_rate: ms.played > 0 ? Math.round((ms.won / ms.played) * 1000) / 10 : 0,
+      league_points: ms.won * 3 + ms.drawn,
     };
   });
 }

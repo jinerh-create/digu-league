@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { PlayerStats, TeamStats, Season } from '../../lib/types';
 
 type SortKey = keyof Pick<PlayerStats,
@@ -53,10 +53,14 @@ function Avatar({ name, avatar_b64, size = 40, rank }: { name: string; avatar_b6
   );
 }
 
-const MEDAL = ['🥇', '🥈', '🥉'];
 const MEDAL_COLOR = ['#D4AF37', '#C0C0C0', '#CD7F32'];
 const MEDAL_GLOW = ['rgba(212,175,55,0.25)', 'rgba(192,192,192,0.15)', 'rgba(205,127,50,0.18)'];
 const MEDAL_LABEL = ['CHAMPION', '2ND PLACE', '3RD PLACE'];
+const MEDAL_GLOW_FILTER = [
+  'drop-shadow(0 6px 18px rgba(212,175,55,0.8)) drop-shadow(0 2px 4px rgba(0,0,0,0.9))',
+  'drop-shadow(0 6px 18px rgba(192,192,192,0.6)) drop-shadow(0 2px 4px rgba(0,0,0,0.9))',
+  'drop-shadow(0 6px 18px rgba(205,127,50,0.7)) drop-shadow(0 2px 4px rgba(0,0,0,0.9))',
+];
 
 const PLAYER_COLS: { key: SortKey; label: string; short: string }[] = [
   { key: 'matches_played', label: 'Games Played', short: 'GP' },
@@ -69,12 +73,25 @@ const PLAYER_COLS: { key: SortKey; label: string; short: string }[] = [
 
 function getMonthOptions() {
   const opts: { value: string; label: string }[] = [{ value: '', label: 'All Time' }];
-  for (let month = 0; month < 12; month++) {
-    const d = new Date(2026, month, 1);
-    const value = `2026-${String(month + 1).padStart(2, '0')}`;
-    opts.push({ value, label: d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) });
+  const now = new Date();
+  // Show from Jan 2026 up to current month
+  const startYear = 2026, startMonth = 0;
+  const endYear = now.getFullYear(), endMonth = now.getMonth();
+  for (let y = startYear; y <= endYear; y++) {
+    const mStart = y === startYear ? startMonth : 0;
+    const mEnd   = y === endYear   ? endMonth   : 11;
+    for (let m = mStart; m <= mEnd; m++) {
+      const value = `${y}-${String(m + 1).padStart(2, '0')}`;
+      const label = new Date(y, m, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      opts.push({ value, label });
+    }
   }
   return opts;
+}
+
+function currentMonthValue() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
 function WinBar({ rate, played }: { rate: number; played: number }) {
@@ -90,12 +107,56 @@ function WinBar({ rate, played }: { rate: number; played: number }) {
   );
 }
 
+function HallOfFameCard({ player, title, icon, color, stats }: {
+  player: PlayerStats;
+  title: string;
+  icon: string;
+  color: string;
+  stats: { label: string; value: string | number; color?: string }[];
+}) {
+  const glow = `${color}28`;
+  return (
+    <div style={{
+      flex: 1, minWidth: 0,
+      background: 'linear-gradient(160deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)',
+      border: `1.5px solid ${color}55`,
+      borderRadius: 20, padding: '1.5rem 1.25rem',
+      textAlign: 'center', position: 'relative', overflow: 'hidden',
+      boxShadow: `0 8px 32px ${glow}, inset 0 1px 0 rgba(255,255,255,0.06)`,
+      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.625rem',
+    }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, transparent, ${color}, transparent)` }} />
+      <div style={{ fontSize: '2.25rem', lineHeight: 1, filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))' }}>{icon}</div>
+      <div style={{ fontSize: '0.5rem', fontWeight: 700, letterSpacing: '0.18em', color, textTransform: 'uppercase' }}>{title}</div>
+      <Avatar name={player.name} avatar_b64={player.avatar_b64} size={80} rank={title === 'Champion' ? 1 : undefined} />
+      <div style={{ width: '100%', textAlign: 'center' }}>
+        <div style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '1.25rem', fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>
+          {player.nickname || player.name}
+        </div>
+        {player.nickname && <div style={{ fontSize: '0.75rem', color: 'rgba(221,209,191,0.6)', marginTop: 2 }}>{player.name}</div>}
+      </div>
+      <div style={{
+        display: 'grid', gridTemplateColumns: `repeat(${stats.length}, 1fr)`,
+        gap: '0.25rem 0.5rem', width: '100%',
+        background: 'rgba(0,0,0,0.2)', borderRadius: 10, padding: '0.5rem 0.375rem',
+      }}>
+        {stats.map(stat => (
+          <div key={stat.label}>
+            <div style={{ fontSize: '0.6rem', color: '#888', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{stat.label}</div>
+            <div style={{ fontSize: '1.0625rem', fontWeight: 800, color: stat.color || color }}>{stat.value}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function PodiumCard({ s, rank }: { s: PlayerStats; rank: number }) {
   const color = MEDAL_COLOR[rank];
   const glow = MEDAL_GLOW[rank];
   const isChamp = rank === 0;
   return (
-    <div style={{
+    <div className={`podium-card podium-rank-${rank}`} style={{
       flex: 1, minWidth: 0,
       background: `linear-gradient(160deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)`,
       border: `1.5px solid ${color}44`,
@@ -108,7 +169,6 @@ function PodiumCard({ s, rank }: { s: PlayerStats; rank: number }) {
       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.625rem',
       transform: isChamp ? 'translateY(-10px)' : 'none',
       transition: 'transform 0.2s',
-      order: rank === 0 ? 0 : rank === 1 ? -1 : 1,
     }}>
       {/* Top shimmer bar */}
       <div style={{
@@ -117,10 +177,11 @@ function PodiumCard({ s, rank }: { s: PlayerStats; rank: number }) {
       }} />
 
       {/* Rank badge */}
-      <div style={{
-        fontSize: isChamp ? '2rem' : '1.5rem',
-        lineHeight: 1, filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))',
-      }}>{MEDAL[rank]}</div>
+      <img
+        src={`/badges/medal-${rank + 1}.svg`}
+        alt={MEDAL_LABEL[rank]}
+        style={{ width: isChamp ? 88 : 72, height: isChamp ? 88 : 72, filter: MEDAL_GLOW_FILTER[rank] }}
+      />
 
       <Avatar name={s.name} avatar_b64={s.avatar_b64} size={isChamp ? 70 : 56} rank={rank + 1} />
 
@@ -255,7 +316,7 @@ export default function LeaderboardTable() {
   const [loading, setLoading] = useState(true);
   const [sortKey, setSortKey] = useState<SortKey>('matches_won');
   const [sortDesc, setSortDesc] = useState(true);
-  const [month, setMonth] = useState('');
+  const [month, setMonth] = useState(currentMonthValue);
   const [season, setSeason] = useState('');
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [showSeasonModal, setShowSeasonModal] = useState(false);
@@ -335,10 +396,13 @@ export default function LeaderboardTable() {
     else { setSortKey(key); setSortDesc(true); }
   }
 
-  const sorted = [...stats].sort((a, b) => {
-    const av = a[sortKey] as number, bv = b[sortKey] as number;
-    return sortDesc ? bv - av : av - bv;
-  });
+  const sorted = useMemo(
+    () => [...stats].sort((a, b) => {
+      const av = a[sortKey] as number, bv = b[sortKey] as number;
+      return sortDesc ? bv - av : av - bv;
+    }),
+    [stats, sortKey, sortDesc]
+  );
 
   const hasPlayed = awardStats.filter(s => s.matches_played > 0);
   const playerOfMonth = hasPlayed.length > 0
@@ -401,8 +465,8 @@ export default function LeaderboardTable() {
             </div>
           ) : (
             <>
-              {/* ── Podium top 3 ───────────────────────────────────── */}
-              {top3.length >= 2 && (
+              {/* ── Hall of Fame: Champion + Digu King ─────────────── */}
+              {hasPlayed.length > 0 && (playerOfMonth || (diguKing && diguKing.gin_count > 0)) && (
                 <div className="podium-section">
                   <div style={{
                     fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.2em',
@@ -411,8 +475,33 @@ export default function LeaderboardTable() {
                   }}>
                     ✦ &nbsp; Hall of Fame &nbsp; ✦
                   </div>
-                  <div className="podium-grid">
-                    {top3.map((s, i) => <PodiumCard key={s.player_id} s={s} rank={i} />)}
+                  <div className="hof-grid">
+                    {playerOfMonth && (
+                      <HallOfFameCard
+                        player={playerOfMonth}
+                        title="Champion"
+                        icon="🏆"
+                        color="#D4AF37"
+                        stats={[
+                          { label: 'PTS', value: playerOfMonth.league_points, color: '#D4AF37' },
+                          { label: 'WIN%', value: `${playerOfMonth.win_rate}%`, color: playerOfMonth.win_rate >= 50 ? '#638D6F' : '#DDD1BF' },
+                          { label: 'W', value: playerOfMonth.matches_won, color: '#638D6F' },
+                        ]}
+                      />
+                    )}
+                    {diguKing && diguKing.gin_count > 0 && (
+                      <HallOfFameCard
+                        player={diguKing}
+                        title="Digu King"
+                        icon="👑"
+                        color="#C8102E"
+                        stats={[
+                          { label: 'DIGU', value: diguKing.gin_count, color: '#D4AF37' },
+                          { label: 'WIN%', value: `${diguKing.win_rate}%`, color: diguKing.win_rate >= 50 ? '#638D6F' : '#DDD1BF' },
+                          { label: 'W', value: diguKing.matches_won, color: '#638D6F' },
+                        ]}
+                      />
+                    )}
                   </div>
                 </div>
               )}
@@ -532,28 +621,6 @@ export default function LeaderboardTable() {
         </>
       )}
 
-      {/* ── Awards ───────────────────────────────────────────────── */}
-      {hasPlayed.length > 0 && (
-        <div className="awards-section">
-          <div className="awards-title">
-            ✦ &nbsp;{month ? monthOptions.find(o => o.value === month)?.label : 'All Time'} Awards&nbsp; ✦
-          </div>
-          <div className="awards-grid">
-            {[
-              { icon: '🏆', title: 'Player of the Month', name: playerOfMonth?.name ?? '—', sub: playerOfMonth ? `${playerOfMonth.league_points} pts` : 'No matches', color: '#D4AF37' },
-              { icon: '👑', title: 'Digu King', name: diguKing && diguKing.gin_count > 0 ? diguKing.name : '—', sub: diguKing && diguKing.gin_count > 0 ? `${diguKing.gin_count} DIGU` : 'No DIGU yet', color: '#C8102E' },
-            ].map(a => (
-              <div key={a.title} className="award-card" style={{ borderColor: a.color + '55', boxShadow: `0 4px 24px ${a.color}22` }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, transparent, ${a.color}, transparent)` }} />
-                <div style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>{a.icon}</div>
-                <div style={{ fontSize: '0.5rem', fontWeight: 700, letterSpacing: '0.15em', color: a.color, textTransform: 'uppercase', marginBottom: '0.25rem' }}>{a.title}</div>
-                <div className="award-name">{a.name}</div>
-                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: a.color }}>{a.sub}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       <style>{`
         /* Filter bar */
@@ -596,12 +663,24 @@ export default function LeaderboardTable() {
         .skeleton-row { height: 56px; border-radius: 12px; background: rgba(255,255,255,0.04); animation: pulse 1.4s ease-in-out infinite; }
         @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:0.8} }
 
-        /* Podium */
+        /* Podium + Hall of Fame */
         .podium-section { margin-bottom: 1.5rem; }
         .podium-grid {
           display: flex; gap: 0.75rem; align-items: flex-end;
         }
-        @media (max-width: 480px) { .podium-grid { flex-direction: column; } }
+        .podium-grid .podium-rank-0 { order: 2; }
+        .podium-grid .podium-rank-1 { order: 1; }
+        .podium-grid .podium-rank-2 { order: 3; }
+        .hof-grid {
+          display: flex; gap: 0.75rem; align-items: stretch;
+        }
+        @media (max-width: 480px) {
+          .podium-grid { flex-direction: column; }
+          .podium-grid .podium-rank-0,
+          .podium-grid .podium-rank-1,
+          .podium-grid .podium-rank-2 { order: unset; }
+          .hof-grid { flex-direction: column; }
+        }
 
         /* Table */
         .lb-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.06); }
@@ -664,25 +743,6 @@ export default function LeaderboardTable() {
           border-bottom: 1px dashed rgba(200,16,46,0.4);
         }
 
-        /* Awards */
-        .awards-section { margin-top: 1.5rem; }
-        .awards-title {
-          font-size: 0.5625rem; font-weight: 700; letter-spacing: 0.2em;
-          text-transform: uppercase; color: var(--text-muted); text-align: center;
-          margin-bottom: 0.75rem;
-        }
-        .awards-grid { display: flex; gap: 0.75rem; }
-        .award-card {
-          flex: 1; background: rgba(255,255,255,0.03); border: 1.5px solid;
-          border-radius: 16px; padding: 0.875rem; text-align: center;
-          position: relative; overflow: hidden;
-        }
-        .award-name {
-          font-family: 'Playfair Display', Georgia, serif;
-          font-size: 1rem; font-weight: 800; color: var(--text-primary);
-          overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-          margin-bottom: 0.2rem;
-        }
 
         /* Empty state */
         .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
