@@ -528,17 +528,63 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
 
       {/* Trophy Case */}
       {(() => {
-        const trophies: { id: string; name: string; period: string; image: string; desc: string }[] = [];
+        type Trophy = { id: string; name: string; period: string; image: string; desc: string; glow: string; shimmer: string };
+        const PLAYER_TROPHIES: { match: string[]; trophies: Trophy[] }[] = [
+          {
+            match: ['shujau', 'sjau'],
+            trophies: [{
+              id: 'champion-may-2026',
+              name: 'OC Digu League Champion',
+              period: 'May 2026',
+              image: '/badges/champion-may-2026.png',
+              desc: 'Monthly League Champion',
+              glow: '0 0 0 2px #D4AF37, 0 0 24px rgba(212,175,55,0.6), 0 0 48px rgba(212,175,55,0.25)',
+              shimmer: 'linear-gradient(135deg, rgba(255,230,100,0.12) 0%, transparent 50%, rgba(255,200,60,0.10) 100%)',
+            }],
+          },
+          {
+            match: ['ahmed jinah', 'jinah'],
+            trophies: [{
+              id: 'digu-king-may-2026',
+              name: 'Digu King',
+              period: 'May 2026',
+              image: '/badges/digu-king-may-2026.png',
+              desc: 'Digu King of the Month',
+              glow: '0 0 0 2px #FFD700, 0 0 24px rgba(255,215,0,0.65), 0 0 48px rgba(255,215,0,0.25)',
+              shimmer: 'linear-gradient(135deg, rgba(255,240,120,0.15) 0%, transparent 50%, rgba(255,215,0,0.10) 100%)',
+            }],
+          },
+          {
+            match: ['athif', 'athif ibrahim'],
+            trophies: [{
+              id: '3rd-place-may-2026',
+              name: 'Digu League 3rd Place',
+              period: 'May 2026',
+              image: '/badges/3rd-place-may-2026.png',
+              desc: 'Monthly League Podium',
+              glow: '0 0 0 2px #CD7F32, 0 0 20px rgba(205,127,50,0.55), 0 0 40px rgba(205,127,50,0.2)',
+              shimmer: 'linear-gradient(135deg, rgba(205,160,80,0.12) 0%, transparent 50%, rgba(180,110,40,0.10) 100%)',
+            }],
+          },
+          {
+            match: ['hussain shareef', 'shareef'],
+            trophies: [{
+              id: '2nd-place-may-2026',
+              name: 'Digu League 2nd Place',
+              period: 'May 2026',
+              image: '/badges/2nd-place-may-2026.png',
+              desc: 'Monthly League Podium',
+              glow: '0 0 0 2px #B0C4DE, 0 0 20px rgba(176,196,222,0.55), 0 0 40px rgba(176,196,222,0.2)',
+              shimmer: 'linear-gradient(135deg, rgba(200,220,240,0.12) 0%, transparent 50%, rgba(160,185,210,0.10) 100%)',
+            }],
+          },
+        ];
+
         const nameLower = (player.name || '').toLowerCase();
-        if (nameLower.includes('shujau') || nameLower.includes('sjau')) {
-          trophies.push({
-            id: 'champion-may-2026',
-            name: 'OC Digu League Champion',
-            period: 'May 2026',
-            image: '/trophy.png',
-            desc: 'Monthly League Champion',
-          });
-        }
+        const trophies: Trophy[] = PLAYER_TROPHIES
+          .filter(entry => entry.match.some(m => nameLower.includes(m)))
+          .flatMap(entry => entry.trophies);
+
         return (
           <>
             <div style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
@@ -553,23 +599,14 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
                     <div key={t.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.625rem', width: 110 }}>
                       <div style={{
                         width: 110, height: 110,
-                        borderRadius: 16,
+                        borderRadius: '50%',
                         overflow: 'hidden',
                         position: 'relative',
-                        background: 'linear-gradient(145deg, #1a1200, #2a1e00)',
-                        boxShadow: '0 0 0 2px #D4AF37, 0 0 24px rgba(212,175,55,0.55), 0 0 48px rgba(212,175,55,0.2)',
+                        background: '#0a0a0a',
+                        boxShadow: t.glow,
                       }}>
-                        <img
-                          src={t.image}
-                          alt={t.name}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        />
-                        {/* Gold shimmer overlay */}
-                        <div style={{
-                          position: 'absolute', inset: 0,
-                          background: 'linear-gradient(135deg, rgba(255,230,100,0.10) 0%, transparent 50%, rgba(255,200,60,0.08) 100%)',
-                          pointerEvents: 'none',
-                        }} />
+                        <img src={t.image} alt={t.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <div style={{ position: 'absolute', inset: 0, background: t.shimmer, pointerEvents: 'none' }} />
                       </div>
                       <div style={{ textAlign: 'center' }}>
                         <div style={{ fontSize: '0.625rem', fontWeight: 800, color: '#D4AF37', lineHeight: 1.25, letterSpacing: '0.02em' }}>{t.name}</div>
