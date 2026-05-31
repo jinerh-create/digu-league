@@ -1,0 +1,1 @@
+ALTER TABLE players ADD COLUMN trophies_json TEXT NOT NULL DEFAULT '[]';

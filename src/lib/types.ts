@@ -4,7 +4,8 @@ export interface Player {
   nickname: string | null;
   avatar_b64: string | null;
   joined_at: string;
-  active: number; // 1 = active, 0 = inactive
+  active: number;
+  trophies_json: string; // JSON array of trophy objects
 }
 
 export interface Match {
