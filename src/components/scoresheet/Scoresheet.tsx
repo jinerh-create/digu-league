@@ -305,7 +305,7 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
     ctx.fillText('Digu League', logoX + logoR + 12, y + 2);
     ctx.fillStyle = '#6b7a96';
     ctx.font = '600 11px system-ui, sans-serif';
-    ctx.fillText(monthLabel(match.started_at).toUpperCase(), logoX + logoR + 12, y + 26);
+    ctx.fillText(monthLabel(match!.started_at).toUpperCase(), logoX + logoR + 12, y + 26);
 
     y += HEADER_H - 10;
 
