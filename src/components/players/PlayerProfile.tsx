@@ -154,6 +154,81 @@ function buildBadges(totalScore: number, ginCount: number, maxWinStreak: number,
 
 type Trophy = { id: string; name: string; period: string; image: string; desc: string };
 
+function TrophyCase({ trophiesJson }: { trophiesJson: string | undefined | null }) {
+  let trophies: Trophy[] = [];
+  try {
+    const parsed = JSON.parse(trophiesJson ?? '[]');
+    trophies = Array.isArray(parsed) ? parsed : [];
+  } catch {
+    trophies = [];
+  }
+
+  return (
+    <>
+      <div style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <span>🏆 Trophy Case</span>
+        {trophies.length > 0 && (
+          <span style={{ color: '#D4AF37', fontWeight: 800 }}>· {trophies.length}</span>
+        )}
+      </div>
+      <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
+        {trophies.length === 0 ? (
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', padding: '1rem 0', textAlign: 'center' }}>
+            No trophies yet…
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', justifyContent: 'center' }}>
+            {trophies.map((t) => (
+              <div key={t.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.625rem', width: 120 }}>
+                {/* Gold coin circle */}
+                <div style={{
+                  width: 120, height: 120, borderRadius: '50%',
+                  overflow: 'hidden', position: 'relative',
+                  background: 'radial-gradient(circle at 35% 35%, #ffe680, #d4af37 55%, #8b6210)',
+                  boxShadow: '0 0 0 3px #D4AF37, 0 0 0 5px rgba(212,175,55,0.3), 0 0 30px rgba(212,175,55,0.6), 0 0 60px rgba(212,175,55,0.25)',
+                  flexShrink: 0,
+                }}>
+                  <img
+                    src={t.image}
+                    alt={t.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                  {/* Shine overlay */}
+                  <div style={{
+                    position: 'absolute', inset: 0,
+                    background: 'linear-gradient(135deg, rgba(255,240,120,0.25) 0%, transparent 50%, rgba(180,130,20,0.15) 100%)',
+                    pointerEvents: 'none',
+                    borderRadius: '50%',
+                  }} />
+                </div>
+                {/* Labels */}
+                <div style={{ textAlign: 'center', width: '100%' }}>
+                  <div style={{ fontSize: '0.625rem', fontWeight: 800, color: '#D4AF37', lineHeight: 1.3, marginBottom: '0.25rem' }}>
+                    {t.name}
+                  </div>
+                  <div style={{
+                    fontSize: '0.5625rem', fontWeight: 700, color: '#fff',
+                    background: 'rgba(212,175,55,0.2)', border: '1px solid rgba(212,175,55,0.4)',
+                    borderRadius: 6, padding: '2px 8px', display: 'inline-block',
+                  }}>
+                    {t.period}
+                  </div>
+                  <div style={{ fontSize: '0.5rem', color: 'var(--text-muted)', marginTop: '0.25rem', lineHeight: 1.3 }}>
+                    {t.desc}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
 const SUITS = ['♠', '♥', '♦', '♣'] as const;
 const VALUES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'] as const;
 
@@ -529,42 +604,7 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
       </div>
 
       {/* Trophy Case */}
-      {(() => {
-        let trophies: Trophy[] = [];
-        try { trophies = JSON.parse(player.trophies_json || '[]'); } catch { trophies = []; }
-        return (
-          <>
-            <div style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
-              🏆 Trophy Case
-            </div>
-            <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
-              {trophies.length === 0 ? (
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', padding: '1rem 0', textAlign: 'center' }}>No trophies yet…</div>
-              ) : (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.25rem', justifyContent: 'center' }}>
-                  {trophies.map((t: Trophy) => (
-                    <div key={t.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.625rem', width: 110 }}>
-                      <div style={{
-                        width: 110, height: 110, borderRadius: '50%',
-                        overflow: 'hidden', position: 'relative', background: '#0a0a0a',
-                        boxShadow: '0 0 0 2px #D4AF37, 0 0 20px rgba(212,175,55,0.5), 0 0 40px rgba(212,175,55,0.2)',
-                      }}>
-                        <img src={t.image} alt={t.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,rgba(255,230,100,0.10) 0%,transparent 60%)', pointerEvents: 'none' }} />
-                      </div>
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '0.625rem', fontWeight: 800, color: '#D4AF37', lineHeight: 1.25 }}>{t.name}</div>
-                        <div style={{ marginTop: '0.2rem', fontSize: '0.5625rem', fontWeight: 700, color: '#fff', background: 'rgba(212,175,55,0.18)', border: '1px solid rgba(212,175,55,0.35)', borderRadius: 6, padding: '1px 6px', display: 'inline-block' }}>{t.period}</div>
-                        <div style={{ fontSize: '0.5rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>{t.desc}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </>
-        );
-      })()}
+      <TrophyCase trophiesJson={player.trophies_json} />
 
       {/* Card Collection */}
       <CardCollection totalScore={totalScore} />
