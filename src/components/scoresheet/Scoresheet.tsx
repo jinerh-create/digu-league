@@ -173,7 +173,7 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
     scoreSaving.current = true;
     setEditingScore(null);
     const val = parseInt(scoreDraft, 10);
-    if (!isNaN(val) && val >= 0) {
+    if (!isNaN(val) && val > 0) {
       const row = match!.games.find(g => g.id === gameId)!;
       const isTeamMatch = !!match!.team1_player2_id;
       const body = isTeamMatch
@@ -605,7 +605,7 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
                         onClick={e => e.stopPropagation()}
                         style={{ width: 60, textAlign: 'center', fontSize: '1rem', fontWeight: 800, background: 'var(--card-raised)', border: '1px solid var(--team-a)', borderRadius: 4, color: 'var(--team-a)', padding: '0.1rem' }}
                       />
-                    ) : (isTeam ? r.t1Score : (r.p1Pts ?? ''))}
+                    ) : (isTeam ? (r.t1Score || '') : (r.p1Pts || ''))}
                   </td>
                   <td className="ss-score-cell" style={{ color: 'var(--team-b)', cursor: (matchCompleted && !isAdmin) ? 'default' : 'pointer' }}
                     onClick={() => { if (matchCompleted && !isAdmin) return; setEditingScore({ gameId: r.id, side: 'p2' }); setScoreDraft(String(isTeam ? r.t2Score : (r.p2Pts ?? 0))); }}>
@@ -619,7 +619,7 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
                         onClick={e => e.stopPropagation()}
                         style={{ width: 60, textAlign: 'center', fontSize: '1rem', fontWeight: 800, background: 'var(--card-raised)', border: '1px solid var(--team-b)', borderRadius: 4, color: 'var(--team-b)', padding: '0.1rem' }}
                       />
-                    ) : (isTeam ? r.t2Score : (r.p2Pts ?? ''))}
+                    ) : (isTeam ? (r.t2Score || '') : (r.p2Pts || ''))}
                   </td>
                   {canDeleteRound && (
                     <td className="ss-del-cell">

@@ -142,11 +142,23 @@ export default function ActiveMatch({ matchId, isAdmin = false, isAuthed = false
   async function handleAddRound(e: React.FormEvent) {
     e.preventDefault();
     if (!match) return;
+    // Validate score before submitting
+    if (!isTeam) {
+      const parsedScore = parseInt(score);
+      if (!score || isNaN(parsedScore) || parsedScore <= 0) {
+        setError('Please enter a valid score (must be greater than 0)');
+        return;
+      }
+    }
+    if (isTeam && team1Total === 0 && team2Total === 0) {
+      setError('Please enter card counts for both teams');
+      return;
+    }
     setSubmitting(true);
     setError('');
     const body = isTeam
       ? { t1_p1_cards: team1Total, t1_p2_cards: 0, t2_p1_cards: team2Total, t2_p2_cards: 0, is_gin: false, gin_player_id: null }
-      : { winner_id: winnerId, score: parseInt(score) || 0, is_gin: isGin, gin_player_id: isGin ? winnerId : null };
+      : { winner_id: winnerId, score: parseInt(score), is_gin: isGin, gin_player_id: isGin ? winnerId : null };
     try {
       const res = await fetch(`/api/matches/${matchId}/games`, {
         method: 'POST',
