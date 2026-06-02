@@ -157,74 +157,80 @@ type Trophy = { id: string; name: string; period: string; image: string; desc: s
 function TrophyCase({ trophiesJson }: { trophiesJson: string | undefined | null }) {
   let trophies: Trophy[] = [];
   try {
-    const parsed = JSON.parse(trophiesJson ?? '[]');
-    trophies = Array.isArray(parsed) ? parsed : [];
+    if (trophiesJson && trophiesJson !== '[]' && trophiesJson !== 'null') {
+      const parsed = JSON.parse(trophiesJson);
+      trophies = Array.isArray(parsed) ? parsed : [];
+    }
   } catch {
     trophies = [];
   }
 
+  if (trophies.length === 0) return null;
+
   return (
     <>
-      <div style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <span>🏆 Trophy Case</span>
-        {trophies.length > 0 && (
-          <span style={{ color: '#D4AF37', fontWeight: 800 }}>· {trophies.length}</span>
-        )}
+      <div style={{
+        fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase',
+        letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.75rem',
+        display: 'flex', alignItems: 'center', gap: '0.5rem'
+      }}>
+        <span>🏆 Trophy Cabinet</span>
+        <span style={{ color: '#D4AF37', fontWeight: 800 }}>· {trophies.length}</span>
       </div>
-      <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
-        {trophies.length === 0 ? (
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', padding: '1rem 0', textAlign: 'center' }}>
-            No trophies yet — keep winning! 🏆
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', justifyContent: 'center' }}>
-            {trophies.map((t) => (
-              <div key={t.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.625rem', width: 120 }}>
-                {/* Gold coin circle */}
+      <div className="card" style={{
+        padding: '1.5rem', marginBottom: '1.5rem',
+        background: 'linear-gradient(135deg, rgba(212,175,55,0.06) 0%, transparent 60%)',
+        border: '1px solid rgba(212,175,55,0.2)',
+      }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', justifyContent: 'center' }}>
+          {trophies.map((t) => (
+            <div key={t.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', width: 130 }}>
+              {/* Coin */}
+              <div style={{
+                width: 120, height: 120, borderRadius: '50%',
+                overflow: 'hidden', position: 'relative', flexShrink: 0,
+                boxShadow: '0 0 0 3px #D4AF37, 0 0 0 6px rgba(212,175,55,0.25), 0 0 40px rgba(212,175,55,0.5), 0 8px 32px rgba(0,0,0,0.5)',
+                animation: 'trophy-glow 3s ease-in-out infinite',
+              }}>
+                <img
+                  src={t.image}
+                  alt={t.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
                 <div style={{
-                  width: 120, height: 120, borderRadius: '50%',
-                  overflow: 'hidden', position: 'relative',
-                  background: 'radial-gradient(circle at 35% 35%, #ffe680, #d4af37 55%, #8b6210)',
-                  boxShadow: '0 0 0 3px #D4AF37, 0 0 0 5px rgba(212,175,55,0.3), 0 0 30px rgba(212,175,55,0.6), 0 0 60px rgba(212,175,55,0.25)',
-                  flexShrink: 0,
-                }}>
-                  <img
-                    src={t.image}
-                    alt={t.name}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                  {/* Shine overlay */}
-                  <div style={{
-                    position: 'absolute', inset: 0,
-                    background: 'linear-gradient(135deg, rgba(255,240,120,0.25) 0%, transparent 50%, rgba(180,130,20,0.15) 100%)',
-                    pointerEvents: 'none',
-                    borderRadius: '50%',
-                  }} />
+                  position: 'absolute', inset: 0,
+                  background: 'linear-gradient(135deg, rgba(255,245,150,0.2) 0%, transparent 45%, rgba(150,100,0,0.1) 100%)',
+                  borderRadius: '50%', pointerEvents: 'none',
+                }} />
+              </div>
+              {/* Labels */}
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '0.6875rem', fontWeight: 800, color: '#D4AF37', marginBottom: '0.3rem', lineHeight: 1.3 }}>
+                  {t.name}
                 </div>
-                {/* Labels */}
-                <div style={{ textAlign: 'center', width: '100%' }}>
-                  <div style={{ fontSize: '0.625rem', fontWeight: 800, color: '#D4AF37', lineHeight: 1.3, marginBottom: '0.25rem' }}>
-                    {t.name}
-                  </div>
-                  <div style={{
-                    fontSize: '0.5625rem', fontWeight: 700, color: '#fff',
-                    background: 'rgba(212,175,55,0.2)', border: '1px solid rgba(212,175,55,0.4)',
-                    borderRadius: 6, padding: '2px 8px', display: 'inline-block',
-                  }}>
-                    {t.period}
-                  </div>
-                  <div style={{ fontSize: '0.5rem', color: 'var(--text-muted)', marginTop: '0.25rem', lineHeight: 1.3 }}>
+                <div style={{
+                  fontSize: '0.5625rem', fontWeight: 700, color: '#fff',
+                  background: 'rgba(212,175,55,0.18)', border: '1px solid rgba(212,175,55,0.35)',
+                  borderRadius: 20, padding: '2px 10px', display: 'inline-block', marginBottom: '0.25rem',
+                }}>
+                  {t.period}
+                </div>
+                {t.desc && (
+                  <div style={{ fontSize: '0.5rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
                     {t.desc}
                   </div>
-                </div>
+                )}
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
       </div>
+      <style>{`
+        @keyframes trophy-glow {
+          0%, 100% { box-shadow: 0 0 0 3px #D4AF37, 0 0 0 6px rgba(212,175,55,0.25), 0 0 40px rgba(212,175,55,0.5), 0 8px 32px rgba(0,0,0,0.5); }
+          50% { box-shadow: 0 0 0 3px #D4AF37, 0 0 0 6px rgba(212,175,55,0.4), 0 0 60px rgba(212,175,55,0.7), 0 8px 32px rgba(0,0,0,0.5); }
+        }
+      `}</style>
     </>
   );
 }
