@@ -174,7 +174,7 @@ function TrophyCase({ trophiesJson }: { trophiesJson: string | undefined | null 
       <div className="card" style={{ padding: '1.25rem', marginBottom: '1.5rem' }}>
         {trophies.length === 0 ? (
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', padding: '1rem 0', textAlign: 'center' }}>
-            No trophies yet…
+            No trophies yet — keep winning! 🏆
           </div>
         ) : (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', justifyContent: 'center' }}>
