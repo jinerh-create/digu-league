@@ -185,34 +185,50 @@ function TrophyCase({ trophiesJson }: { trophiesJson: string | undefined | null 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2.5rem', justifyContent: 'center', alignItems: 'flex-end' }}>
           {trophies.map((t) => (
             <div key={t.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-              {/* Trophy image on white card — white bg is intentional */}
-              <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center', animation: 'trophy-float 3s ease-in-out infinite' }}>
-                {/* Gold glow ring behind card */}
+              {/* Trophy — canvas removes white bg, no animation */}
+              <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <div style={{
-                  position: 'absolute', inset: -20, borderRadius: 20,
-                  background: 'radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 70%)',
-                  animation: 'trophy-glow-shadow 3s ease-in-out infinite',
+                  position: 'absolute', inset: -16, borderRadius: 20,
+                  background: 'radial-gradient(circle, rgba(212,175,55,0.12) 0%, transparent 70%)',
+                  pointerEvents: 'none',
                 }} />
-                {/* White card housing the trophy */}
-                <div style={{
-                  background: 'linear-gradient(160deg,#fff 0%,#f5f0e8 100%)',
-                  borderRadius: 16, padding: '16px 20px 12px',
-                  boxShadow: '0 0 0 2px rgba(212,175,55,0.4), 0 0 0 4px rgba(212,175,55,0.12), 0 12px 40px rgba(0,0,0,0.5), 0 0 30px rgba(212,175,55,0.2)',
-                  position: 'relative', zIndex: 1,
-                  animation: 'trophy-glow 3s ease-in-out infinite',
-                }}>
-                  <img
-                    src={t.image}
-                    alt={t.name}
-                    style={{ width: 160, height: 'auto', display: 'block' }}
-                  />
-                </div>
-                {/* Shadow under card */}
-                <div style={{
-                  width: '70%', height: 10, marginTop: 4,
-                  background: 'radial-gradient(ellipse, rgba(212,175,55,0.4) 0%, transparent 70%)',
-                  filter: 'blur(6px)',
-                }} />
+                {/* Hidden img loads, canvas processes it */}
+                <img
+                  src={t.image}
+                  alt=""
+                  style={{ display: 'none' }}
+                  crossOrigin="anonymous"
+                  onLoad={(e) => {
+                    const img = e.currentTarget;
+                    const canvas = img.nextElementSibling as HTMLCanvasElement;
+                    if (!canvas) return;
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) return;
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    ctx.drawImage(img, 0, 0);
+                    const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const d = data.data;
+                    for (let i = 0; i < d.length; i += 4) {
+                      const r = d[i], g = d[i+1], b = d[i+2];
+                      const bright = (r + g + b) / 3;
+                      const sat = Math.max(r,g,b) - Math.min(r,g,b);
+                      if (bright > 205 && sat < 45) {
+                        const alpha = Math.max(0, 255 - (bright - 205) * 10);
+                        d[i+3] = Math.min(d[i+3], alpha);
+                      }
+                    }
+                    ctx.putImageData(data, 0, 0);
+                    canvas.style.display = 'block';
+                  }}
+                />
+                <canvas
+                  style={{
+                    width: 180, height: 'auto', display: 'none',
+                    filter: 'drop-shadow(0 0 16px rgba(212,175,55,0.7)) drop-shadow(0 4px 16px rgba(0,0,0,0.6))',
+                    position: 'relative', zIndex: 1,
+                  }}
+                />
               </div>
               {/* Labels */}
               <div style={{ textAlign: 'center' }}>

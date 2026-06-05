@@ -101,10 +101,10 @@ const next = Astro.url.searchParams.get('next') ?? '/';
 
         <!-- Role selector -->
         <div class="rp-tabs">
-          <button type="button" class="rp-tab rp-tab-active" id="tab-player" onclick="switchTab('player')">
+          <button type="button" class="rp-tab rp-tab-active" id="tab-player">
             <span class="rp-tab-icon">🎴</span> Player
           </button>
-          <button type="button" class="rp-tab" id="tab-admin" onclick="switchTab('admin')">
+          <button type="button" class="rp-tab" id="tab-admin">
             <span class="rp-tab-icon">⚔️</span> Admin
           </button>
         </div>
@@ -115,7 +115,7 @@ const next = Astro.url.searchParams.get('next') ?? '/';
             <div class="rp-hint-dot"></div>
             <span>Start matches · Enter scores · Edit rounds</span>
           </div>
-          <form id="player-form" onsubmit="handleSubmit(event,'player')">
+          <form id="player-form">
             <input type="hidden" class="nxt" value={next} />
             <div class="rp-field">
               <label class="rp-label">Player Password</label>
@@ -126,7 +126,7 @@ const next = Astro.url.searchParams.get('next') ?? '/';
                   autocomplete="current-password"
                   onfocus="document.getElementById('iw-player').classList.add('rp-iw-focus')"
                   onblur="document.getElementById('iw-player').classList.remove('rp-iw-focus')" />
-                <button type="button" class="rp-eye" onclick="togglePw('player-pw',this)" tabindex="-1">
+                <button type="button" class="rp-eye" data-target="player-pw">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </button>
               </div>
@@ -144,7 +144,7 @@ const next = Astro.url.searchParams.get('next') ?? '/';
             <div class="rp-hint-dot rp-hint-dot-red"></div>
             <span>Full access · Manage players · Settings</span>
           </div>
-          <form id="admin-form" onsubmit="handleSubmit(event,'admin')">
+          <form id="admin-form">
             <input type="hidden" class="nxt" value={next} />
             <div class="rp-field">
               <label class="rp-label">Admin Password</label>
@@ -155,7 +155,7 @@ const next = Astro.url.searchParams.get('next') ?? '/';
                   autocomplete="current-password"
                   onfocus="document.getElementById('iw-admin').classList.add('rp-iw-focus')"
                   onblur="document.getElementById('iw-admin').classList.remove('rp-iw-focus')" />
-                <button type="button" class="rp-eye" onclick="togglePw('admin-pw',this)" tabindex="-1">
+                <button type="button" class="rp-eye" data-target="admin-pw">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </button>
               </div>
@@ -174,7 +174,41 @@ const next = Astro.url.searchParams.get('next') ?? '/';
   </div>
 </div>
 
-<script>
+<script is:inline>
+  // Wait for DOM ready
+  document.addEventListener('DOMContentLoaded', function() {
+
+    // ── Tab switching ──
+    document.getElementById('tab-player').addEventListener('click', function() { switchTab('player'); });
+    document.getElementById('tab-admin').addEventListener('click', function() { switchTab('admin'); });
+
+    // ── Eye buttons ──
+    document.querySelectorAll('.rp-eye').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const inputId = btn.getAttribute('data-target');
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        input.type = input.type === 'password' ? 'text' : 'password';
+        btn.style.opacity = input.type === 'text' ? '0.5' : '1';
+      });
+    });
+
+    // ── Form submit ──
+    document.getElementById('player-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      doLogin('player-pw', 'player-err', 'player-sub',
+        document.querySelector('#player-form .nxt').value);
+    });
+    document.getElementById('admin-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      doLogin('admin-pw', 'admin-err', 'admin-sub',
+        document.querySelector('#admin-form .nxt').value);
+    });
+
+  });
+
   function switchTab(role) {
     const isPlayer = role === 'player';
     document.getElementById('panel-player').style.display = isPlayer ? 'block' : 'none';
@@ -183,21 +217,11 @@ const next = Astro.url.searchParams.get('next') ?? '/';
     document.getElementById('tab-admin').className = 'rp-tab' + (!isPlayer ? ' rp-tab-active rp-tab-admin-active' : '');
   }
 
-  function togglePw(id, btn) {
-    const input = document.getElementById(id);
-    input.type = input.type === 'password' ? 'text' : 'password';
-  }
-
-  async function handleSubmit(e, role) {
-    e.preventDefault();
-    const pwId = role === 'player' ? 'player-pw' : 'admin-pw';
-    const btnId = role === 'player' ? 'player-sub' : 'admin-sub';
-    const errId = role === 'player' ? 'player-err' : 'admin-err';
-    const nxtEl = e.currentTarget.querySelector('.nxt');
+  async function doLogin(pwId, errId, btnId, nxt) {
     const pw = document.getElementById(pwId).value;
     const btn = document.getElementById(btnId);
     const errEl = document.getElementById(errId);
-    const nxt = nxtEl ? nxtEl.value : '/';
+    if (!pw) { errEl.textContent = 'Please enter password'; return; }
     errEl.textContent = '';
     btn.disabled = true;
     const orig = btn.textContent;
