@@ -94,17 +94,17 @@ const next = Astro.url.searchParams.get('next') ?? '/';
 
         <!-- Header -->
         <div class="rp-header">
-          <div class="rp-crown">♔</div>
+          <img src="/icon.png" class="rp-crown-icon" alt="Digu League" />
           <h1 class="rp-title">Sign In</h1>
           <p class="rp-sub">Welcome back to the league</p>
         </div>
 
         <!-- Role selector -->
         <div class="rp-tabs">
-          <button type="button" class="rp-tab rp-tab-active" id="tab-player">
+          <button type="button" class="rp-tab rp-tab-active" id="tab-player" onclick="switchTab('player')">
             <span class="rp-tab-icon">🎴</span> Player
           </button>
-          <button type="button" class="rp-tab" id="tab-admin">
+          <button type="button" class="rp-tab" id="tab-admin" onclick="switchTab('admin')">
             <span class="rp-tab-icon">⚔️</span> Admin
           </button>
         </div>
@@ -115,8 +115,8 @@ const next = Astro.url.searchParams.get('next') ?? '/';
             <div class="rp-hint-dot"></div>
             <span>Start matches · Enter scores · Edit rounds</span>
           </div>
-          <form id="player-form">
-            <input type="hidden" class="nxt" value={next} />
+          <form id="player-form" onsubmit="return false">
+            <input type="hidden" class="nxt" id="nxt-player" value={next} />
             <div class="rp-field">
               <label class="rp-label">Player Password</label>
               <div class="rp-iw" id="iw-player">
@@ -126,13 +126,13 @@ const next = Astro.url.searchParams.get('next') ?? '/';
                   autocomplete="current-password"
                   onfocus="document.getElementById('iw-player').classList.add('rp-iw-focus')"
                   onblur="document.getElementById('iw-player').classList.remove('rp-iw-focus')" />
-                <button type="button" class="rp-eye" data-target="player-pw">
+                <button type="button" class="rp-eye" onclick="togglePw('player-pw')">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </button>
               </div>
             </div>
             <p class="rp-err" id="player-err"></p>
-            <button type="submit" class="rp-btn rp-gold-btn" id="player-sub">
+            <button type="button" class="rp-btn rp-gold-btn" id="player-sub" onclick="doLogin('player-pw','player-err','player-sub','nxt-player')">
               Sign In as Player →
             </button>
           </form>
@@ -144,8 +144,8 @@ const next = Astro.url.searchParams.get('next') ?? '/';
             <div class="rp-hint-dot rp-hint-dot-red"></div>
             <span>Full access · Manage players · Settings</span>
           </div>
-          <form id="admin-form">
-            <input type="hidden" class="nxt" value={next} />
+          <form id="admin-form" onsubmit="return false">
+            <input type="hidden" class="nxt" id="nxt-admin" value={next} />
             <div class="rp-field">
               <label class="rp-label">Admin Password</label>
               <div class="rp-iw" id="iw-admin">
@@ -155,13 +155,13 @@ const next = Astro.url.searchParams.get('next') ?? '/';
                   autocomplete="current-password"
                   onfocus="document.getElementById('iw-admin').classList.add('rp-iw-focus')"
                   onblur="document.getElementById('iw-admin').classList.remove('rp-iw-focus')" />
-                <button type="button" class="rp-eye" data-target="admin-pw">
+                <button type="button" class="rp-eye" onclick="togglePw('admin-pw')">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </button>
               </div>
             </div>
             <p class="rp-err" id="admin-err"></p>
-            <button type="submit" class="rp-btn rp-ember-btn" id="admin-sub">
+            <button type="button" class="rp-btn rp-ember-btn" id="admin-sub" onclick="doLogin('admin-pw','admin-err','admin-sub','nxt-admin')">
               Sign In as Admin →
             </button>
           </form>
@@ -175,127 +175,74 @@ const next = Astro.url.searchParams.get('next') ?? '/';
 </div>
 
 <script is:inline>
-  // Wait for DOM ready
-  document.addEventListener('DOMContentLoaded', function() {
-
-    // ── Tab switching ──
-    document.getElementById('tab-player').addEventListener('click', function() { switchTab('player'); });
-    document.getElementById('tab-admin').addEventListener('click', function() { switchTab('admin'); });
-
-    // ── Eye buttons ──
-    document.querySelectorAll('.rp-eye').forEach(function(btn) {
-      btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const inputId = btn.getAttribute('data-target');
-        const input = document.getElementById(inputId);
-        if (!input) return;
-        input.type = input.type === 'password' ? 'text' : 'password';
-        btn.style.opacity = input.type === 'text' ? '0.5' : '1';
-      });
-    });
-
-    // ── Form submit ──
-    document.getElementById('player-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      doLogin('player-pw', 'player-err', 'player-sub',
-        document.querySelector('#player-form .nxt').value);
-    });
-    document.getElementById('admin-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      doLogin('admin-pw', 'admin-err', 'admin-sub',
-        document.querySelector('#admin-form .nxt').value);
-    });
-
-  });
-
   function switchTab(role) {
-    const isPlayer = role === 'player';
+    var isPlayer = role === 'player';
     document.getElementById('panel-player').style.display = isPlayer ? 'block' : 'none';
     document.getElementById('panel-admin').style.display = isPlayer ? 'none' : 'block';
     document.getElementById('tab-player').className = 'rp-tab' + (isPlayer ? ' rp-tab-active' : '');
     document.getElementById('tab-admin').className = 'rp-tab' + (!isPlayer ? ' rp-tab-active rp-tab-admin-active' : '');
   }
 
-  async function doLogin(pwId, errId, btnId, nxt) {
-    const pw = document.getElementById(pwId).value;
-    const btn = document.getElementById(btnId);
-    const errEl = document.getElementById(errId);
+  function togglePw(inputId) {
+    var input = document.getElementById(inputId);
+    if (!input) return;
+    input.type = input.type === 'password' ? 'text' : 'password';
+  }
+
+  function doLogin(pwId, errId, btnId, nxtId) {
+    var pw = document.getElementById(pwId).value;
+    var btn = document.getElementById(btnId);
+    var errEl = document.getElementById(errId);
+    var nxtEl = document.getElementById(nxtId);
+    var nxt = nxtEl ? nxtEl.value : '/';
     if (!pw) { errEl.textContent = 'Please enter password'; return; }
     errEl.textContent = '';
     btn.disabled = true;
-    const orig = btn.textContent;
+    var orig = btn.textContent;
     btn.textContent = 'Signing in…';
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: pw }),
-      });
-      if (res.ok) {
-        window.location.href = nxt || '/';
-      } else {
-        const d = await res.json();
-        errEl.textContent = d.error || 'Incorrect password';
-        btn.disabled = false;
-        btn.textContent = orig;
+    fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw })
+    }).then(function(res) {
+      return res.json().then(function(d) { return { ok: res.ok, d: d }; });
+    }).then(function(r) {
+      if (r.ok) { window.location.href = nxt || '/'; }
+      else {
+        errEl.textContent = r.d.error || 'Incorrect password';
+        btn.disabled = false; btn.textContent = orig;
       }
-    } catch {
-      errEl.textContent = 'Network error — try again';
-      btn.disabled = false;
-      btn.textContent = orig;
-    }
-  }
-
-  // Remove white background from trophy using canvas
-  function processTrophy(img) {
-    const canvas = document.getElementById('trophy-canvas');
-    const loader = document.getElementById('suit-loader');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
-    ctx.drawImage(img, 0, 0);
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const d = imageData.data;
-    for (let i = 0; i < d.length; i += 4) {
-      const r = d[i], g = d[i+1], b = d[i+2];
-      // Remove white/near-white pixels (background)
-      const brightness = (r + g + b) / 3;
-      const saturation = Math.max(r,g,b) - Math.min(r,g,b);
-      if (brightness > 210 && saturation < 40) {
-        // Smooth edge: partially transparent near white
-        const alpha = Math.max(0, 255 - (brightness - 210) * 8);
-        d[i+3] = Math.min(d[i+3], alpha);
-      }
-    }
-    ctx.putImageData(imageData, 0, 0);
-    // Show canvas, hide loader
-    canvas.style.display = 'block';
-    if (loader) loader.style.display = 'none';
-  }
-
-  // Gold dust particles
-  const canvas = document.getElementById('particles');
-  const ctx = canvas.getContext('2d');
-  function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
-  resize(); window.addEventListener('resize', resize);
-  const pts = Array.from({length:50}, () => ({
-    x: Math.random()*innerWidth, y: Math.random()*innerHeight,
-    r: Math.random()*1.2+0.3, vx:(Math.random()-.5)*.25,
-    vy:-Math.random()*.3-.05, o: Math.random()*.4+.05,
-  }));
-  function draw() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    pts.forEach(p => {
-      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      ctx.fillStyle = `rgba(212,175,55,${p.o})`; ctx.fill();
-      p.x+=p.vx; p.y+=p.vy;
-      if (p.y<-5) { p.y=canvas.height+5; p.x=Math.random()*canvas.width; }
+    }).catch(function() {
+      errEl.textContent = 'Network error';
+      btn.disabled = false; btn.textContent = orig;
     });
-    requestAnimationFrame(draw);
   }
-  draw();
+
+  // Particle canvas
+  window.addEventListener('load', function() {
+    var canvas = document.getElementById('particles');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+    resize(); window.addEventListener('resize', resize);
+    var pts = [];
+    for (var i = 0; i < 50; i++) {
+      pts.push({ x: Math.random()*innerWidth, y: Math.random()*innerHeight,
+        r: Math.random()*1.2+0.3, vx:(Math.random()-.5)*.25,
+        vy:-Math.random()*.3-.05, o: Math.random()*.4+.05 });
+    }
+    function draw() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      pts.forEach(function(p) {
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle = 'rgba(212,175,55,'+p.o+')'; ctx.fill();
+        p.x+=p.vx; p.y+=p.vy;
+        if (p.y<-5) { p.y=canvas.height+5; p.x=Math.random()*canvas.width; }
+      });
+      requestAnimationFrame(draw);
+    }
+    draw();
+  });
 </script>
 
 <style>
@@ -515,7 +462,7 @@ body {
 
 /* Header */
 .rp-header{margin-bottom:1.625rem;text-align:center}
-.rp-crown{font-size:1.5rem;margin-bottom:.375rem;filter:drop-shadow(0 0 8px rgba(212,175,55,.5))}
+.rp-crown-icon{width:56px;height:56px;object-fit:contain;margin-bottom:.375rem;filter:drop-shadow(0 0 10px rgba(212,175,55,.6));border-radius:12px;}
 .rp-title{
   font-family:'Cinzel Decorative',serif;
   font-size:1.625rem;font-weight:900;color:#D4AF37;
@@ -532,7 +479,7 @@ body {
   letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
   color:rgba(212,175,55,.35);transition:all .25s;
   display:flex;align-items:center;justify-content:center;gap:.375rem;
-  border:1px solid transparent;
+  border:1px solid transparent;background:transparent!important;-webkit-appearance:none;appearance:none;outline:none;
 }
 .rp-tab-icon{font-size:.875rem}
 .rp-tab-active{
