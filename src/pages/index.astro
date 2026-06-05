@@ -161,8 +161,20 @@ function side2(m: typeof recentMatches[0]) {
 
   .hero-logo {
     width: 150px;
-    height: auto;
-    margin: 0 auto 0.5rem;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 28px;
+    margin: 0 auto 0.75rem;
+    display: block;
+    box-shadow:
+      0 0 0 2px rgba(212,175,55,0.3),
+      0 16px 48px rgba(0,0,0,0.6),
+      0 0 40px rgba(212,175,55,0.2);
+    animation: hero-logo-pulse 3s ease-in-out infinite;
+  }
+  @keyframes hero-logo-pulse {
+    0%,100% { box-shadow: 0 0 0 2px rgba(212,175,55,0.3), 0 16px 48px rgba(0,0,0,.6), 0 0 40px rgba(212,175,55,.2); transform: translateY(0); }
+    50%      { box-shadow: 0 0 0 2px rgba(212,175,55,0.5), 0 16px 48px rgba(0,0,0,.6), 0 0 60px rgba(212,175,55,.4); transform: translateY(-4px); }
   }
 
   .hero-sub {

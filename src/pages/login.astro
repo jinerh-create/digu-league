@@ -8,7 +8,7 @@ const next = Astro.url.searchParams.get('next') ?? '/';
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#0B0F1A" />
+  <meta name="theme-color" content="#080C14" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="icon" type="image/png" href="/logo.png" />
@@ -16,139 +16,165 @@ const next = Astro.url.searchParams.get('next') ?? '/';
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Quicksand:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
   <title>Digu League</title>
 </head>
 <body>
 
-<!-- ── ANIMATED BACKGROUND ── -->
-<div class="bg-felt"></div>
-<div class="bg-glow bg-glow-1"></div>
-<div class="bg-glow bg-glow-2"></div>
-<div class="bg-glow bg-glow-3"></div>
+<!-- ═══ ANIMATED BACKGROUND ═══ -->
+<canvas id="bg-canvas"></canvas>
 
-<!-- Floating cards -->
-<div class="fc fc1"><div class="fc-inner"><div class="fc-front">A<span>♠</span></div><div class="fc-back"></div></div></div>
-<div class="fc fc2"><div class="fc-inner"><div class="fc-front red">K<span>♥</span></div><div class="fc-back"></div></div></div>
-<div class="fc fc3"><div class="fc-inner"><div class="fc-front">Q<span>♣</span></div><div class="fc-back"></div></div></div>
-<div class="fc fc4"><div class="fc-inner"><div class="fc-front red">J<span>♦</span></div><div class="fc-back"></div></div></div>
-<div class="fc fc5"><div class="fc-inner"><div class="fc-front">10<span>♠</span></div><div class="fc-back"></div></div></div>
-<div class="fc fc6"><div class="fc-inner"><div class="fc-front red">A<span>♥</span></div><div class="fc-back"></div></div></div>
-<div class="fc fc7"><div class="fc-inner"><div class="fc-front">K<span>♠</span></div><div class="fc-back"></div></div></div>
-<div class="fc fc8"><div class="fc-inner"><div class="fc-front red">Q<span>♦</span></div><div class="fc-back"></div></div></div>
+<div class="bg-grad-1"></div>
+<div class="bg-grad-2"></div>
+<div class="bg-grad-3"></div>
 
-<!-- Chip particles -->
-<div class="chip-particle cp1">🪙</div>
-<div class="chip-particle cp2">🃏</div>
-<div class="chip-particle cp3">🪙</div>
-<div class="chip-particle cp4">🃏</div>
-
-<!-- ── MAIN CONTENT ── -->
+<!-- ═══ MAIN PAGE ═══ -->
 <div class="page">
 
-  <!-- Logo section -->
-  <div class="hero">
-    <div class="logo-ring">
-      <div class="logo-ring-inner"></div>
-      <img src="/logo.png" alt="Digu League" class="hero-logo" />
+  <!-- LOGO & TITLE -->
+  <div class="brand">
+    <!-- Decorative rings -->
+    <div class="logo-stage">
+      <div class="orbit orbit-1"></div>
+      <div class="orbit orbit-2"></div>
+      <div class="orbit orbit-3"></div>
+      <div class="logo-glow"></div>
+      <img src="/logo.png" alt="Digu League" class="brand-logo" id="brand-logo" />
+      <!-- Crown sparkles -->
+      <div class="sparkle sp1">✦</div>
+      <div class="sparkle sp2">✦</div>
+      <div class="sparkle sp3">✦</div>
+      <div class="sparkle sp4">✦</div>
     </div>
-    <h1 class="hero-title">Digu League</h1>
-    <p class="hero-sub">GIN RUMMY · COMPETITION TRACKER</p>
-    <div class="hero-suits">
-      <span class="suit black">♠</span>
-      <span class="suit red">♥</span>
-      <span class="suit black">♣</span>
-      <span class="suit red">♦</span>
+
+    <div class="brand-text">
+      <h1 class="brand-name">Digu League</h1>
+      <div class="brand-rule">
+        <span class="rule-line"></span>
+        <span class="rule-suit">♦</span>
+        <span class="rule-line"></span>
+      </div>
+      <p class="brand-motto">Play Smart &nbsp;·&nbsp; Win Big &nbsp;·&nbsp; Reign Supreme</p>
     </div>
   </div>
 
-  <!-- Login card -->
-  <div class="login-card">
+  <!-- LOGIN CARD -->
+  <div class="lcard">
 
-    <!-- Tab switcher -->
-    <div class="tabs">
-      <button class="tab active" id="tab-player" onclick="switchTab('player')">
-        🎴 Player
+    <!-- Card shimmer effect -->
+    <div class="card-shine"></div>
+
+    <!-- Header -->
+    <div class="lcard-header">
+      <div class="lcard-suits">
+        <span class="ls black">♠</span>
+        <span class="ls red">♥</span>
+        <span class="ls black">♣</span>
+        <span class="ls red">♦</span>
+      </div>
+      <div class="lcard-title">Sign In</div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="ltabs">
+      <button class="ltab ltab-active" id="tab-player" onclick="switchTab('player')">
+        <span class="ltab-icon">🎴</span>
+        <span class="ltab-label">Player</span>
+        <div class="ltab-bar"></div>
       </button>
-      <button class="tab" id="tab-admin" onclick="switchTab('admin')">
-        ⚙️ Admin
+      <div class="ltab-divider">|</div>
+      <button class="ltab" id="tab-admin" onclick="switchTab('admin')">
+        <span class="ltab-icon">⚙️</span>
+        <span class="ltab-label">Admin</span>
+        <div class="ltab-bar"></div>
       </button>
     </div>
 
     <!-- Player panel -->
-    <div id="panel-player" class="panel">
-      <div class="access-info player-info">
-        <div class="access-dots">
-          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-        </div>
+    <div id="panel-player">
+      <div class="access-badge player-badge">
+        <div class="ab-dot"></div>
         <span>Start matches · Enter scores · Edit rounds</span>
       </div>
       <form id="player-form">
         <input type="hidden" class="nxt" value={next} />
-        <div class="field">
-          <label class="lbl">Player Password</label>
-          <div class="inp-row">
-            <span class="inp-icon">🔑</span>
-            <input type="password" id="player-pw" class="inp"
-              placeholder="••••••••" autocomplete="current-password" />
-            <button type="button" class="eye" onclick="togglePw('player-pw',this)">👁</button>
+        <div class="lfield">
+          <label class="llabel">Player Password</label>
+          <div class="linput-wrap" id="pw-wrap-player">
+            <span class="linput-icon">🔑</span>
+            <input type="password" class="linput" id="player-pw"
+              placeholder="Enter password"
+              autocomplete="current-password"
+              onfocus="document.getElementById('pw-wrap-player').classList.add('focused')"
+              onblur="document.getElementById('pw-wrap-player').classList.remove('focused')" />
+            <button type="button" class="leye" onclick="togglePw('player-pw',this)">👁</button>
           </div>
         </div>
-        <p class="err" id="player-err"></p>
-        <button type="submit" class="sbtn player-sbtn" id="player-sub">
-          Sign In as Player →
+        <p class="lerr" id="player-err"></p>
+        <button type="submit" class="lbtn player-lbtn" id="player-sub">
+          <span class="lbtn-text">Sign In as Player</span>
+          <span class="lbtn-arrow">→</span>
         </button>
       </form>
     </div>
 
     <!-- Admin panel -->
-    <div id="panel-admin" class="panel" style="display:none">
-      <div class="access-info admin-info">
-        <div class="access-dots">
-          <span class="dot red"></span><span class="dot red"></span><span class="dot red"></span>
-        </div>
+    <div id="panel-admin" style="display:none">
+      <div class="access-badge admin-badge">
+        <div class="ab-dot ab-red"></div>
         <span>Full access · Manage players · All settings</span>
       </div>
       <form id="admin-form">
         <input type="hidden" class="nxt" value={next} />
-        <div class="field">
-          <label class="lbl">Admin Password</label>
-          <div class="inp-row">
-            <span class="inp-icon">🔐</span>
-            <input type="password" id="admin-pw" class="inp"
-              placeholder="••••••••" autocomplete="current-password" />
-            <button type="button" class="eye" onclick="togglePw('admin-pw',this)">👁</button>
+        <div class="lfield">
+          <label class="llabel">Admin Password</label>
+          <div class="linput-wrap" id="pw-wrap-admin">
+            <span class="linput-icon">🔐</span>
+            <input type="password" class="linput" id="admin-pw"
+              placeholder="Enter password"
+              autocomplete="current-password"
+              onfocus="document.getElementById('pw-wrap-admin').classList.add('focused')"
+              onblur="document.getElementById('pw-wrap-admin').classList.remove('focused')" />
+            <button type="button" class="leye" onclick="togglePw('admin-pw',this)">👁</button>
           </div>
         </div>
-        <p class="err" id="admin-err"></p>
-        <button type="submit" class="sbtn admin-sbtn" id="admin-sub">
-          Sign In as Admin →
+        <p class="lerr" id="admin-err"></p>
+        <button type="submit" class="lbtn admin-lbtn" id="admin-sub">
+          <span class="lbtn-text">Sign In as Admin</span>
+          <span class="lbtn-arrow">→</span>
         </button>
       </form>
     </div>
 
   </div>
 
+  <p class="footer-text">♠ ♥ ♣ ♦ &nbsp; Gin Rummy Competition Tracker</p>
+
 </div>
 
 <script>
+  // Tab switching
   function switchTab(r) {
     const p = r === 'player';
     document.getElementById('panel-player').style.display = p ? '' : 'none';
     document.getElementById('panel-admin').style.display = p ? 'none' : '';
-    document.getElementById('tab-player').classList.toggle('active', p);
-    document.getElementById('tab-admin').classList.toggle('active', !p);
+    document.getElementById('tab-player').classList.toggle('ltab-active', p);
+    document.getElementById('tab-admin').classList.toggle('ltab-active', !p);
   }
+
+  // Show/hide password
   function togglePw(id, btn) {
     const i = document.getElementById(id);
     i.type = i.type === 'password' ? 'text' : 'password';
     btn.textContent = i.type === 'password' ? '👁' : '🙈';
   }
+
+  // Login logic
   async function doLogin(pw, next, errEl, btn) {
     errEl.textContent = '';
     btn.disabled = true;
-    const orig = btn.textContent;
-    btn.textContent = 'Signing in…';
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<span class="lbtn-text">Signing in…</span>';
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -159,13 +185,16 @@ const next = Astro.url.searchParams.get('next') ?? '/';
       else {
         const d = await res.json();
         errEl.textContent = d.error || 'Incorrect password';
-        btn.disabled = false; btn.textContent = orig;
+        btn.disabled = false;
+        btn.innerHTML = orig;
       }
     } catch {
-      errEl.textContent = 'Network error';
-      btn.disabled = false; btn.textContent = orig;
+      errEl.textContent = 'Network error — please try again';
+      btn.disabled = false;
+      btn.innerHTML = orig;
     }
   }
+
   document.getElementById('player-form').addEventListener('submit', e => {
     e.preventDefault();
     doLogin(document.getElementById('player-pw').value,
@@ -180,6 +209,49 @@ const next = Astro.url.searchParams.get('next') ?? '/';
       document.getElementById('admin-err'),
       document.getElementById('admin-sub'));
   });
+
+  // Canvas particle effect
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Create golden dust particles
+  for (let i = 0; i < 60; i++) {
+    particles.push({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      r: Math.random() * 1.5 + 0.3,
+      dx: (Math.random() - 0.5) * 0.3,
+      dy: -Math.random() * 0.4 - 0.1,
+      o: Math.random() * 0.5 + 0.1,
+      do: (Math.random() - 0.5) * 0.005,
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(212,175,55,${p.o})`;
+      ctx.fill();
+      p.x += p.dx; p.y += p.dy;
+      p.o += p.do;
+      if (p.o < 0.05 || p.o > 0.6) p.do *= -1;
+      if (p.y < -5) { p.y = H + 5; p.x = Math.random() * W; }
+      if (p.x < -5) p.x = W + 5;
+      if (p.x > W + 5) p.x = -5;
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
 </script>
 
 <style>
@@ -188,304 +260,335 @@ html, body { height: 100%; }
 
 body {
   font-family: 'Quicksand', system-ui, sans-serif;
-  background: #07090F;
+  background: #080C14;
   color: #DDD1BF;
   min-height: 100dvh;
   overflow-x: hidden;
-  position: relative;
 }
 
-/* ── Background ── */
-.bg-felt {
-  position: fixed; inset: 0; z-index: 0;
-  background:
-    radial-gradient(ellipse 120% 80% at 50% 0%, #0D1628 0%, transparent 60%),
-    radial-gradient(ellipse 80% 60% at 20% 100%, #130C1C 0%, transparent 50%),
-    #07090F;
-  background-image:
-    radial-gradient(ellipse 120% 80% at 50% 0%, #0D1628 0%, transparent 60%),
-    radial-gradient(ellipse 80% 60% at 20% 100%, #130C1C 0%, transparent 50%),
-    repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.012) 40px),
-    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.012) 40px);
-}
+/* Canvas */
+#bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
-.bg-glow {
+/* Background gradients */
+.bg-grad-1, .bg-grad-2, .bg-grad-3 {
   position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
-  filter: blur(80px); animation: glow-drift 8s ease-in-out infinite alternate;
+  filter: blur(100px);
 }
-.bg-glow-1 { width: 500px; height: 500px; top: -150px; left: -100px; background: rgba(212,175,55,0.06); animation-delay: 0s; }
-.bg-glow-2 { width: 400px; height: 400px; bottom: -100px; right: -80px; background: rgba(200,16,46,0.07); animation-delay: 3s; }
-.bg-glow-3 { width: 350px; height: 350px; top: 40%; left: 40%; background: rgba(43,79,55,0.08); animation-delay: 6s; }
-@keyframes glow-drift {
-  from { transform: scale(1) translate(0,0); }
-  to   { transform: scale(1.15) translate(20px,20px); }
+.bg-grad-1 { width: 600px; height: 600px; top: -200px; left: -150px; background: rgba(212,175,55,0.05); animation: bg-drift 12s ease-in-out infinite alternate; }
+.bg-grad-2 { width: 500px; height: 500px; bottom: -150px; right: -100px; background: rgba(200,16,46,0.05); animation: bg-drift 15s ease-in-out infinite alternate-reverse; }
+.bg-grad-3 { width: 400px; height: 400px; top: 40%; left: 30%; background: rgba(43,79,55,0.06); animation: bg-drift 10s ease-in-out infinite alternate; }
+@keyframes bg-drift { from { transform: translate(0,0) scale(1); } to { transform: translate(30px,20px) scale(1.1); } }
+
+  50%,85%     { transform: rotateY(180deg); }
 }
 
-/* ── Floating cards ── */
-.fc {
-  position: fixed; width: 54px; height: 78px;
-  perspective: 600px; z-index: 1; pointer-events: none;
-  animation: fc-float 20s ease-in-out infinite;
-}
-.fc-inner {
-  width: 100%; height: 100%;
-  transform-style: preserve-3d;
-  animation: fc-flip 6s ease-in-out infinite;
-  border-radius: 8px;
-}
-.fc-front, .fc-back {
-  position: absolute; inset: 0; border-radius: 8px;
-  backface-visibility: hidden;
-}
-.fc-front {
-  background: #fff; color: #1a1a2e;
-  display: flex; flex-direction: column; align-items: flex-start;
-  justify-content: flex-start; padding: 5px 6px;
-  font-family: Georgia, serif; font-size: 14px; font-weight: 900;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-  opacity: 0.7;
-}
-.fc-front span { font-size: 16px; display: block; line-height: 1; }
-.fc-front.red { color: #C8102E; }
-.fc-back {
-  background: linear-gradient(135deg, #1a3a2a 0%, #0d1f17 100%);
-  border: 2px solid rgba(212,175,55,0.3);
-  transform: rotateY(180deg);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-}
-.fc-back::after {
-  content: '🃏'; position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center; font-size: 20px;
-  opacity: 0.4;
-}
-
-/* Card positions & animations */
-.fc1  { top:5%;  left:3%;  animation-delay:0s;  animation-duration:18s }
-.fc2  { top:15%; right:4%; animation-delay:2s;  animation-duration:22s }
-.fc3  { top:55%; left:2%;  animation-delay:4s;  animation-duration:20s }
-.fc4  { top:70%; right:3%; animation-delay:1s;  animation-duration:25s }
-.fc5  { top:30%; left:6%;  animation-delay:3s;  animation-duration:19s }
-.fc6  { top:80%; left:25%; animation-delay:5s;  animation-duration:21s }
-.fc7  { top:10%; right:15%;animation-delay:7s;  animation-duration:23s }
-.fc8  { top:65%; right:20%;animation-delay:6s;  animation-duration:17s }
-
-@keyframes fc-float {
-  0%,100% { transform: translateY(0) rotate(-5deg); }
-  25%      { transform: translateY(-18px) rotate(3deg); }
-  50%      { transform: translateY(-8px) rotate(-2deg); }
-  75%      { transform: translateY(-22px) rotate(5deg); }
-}
-@keyframes fc-flip {
-  0%,40%,100% { transform: rotateY(0deg); }
-  50%,90%     { transform: rotateY(180deg); }
-}
-
-/* ── Chip particles ── */
-.chip-particle {
-  position: fixed; font-size: 1.5rem; pointer-events: none; z-index: 1;
-  animation: chip-float 10s ease-in-out infinite;
-  opacity: 0.15;
-}
-.cp1 { bottom:15%; left:8%;  animation-delay:0s }
-.cp2 { top:20%;    right:8%; animation-delay:3s }
-.cp3 { top:45%;    left:12%; animation-delay:6s }
-.cp4 { bottom:25%; right:12%;animation-delay:9s }
-@keyframes chip-float {
-  0%,100% { transform: translateY(0) scale(1); opacity:0.15; }
-  50%      { transform: translateY(-16px) scale(1.1); opacity:0.25; }
-}
-
-/* ── Page layout ── */
+/* ═══ PAGE ═══ */
 .page {
   position: relative; z-index: 10;
   min-height: 100dvh;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  padding: 2rem 1rem 3rem;
-  gap: 2rem;
+  padding: 2rem 1.25rem 2.5rem;
+  gap: 1.75rem;
 }
 
-/* ── Hero ── */
-.hero { text-align: center; }
+/* ═══ BRAND ═══ */
+.brand { text-align: center; }
 
-.logo-ring {
-  position: relative; width: 110px; height: 110px;
-  margin: 0 auto 1.125rem;
+/* Logo stage */
+.logo-stage {
+  position: relative; width: 150px; height: 150px;
+  margin: 0 auto 1.25rem;
 }
-.logo-ring-inner {
-  position: absolute; inset: -8px; border-radius: 50%;
-  border: 2px solid transparent;
-  background: linear-gradient(135deg, #D4AF37, #C8102E, #2B4F37, #D4AF37) border-box;
-  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: destination-out;
-  mask-composite: exclude;
-  animation: ring-spin 8s linear infinite;
-}
-@keyframes ring-spin { to { transform: rotate(360deg); } }
 
-.hero-logo {
-  width: 110px; height: 110px; border-radius: 26px;
-  position: relative; z-index: 1;
+/* Orbiting rings */
+.orbit {
+  position: absolute; border-radius: 50%; pointer-events: none;
+  border-style: solid;
+}
+.orbit-1 {
+  inset: -14px;
+  border-width: 1.5px;
+  border-color: rgba(212,175,55,0.35) rgba(212,175,55,0.1) rgba(212,175,55,0.35) rgba(212,175,55,0.1);
+  animation: orbit-spin 6s linear infinite;
+}
+.orbit-2 {
+  inset: -24px;
+  border-width: 1px;
+  border-color: rgba(200,16,46,0.2) transparent rgba(200,16,46,0.2) transparent;
+  animation: orbit-spin 10s linear infinite reverse;
+}
+.orbit-3 {
+  inset: -34px;
+  border-width: 0.5px;
+  border-color: rgba(212,175,55,0.1) transparent rgba(212,175,55,0.1) transparent;
+  animation: orbit-spin 16s linear infinite;
+}
+@keyframes orbit-spin { to { transform: rotate(360deg); } }
+
+/* Glow */
+.logo-glow {
+  position: absolute; inset: -25px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(212,175,55,0.22) 0%, transparent 70%);
+  animation: logo-breathe 3s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes logo-breathe {
+  0%,100% { transform: scale(1);   opacity: 0.8; }
+  50%      { transform: scale(1.2); opacity: 1;   }
+}
+
+.brand-logo {
+  width: 150px; height: 150px; border-radius: 22px;
+  position: relative; z-index: 2; object-fit: cover;
   box-shadow:
-    0 0 0 1px rgba(212,175,55,0.25),
-    0 20px 60px rgba(0,0,0,0.7),
-    0 0 40px rgba(212,175,55,0.2);
-  animation: logo-pulse 3s ease-in-out infinite;
+    0 0 0 2px rgba(212,175,55,0.4),
+    0 20px 60px rgba(0,0,0,0.8),
+    0 0 60px rgba(212,175,55,0.2);
+  animation: logo-levitate 4s ease-in-out infinite;
 }
-@keyframes logo-pulse {
-  0%,100% { box-shadow: 0 0 0 1px rgba(212,175,55,0.25), 0 20px 60px rgba(0,0,0,.7), 0 0 40px rgba(212,175,55,.2); }
-  50%      { box-shadow: 0 0 0 1px rgba(212,175,55,0.4),  0 20px 60px rgba(0,0,0,.7), 0 0 60px rgba(212,175,55,.35); }
-}
-
-.hero-title {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(2rem, 8vw, 3rem);
-  font-weight: 900; color: #D4AF37; letter-spacing: -0.02em; line-height: 1;
-  margin-bottom: 0.5rem;
-  text-shadow: 0 0 40px rgba(212,175,55,0.4), 0 0 80px rgba(212,175,55,0.15);
-  animation: title-shimmer 4s ease-in-out infinite;
-}
-@keyframes title-shimmer {
-  0%,100% { text-shadow: 0 0 40px rgba(212,175,55,0.4), 0 0 80px rgba(212,175,55,0.15); }
-  50%      { text-shadow: 0 0 60px rgba(212,175,55,0.6), 0 0 120px rgba(212,175,55,0.25); }
+@keyframes logo-levitate {
+  0%,100% { transform: translateY(0);    box-shadow: 0 0 0 2px rgba(212,175,55,0.4), 0 20px 60px rgba(0,0,0,.8), 0 0 60px rgba(212,175,55,.2); }
+  50%      { transform: translateY(-8px); box-shadow: 0 0 0 2px rgba(212,175,55,0.6), 0 28px 70px rgba(0,0,0,.7), 0 0 80px rgba(212,175,55,.35); }
 }
 
-.hero-sub {
-  font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.22em;
-  color: #6a9bc8; text-transform: uppercase; margin-bottom: 1.25rem;
+/* Sparkles */
+.sparkle {
+  position: absolute; z-index: 3; color: #D4AF37;
+  font-size: 0.875rem; pointer-events: none;
+  animation: sparkle-pulse 2s ease-in-out infinite;
+}
+.sp1 { top:-8px;  left:50%; transform:translateX(-50%); animation-delay:0s; }
+.sp2 { top:50%;   right:-10px; transform:translateY(-50%); animation-delay:0.5s; }
+.sp3 { bottom:-8px; left:50%; transform:translateX(-50%); animation-delay:1s; }
+.sp4 { top:50%;   left:-10px; transform:translateY(-50%); animation-delay:1.5s; }
+@keyframes sparkle-pulse {
+  0%,100% { opacity:0.3; transform:scale(0.8) translateX(-50%); }
+  50%      { opacity:1;   transform:scale(1.3) translateX(-50%); }
+}
+.sp2, .sp4 { transform: translateY(-50%) !important; }
+@keyframes sparkle-pulse2 {
+  0%,100% { opacity:0.3; transform:scale(0.8) translateY(-50%); }
+  50%      { opacity:1;   transform:scale(1.3) translateY(-50%); }
+}
+.sp2 { animation-name: sparkle-pulse2; }
+.sp4 { animation-name: sparkle-pulse2; }
+
+/* Brand text */
+.brand-text { text-align: center; }
+
+.brand-name {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(1.75rem, 7vw, 2.5rem);
+  font-weight: 900; color: #D4AF37;
+  letter-spacing: 0.04em; line-height: 1.1;
+  text-shadow:
+    0 0 30px rgba(212,175,55,0.5),
+    0 0 60px rgba(212,175,55,0.2),
+    0 2px 4px rgba(0,0,0,0.8);
+  animation: name-glow 4s ease-in-out infinite;
+  margin-bottom: 0.75rem;
+}
+@keyframes name-glow {
+  0%,100% { text-shadow: 0 0 30px rgba(212,175,55,0.5), 0 0 60px rgba(212,175,55,0.2), 0 2px 4px rgba(0,0,0,.8); }
+  50%      { text-shadow: 0 0 40px rgba(212,175,55,0.7), 0 0 80px rgba(212,175,55,0.35), 0 2px 4px rgba(0,0,0,.8); }
 }
 
-.hero-suits {
-  display: flex; gap: 0.875rem; justify-content: center; align-items: center;
+.brand-rule {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0.625rem; margin-bottom: 0.625rem;
 }
-.suit {
-  font-size: 1.375rem; font-family: Georgia, serif;
-  animation: suit-bounce 2s ease-in-out infinite;
-  display: inline-block;
+.rule-line {
+  height: 1px; width: 50px;
+  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.5), transparent);
 }
-.suit:nth-child(1) { animation-delay: 0s; }
-.suit:nth-child(2) { animation-delay: 0.2s; }
-.suit:nth-child(3) { animation-delay: 0.4s; }
-.suit:nth-child(4) { animation-delay: 0.6s; }
-.suit.black { color: #DDD1BF; }
-.suit.red   { color: #C8102E; }
-@keyframes suit-bounce {
-  0%,100% { transform: translateY(0); }
-  50%      { transform: translateY(-5px); }
+.rule-suit { color: #D4AF37; font-size: 0.75rem; opacity: 0.7; }
+
+.brand-motto {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.75rem; font-weight: 600;
+  color: rgba(212,175,55,0.6);
+  letter-spacing: 0.18em; text-transform: uppercase;
+  font-style: italic;
 }
 
-/* ── Login card ── */
-.login-card {
-  width: 100%; max-width: 400px;
-  background: rgba(13,21,37,0.85);
-  border: 1px solid rgba(212,175,55,0.15);
-  border-radius: 20px;
-  padding: 1.75rem 1.5rem;
-  backdrop-filter: blur(20px);
+/* ═══ LOGIN CARD ═══ */
+.lcard {
+  width: 100%; max-width: 390px;
+  background: linear-gradient(160deg, rgba(15,24,42,0.95) 0%, rgba(10,16,30,0.98) 100%);
+  border: 1px solid rgba(212,175,55,0.18);
+  border-radius: 22px;
+  padding: 1.75rem 1.625rem 1.875rem;
+  position: relative; overflow: hidden;
   box-shadow:
     0 0 0 1px rgba(255,255,255,0.04),
-    0 24px 80px rgba(0,0,0,0.7),
-    inset 0 1px 0 rgba(255,255,255,0.06);
-  animation: card-appear 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+    0 30px 80px rgba(0,0,0,0.75),
+    0 0 40px rgba(212,175,55,0.06),
+    inset 0 1px 0 rgba(255,255,255,0.07);
+  animation: card-in 0.7s cubic-bezier(0.34,1.56,0.64,1) both 0.2s;
 }
-@keyframes card-appear {
-  from { opacity:0; transform: translateY(30px) scale(0.95); }
+@keyframes card-in {
+  from { opacity:0; transform: translateY(40px) scale(0.94); }
   to   { opacity:1; transform: none; }
 }
 
-/* ── Tabs ── */
-.tabs {
-  display: flex; gap: 4px;
-  background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 12px; padding: 4px; margin-bottom: 1.25rem;
-}
-.tab {
-  flex: 1; padding: 0.625rem 0.5rem; border-radius: 9px;
-  font-size: 0.875rem; font-weight: 700; cursor: pointer;
-  color: #6a9bc8; transition: all 0.25s; font-family: 'Quicksand', sans-serif;
-}
-.tab.active {
-  background: rgba(212,175,55,0.12);
-  color: #D4AF37;
-  box-shadow: 0 1px 8px rgba(212,175,55,0.15);
-}
-
-/* ── Access info ── */
-.access-info {
-  display: flex; align-items: center; gap: 0.75rem;
-  border-radius: 10px; padding: 0.625rem 0.875rem; margin-bottom: 1.25rem;
-  font-size: 0.75rem; font-weight: 600; color: #6a9bc8;
-}
-.player-info { background: rgba(212,175,55,0.05); border: 1px solid rgba(212,175,55,0.14); }
-.admin-info  { background: rgba(120,39,13,0.08);  border: 1px solid rgba(120,39,13,0.25); }
-.access-dots { display: flex; gap: 4px; flex-shrink: 0; }
-.dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(212,175,55,0.5); display: block; }
-.dot.red { background: rgba(200,16,46,0.6); }
-
-/* ── Field ── */
-.field { margin-bottom: 0.875rem; }
-.lbl {
-  display: block; font-size: 0.5625rem; font-weight: 800;
-  text-transform: uppercase; letter-spacing: 0.14em;
-  color: #6a9bc8; margin-bottom: 0.5rem;
-}
-.inp-row {
-  display: flex; align-items: center;
-  background: rgba(0,0,0,0.35); border: 1.5px solid rgba(255,255,255,0.08);
-  border-radius: 10px; overflow: hidden; transition: all 0.2s;
-}
-.inp-row:focus-within {
-  border-color: rgba(212,175,55,0.5);
-  box-shadow: 0 0 0 3px rgba(212,175,55,0.08);
-}
-.inp-icon { padding: 0 0.75rem; font-size: 1rem; flex-shrink: 0; }
-.inp {
-  flex: 1; background: none; border: none; outline: none;
-  color: #DDD1BF; font-size: 1rem; font-family: inherit;
-  padding: 0.75rem 0; font-weight: 600; min-width: 0;
-  letter-spacing: 0.05em;
-}
-.inp::placeholder { color: #1e3a5a; letter-spacing: 0; }
-.eye { padding: 0 0.75rem; font-size: 1rem; cursor: pointer; color: #6a9bc8; flex-shrink: 0; }
-
-/* ── Error ── */
-.err {
-  font-size: 0.8125rem; color: #C8102E; font-weight: 600;
-  min-height: 1.25em; margin-bottom: 0.5rem;
-}
-
-/* ── Submit buttons ── */
-.sbtn {
-  width: 100%; padding: 0.9375rem; border-radius: 12px; border: none;
-  font-size: 1rem; font-weight: 800; cursor: pointer;
-  font-family: 'Quicksand', sans-serif; letter-spacing: 0.02em;
-  transition: all 0.2s; min-height: 52px; position: relative; overflow: hidden;
-}
-.sbtn::after {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+/* Shimmer sweep */
+.card-shine {
+  position: absolute; top: 0; left: -100%;
+  width: 60%; height: 100%;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.03) 50%, transparent 60%);
+  animation: shine-sweep 4s ease-in-out infinite 1s;
   pointer-events: none;
 }
-.player-sbtn {
-  background: linear-gradient(135deg, #A8880A, #D4AF37, #EDD060);
-  color: #0B0F1A;
-  box-shadow: 0 4px 24px rgba(212,175,55,0.4);
+@keyframes shine-sweep { 0%,100% { left:-100%; } 50% { left:150%; } }
+
+/* Card header */
+.lcard-header {
+  display: flex; align-items: center; gap: 0.75rem;
+  margin-bottom: 1.25rem;
 }
-.player-sbtn:hover:not(:disabled) {
+.lcard-suits { display: flex; gap: 0.3rem; }
+.ls { font-size: 0.9375rem; font-family: Georgia, serif; opacity: 0.6; }
+.ls.black { color: #DDD1BF; }
+.ls.red   { color: #C8102E; }
+.lcard-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.0625rem; font-weight: 700; color: #DDD1BF;
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+
+/* Tabs */
+.ltabs {
+  display: flex; align-items: center;
+  gap: 0; margin-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(212,175,55,0.12);
+  padding-bottom: 0;
+}
+.ltab {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: 0.5rem; padding: 0.625rem 0.5rem 0.75rem;
+  font-size: 0.9375rem; font-weight: 700; cursor: pointer;
+  color: rgba(200,180,140,0.4); transition: all 0.2s;
+  font-family: 'Quicksand', sans-serif;
+  position: relative;
+}
+.ltab-bar {
+  position: absolute; bottom: -1px; left: 10%; right: 10%; height: 2px;
+  background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+  border-radius: 2px; opacity: 0;
+  box-shadow: 0 0 8px rgba(212,175,55,0.6);
+  transition: opacity 0.2s;
+}
+.ltab-active { color: #D4AF37; }
+.ltab-active .ltab-bar { opacity: 1; }
+.ltab-divider { color: rgba(212,175,55,0.15); font-size: 1.25rem; padding: 0 0.25rem; }
+.ltab-icon { font-size: 1rem; }
+.ltab-label { font-size: 0.875rem; }
+
+/* Access badge */
+.access-badge {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.6rem 0.875rem; border-radius: 10px;
+  margin-bottom: 1.125rem;
+  font-size: 0.75rem; font-weight: 600; color: rgba(200,180,140,0.6);
+}
+.player-badge { background: rgba(212,175,55,0.05); border: 1px solid rgba(212,175,55,0.12); }
+.admin-badge  { background: rgba(120,39,13,0.08);  border: 1px solid rgba(120,39,13,0.22); }
+.ab-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  background: #D4AF37; box-shadow: 0 0 6px rgba(212,175,55,0.6);
+  animation: dot-pulse 2s ease-in-out infinite;
+}
+.ab-dot.ab-red { background: #C8102E; box-shadow: 0 0 6px rgba(200,16,46,0.6); }
+@keyframes dot-pulse { 0%,100% { transform:scale(1); opacity:1; } 50% { transform:scale(1.3); opacity:0.8; } }
+
+/* Field */
+.lfield { margin-bottom: 0.875rem; }
+.llabel {
+  display: block; font-size: 0.5625rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.16em;
+  color: rgba(200,180,140,0.5); margin-bottom: 0.5rem;
+  font-family: 'Cinzel', serif;
+}
+.linput-wrap {
+  display: flex; align-items: center;
+  background: rgba(0,0,0,0.4);
+  border: 1.5px solid rgba(212,175,55,0.12);
+  border-radius: 12px; overflow: hidden;
+  transition: all 0.25s;
+}
+.linput-wrap.focused {
+  border-color: rgba(212,175,55,0.45);
+  box-shadow: 0 0 0 3px rgba(212,175,55,0.07), 0 0 16px rgba(212,175,55,0.08);
+  background: rgba(0,0,0,0.5);
+}
+.linput-icon { padding: 0 0.875rem; font-size: 1rem; flex-shrink: 0; }
+.linput {
+  flex: 1; background: none; border: none; outline: none;
+  color: #E8D8B8; font-size: 1rem; font-family: 'Quicksand', sans-serif;
+  padding: 0.8125rem 0; font-weight: 600; min-width: 0; letter-spacing: 0.05em;
+}
+.linput::placeholder { color: rgba(200,180,140,0.2); letter-spacing: 0; }
+.leye { padding: 0 0.875rem; font-size: 1rem; cursor: pointer; color: rgba(200,180,140,0.4); flex-shrink: 0; transition: color 0.15s; }
+.leye:hover { color: #D4AF37; }
+
+/* Error */
+.lerr {
+  font-size: 0.8125rem; color: #C8102E; font-weight: 700;
+  min-height: 1.25em; margin-bottom: 0.625rem;
+  font-family: 'Quicksand', sans-serif;
+}
+
+/* Submit buttons */
+.lbtn {
+  width: 100%; padding: 1rem; border-radius: 12px; border: none;
+  font-size: 1rem; font-weight: 800; cursor: pointer;
+  font-family: 'Quicksand', sans-serif;
+  transition: all 0.25s; min-height: 54px;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  position: relative; overflow: hidden;
+}
+.lbtn::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+.lbtn-text { flex: 1; text-align: center; }
+.lbtn-arrow { font-size: 1.125rem; transition: transform 0.2s; }
+.lbtn:hover .lbtn-arrow { transform: translateX(4px); }
+
+.player-lbtn {
+  background: linear-gradient(135deg, #9A7800, #C8A400, #D4AF37, #E8CC60, #D4AF37);
+  background-size: 200% 100%;
+  color: #1A1200;
+  box-shadow: 0 6px 28px rgba(212,175,55,0.45), 0 2px 8px rgba(0,0,0,0.4);
+  animation: btn-shimmer 3s linear infinite;
+}
+@keyframes btn-shimmer { 0% { background-position: 0% 0%; } 100% { background-position: 200% 0%; } }
+.player-lbtn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(212,175,55,0.55);
+  box-shadow: 0 10px 36px rgba(212,175,55,0.6), 0 2px 8px rgba(0,0,0,0.4);
 }
-.admin-sbtn {
-  background: linear-gradient(135deg, #5C1A08, #78270D, #B03A1A);
-  color: #FFF0E8;
-  box-shadow: 0 4px 24px rgba(120,39,13,0.5);
+
+.admin-lbtn {
+  background: linear-gradient(135deg, #4A0F04, #78270D, #A03418);
+  color: #FFD8C0;
+  box-shadow: 0 6px 28px rgba(120,39,13,0.55), 0 2px 8px rgba(0,0,0,0.4);
 }
-.admin-sbtn:hover:not(:disabled) {
+.admin-lbtn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(120,39,13,0.65);
+  box-shadow: 0 10px 36px rgba(120,39,13,0.7), 0 2px 8px rgba(0,0,0,0.4);
 }
-.sbtn:active { transform: translateY(0); }
-.sbtn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+.lbtn:active { transform: translateY(0) !important; }
+.lbtn:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; }
+
+/* Footer */
+.footer-text {
+  font-size: 0.6875rem; color: rgba(212,175,55,0.25);
+  letter-spacing: 0.12em; font-family: 'Cinzel', serif;
+  text-transform: uppercase;
+}
 </style>
 
 </body>
