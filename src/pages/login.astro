@@ -181,6 +181,14 @@ const next = Astro.url.searchParams.get('next') ?? '/';
     document.getElementById('panel-admin').style.display = isPlayer ? 'none' : 'block';
     document.getElementById('tab-player').className = 'rp-tab' + (isPlayer ? ' rp-tab-active' : '');
     document.getElementById('tab-admin').className = 'rp-tab' + (!isPlayer ? ' rp-tab-active rp-tab-admin-active' : '');
+    // Always clear passwords when switching tabs
+    document.getElementById('player-pw').value = '';
+    document.getElementById('admin-pw').value = '';
+    document.getElementById('player-err').textContent = '';
+    document.getElementById('admin-err').textContent = '';
+    // Reset input types to password
+    document.getElementById('player-pw').type = 'password';
+    document.getElementById('admin-pw').type = 'password';
   }
 
   function togglePw(inputId) {
