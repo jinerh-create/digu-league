@@ -182,41 +182,48 @@ function TrophyCase({ trophiesJson }: { trophiesJson: string | undefined | null 
         background: 'linear-gradient(135deg, rgba(212,175,55,0.06) 0%, transparent 60%)',
         border: '1px solid rgba(212,175,55,0.2)',
       }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2.5rem', justifyContent: 'center', alignItems: 'flex-end' }}>
           {trophies.map((t) => (
-            <div key={t.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', width: 130 }}>
-              {/* Coin */}
-              <div style={{
-                width: 120, height: 120, borderRadius: '50%',
-                overflow: 'hidden', position: 'relative', flexShrink: 0,
-                boxShadow: '0 0 0 3px #D4AF37, 0 0 0 6px rgba(212,175,55,0.25), 0 0 40px rgba(212,175,55,0.5), 0 8px 32px rgba(0,0,0,0.5)',
-                animation: 'trophy-glow 3s ease-in-out infinite',
-              }}>
+            <div key={t.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+              {/* Trophy image — no circle, mix-blend removes white bg */}
+              <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', animation: 'trophy-float 3s ease-in-out infinite' }}>
+                {/* Gold glow underneath */}
+                <div style={{
+                  position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)',
+                  width: '70%', height: 20,
+                  background: 'radial-gradient(ellipse, rgba(212,175,55,0.5) 0%, transparent 70%)',
+                  filter: 'blur(8px)',
+                  animation: 'trophy-glow-shadow 3s ease-in-out infinite',
+                }} />
                 <img
                   src={t.image}
                   alt={t.name}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  style={{
+                    width: 180, height: 'auto', display: 'block',
+                    mixBlendMode: 'multiply',
+                    filter: 'drop-shadow(0 0 20px rgba(212,175,55,0.6)) drop-shadow(0 8px 24px rgba(0,0,0,0.8))',
+                    position: 'relative', zIndex: 1,
+                  }}
                 />
-                <div style={{
-                  position: 'absolute', inset: 0,
-                  background: 'linear-gradient(135deg, rgba(255,245,150,0.2) 0%, transparent 45%, rgba(150,100,0,0.1) 100%)',
-                  borderRadius: '50%', pointerEvents: 'none',
-                }} />
               </div>
               {/* Labels */}
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '0.6875rem', fontWeight: 800, color: '#D4AF37', marginBottom: '0.3rem', lineHeight: 1.3 }}>
+                <div style={{
+                  fontSize: '1rem', fontWeight: 900, color: '#D4AF37',
+                  marginBottom: '0.375rem', lineHeight: 1.2,
+                  textShadow: '0 0 20px rgba(212,175,55,0.5)',
+                }}>
                   {t.name}
                 </div>
                 <div style={{
-                  fontSize: '0.5625rem', fontWeight: 700, color: '#fff',
-                  background: 'rgba(212,175,55,0.18)', border: '1px solid rgba(212,175,55,0.35)',
-                  borderRadius: 20, padding: '2px 10px', display: 'inline-block', marginBottom: '0.25rem',
+                  fontSize: '0.6875rem', fontWeight: 700, color: '#D4AF37',
+                  background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.4)',
+                  borderRadius: 20, padding: '4px 14px', display: 'inline-block', marginBottom: '0.375rem',
                 }}>
                   {t.period}
                 </div>
                 {t.desc && (
-                  <div style={{ fontSize: '0.5rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                  <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 600, lineHeight: 1.4 }}>
                     {t.desc}
                   </div>
                 )}
@@ -226,9 +233,17 @@ function TrophyCase({ trophiesJson }: { trophiesJson: string | undefined | null 
         </div>
       </div>
       <style>{`
+        @keyframes trophy-float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+        @keyframes trophy-glow-shadow {
+          0%, 100% { opacity: 0.6; transform: translateX(-50%) scaleX(1); }
+          50% { opacity: 1; transform: translateX(-50%) scaleX(1.2); }
+        }
         @keyframes trophy-glow {
-          0%, 100% { box-shadow: 0 0 0 3px #D4AF37, 0 0 0 6px rgba(212,175,55,0.25), 0 0 40px rgba(212,175,55,0.5), 0 8px 32px rgba(0,0,0,0.5); }
-          50% { box-shadow: 0 0 0 3px #D4AF37, 0 0 0 6px rgba(212,175,55,0.4), 0 0 60px rgba(212,175,55,0.7), 0 8px 32px rgba(0,0,0,0.5); }
+          0%, 100% { filter: drop-shadow(0 0 20px rgba(212,175,55,0.6)) drop-shadow(0 8px 24px rgba(0,0,0,0.8)); }
+          50% { filter: drop-shadow(0 0 35px rgba(212,175,55,0.9)) drop-shadow(0 8px 24px rgba(0,0,0,0.8)); }
         }
       `}</style>
     </>
