@@ -185,26 +185,34 @@ function TrophyCase({ trophiesJson }: { trophiesJson: string | undefined | null 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2.5rem', justifyContent: 'center', alignItems: 'flex-end' }}>
           {trophies.map((t) => (
             <div key={t.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-              {/* Trophy image — no circle, mix-blend removes white bg */}
-              <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', animation: 'trophy-float 3s ease-in-out infinite' }}>
-                {/* Gold glow underneath */}
+              {/* Trophy image on white card — white bg is intentional */}
+              <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center', animation: 'trophy-float 3s ease-in-out infinite' }}>
+                {/* Gold glow ring behind card */}
                 <div style={{
-                  position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)',
-                  width: '70%', height: 20,
-                  background: 'radial-gradient(ellipse, rgba(212,175,55,0.5) 0%, transparent 70%)',
-                  filter: 'blur(8px)',
+                  position: 'absolute', inset: -20, borderRadius: 20,
+                  background: 'radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 70%)',
                   animation: 'trophy-glow-shadow 3s ease-in-out infinite',
                 }} />
-                <img
-                  src={t.image}
-                  alt={t.name}
-                  style={{
-                    width: 180, height: 'auto', display: 'block',
-                    mixBlendMode: 'multiply',
-                    filter: 'drop-shadow(0 0 20px rgba(212,175,55,0.6)) drop-shadow(0 8px 24px rgba(0,0,0,0.8))',
-                    position: 'relative', zIndex: 1,
-                  }}
-                />
+                {/* White card housing the trophy */}
+                <div style={{
+                  background: 'linear-gradient(160deg,#fff 0%,#f5f0e8 100%)',
+                  borderRadius: 16, padding: '16px 20px 12px',
+                  boxShadow: '0 0 0 2px rgba(212,175,55,0.4), 0 0 0 4px rgba(212,175,55,0.12), 0 12px 40px rgba(0,0,0,0.5), 0 0 30px rgba(212,175,55,0.2)',
+                  position: 'relative', zIndex: 1,
+                  animation: 'trophy-glow 3s ease-in-out infinite',
+                }}>
+                  <img
+                    src={t.image}
+                    alt={t.name}
+                    style={{ width: 160, height: 'auto', display: 'block' }}
+                  />
+                </div>
+                {/* Shadow under card */}
+                <div style={{
+                  width: '70%', height: 10, marginTop: 4,
+                  background: 'radial-gradient(ellipse, rgba(212,175,55,0.4) 0%, transparent 70%)',
+                  filter: 'blur(6px)',
+                }} />
               </div>
               {/* Labels */}
               <div style={{ textAlign: 'center' }}>
