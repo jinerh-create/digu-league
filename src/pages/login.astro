@@ -16,202 +16,180 @@ const next = Astro.url.searchParams.get('next') ?? '/';
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Quicksand:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
-  <title>Digu League</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet" />
+  <title>Digu League · Sign In</title>
 </head>
 <body>
 
-<!-- ═══ ANIMATED BACKGROUND ═══ -->
-<canvas id="bg-canvas"></canvas>
+<!-- Background -->
+<div class="bg"></div>
+<div class="bg-blob bg-blob-1"></div>
+<div class="bg-blob bg-blob-2"></div>
+<canvas id="particles"></canvas>
 
-<div class="bg-grad-1"></div>
-<div class="bg-grad-2"></div>
-<div class="bg-grad-3"></div>
-
-<!-- ═══ MAIN PAGE ═══ -->
+<!-- ── MAIN SPLIT CARD ── -->
 <div class="page">
+  <div class="split-card">
 
-  <!-- LOGO & TITLE -->
-  <div class="brand">
-    <!-- Decorative rings -->
-    <div class="logo-stage">
-      <div class="orbit orbit-1"></div>
-      <div class="orbit orbit-2"></div>
-      <div class="orbit orbit-3"></div>
-      <div class="logo-glow"></div>
-      <img src="/logo.png" alt="Digu League" class="brand-logo" id="brand-logo" />
-      <!-- Crown sparkles -->
-      <div class="sparkle sp1">✦</div>
-      <div class="sparkle sp2">✦</div>
-      <div class="sparkle sp3">✦</div>
-      <div class="sparkle sp4">✦</div>
-    </div>
+    <!-- ══ LEFT PANEL ══ -->
+    <div class="left-panel">
+      <!-- Blob shapes behind trophy -->
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
 
-    <div class="brand-text">
-      <h1 class="brand-name">Digu League</h1>
-      <div class="brand-rule">
-        <span class="rule-line"></span>
-        <span class="rule-suit">♦</span>
-        <span class="rule-line"></span>
-      </div>
-      <p class="brand-motto">Play Smart &nbsp;·&nbsp; Win Big &nbsp;·&nbsp; Reign Supreme</p>
-    </div>
-
-    <!-- TROPHY SHOWCASE (desktop only) -->
-    <div class="trophy-showcase">
-      <div class="trophy-label">
-        <span class="trophy-label-line"></span>
-        <span class="trophy-label-text">🏆 MAY 2026 CHAMPION</span>
-        <span class="trophy-label-line"></span>
-      </div>
-      <div class="trophy-img-wrap">
-        <div class="trophy-ground-glow"></div>
-        <img src="/badges/champion-may-2026.png" alt="May 2026 Champion Trophy" class="trophy-img" />
-      </div>
-      <div class="trophy-winner">
-        <span class="trophy-crown">👑</span>
-        <span class="trophy-winner-name">Mohamed Shujau</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- LOGIN CARD -->
-  <div class="lcard">
-
-    <!-- Card shimmer effect -->
-    <div class="card-shine"></div>
-
-    <!-- Header -->
-    <div class="lcard-header">
-      <div class="lcard-suits">
-        <span class="ls black">♠</span>
-        <span class="ls red">♥</span>
-        <span class="ls black">♣</span>
-        <span class="ls red">♦</span>
-      </div>
-      <div class="lcard-title">Sign In</div>
-    </div>
-
-    <!-- Tabs -->
-    <div class="ltabs">
-      <button class="ltab ltab-active" id="tab-player" onclick="switchTab('player')">
-        <span class="ltab-icon">🎴</span>
-        <span class="ltab-label">Player</span>
-        <div class="ltab-bar"></div>
-      </button>
-      <div class="ltab-divider">|</div>
-      <button class="ltab" id="tab-admin" onclick="switchTab('admin')">
-        <span class="ltab-icon">⚙️</span>
-        <span class="ltab-label">Admin</span>
-        <div class="ltab-bar"></div>
-      </button>
-    </div>
-
-    <!-- Player panel -->
-    <div id="panel-player">
-      <div class="access-badge player-badge">
-        <div class="ab-dot"></div>
-        <span>Start matches · Enter scores · Edit rounds</span>
-      </div>
-      <form id="player-form">
-        <input type="hidden" class="nxt" value={next} />
-        <div class="lfield">
-          <label class="llabel">Player Password</label>
-          <div class="linput-wrap" id="pw-wrap-player">
-            <span class="linput-icon">🔑</span>
-            <input type="password" class="linput" id="player-pw"
-              placeholder="Enter password"
-              autocomplete="current-password"
-              onfocus="document.getElementById('pw-wrap-player').classList.add('focused')"
-              onblur="document.getElementById('pw-wrap-player').classList.remove('focused')" />
-            <button type="button" class="leye" onclick="togglePw('player-pw',this)">👁</button>
-          </div>
+      <!-- Logo top left -->
+      <div class="lp-logo">
+        <img src="/logo.png" alt="Digu League" class="lp-logo-img" />
+        <div class="lp-logo-text">
+          <div class="lp-name">Digu League</div>
+          <div class="lp-sub">Play Smart · Win Big · Reign Supreme</div>
         </div>
-        <p class="lerr" id="player-err"></p>
-        <button type="submit" class="lbtn player-lbtn" id="player-sub">
-          <span class="lbtn-text">Sign In as Player</span>
-          <span class="lbtn-arrow">→</span>
-        </button>
-      </form>
+      </div>
+
+      <!-- Trophy center -->
+      <div class="lp-trophy">
+        <div class="trophy-glow-ring"></div>
+        <div class="trophy-glow-floor"></div>
+        <img
+          src="/badges/champion-may-2026.png"
+          alt="May 2026 Champion"
+          class="lp-trophy-img"
+        />
+        <div class="trophy-badge">
+          <span>👑</span>
+          <span>May 2026 Champion</span>
+          <span>·</span>
+          <span>Mohamed Shujau</span>
+        </div>
+      </div>
+
+      <!-- Bottom suits decoration -->
+      <div class="lp-suits">
+        <span class="s-black">♠</span>
+        <span class="s-red">♥</span>
+        <span class="s-black">♣</span>
+        <span class="s-red">♦</span>
+      </div>
     </div>
 
-    <!-- Admin panel -->
-    <div id="panel-admin" style="display:none">
-      <div class="access-badge admin-badge">
-        <div class="ab-dot ab-red"></div>
-        <span>Full access · Manage players · All settings</span>
-      </div>
-      <form id="admin-form">
-        <input type="hidden" class="nxt" value={next} />
-        <div class="lfield">
-          <label class="llabel">Admin Password</label>
-          <div class="linput-wrap" id="pw-wrap-admin">
-            <span class="linput-icon">🔐</span>
-            <input type="password" class="linput" id="admin-pw"
-              placeholder="Enter password"
-              autocomplete="current-password"
-              onfocus="document.getElementById('pw-wrap-admin').classList.add('focused')"
-              onblur="document.getElementById('pw-wrap-admin').classList.remove('focused')" />
-            <button type="button" class="leye" onclick="togglePw('admin-pw',this)">👁</button>
-          </div>
+    <!-- ══ RIGHT PANEL ══ -->
+    <div class="right-panel">
+      <div class="rp-inner">
+
+        <!-- Header -->
+        <div class="rp-header">
+          <h1 class="rp-title">Sign In</h1>
+          <p class="rp-sub">Welcome back to the league</p>
         </div>
-        <p class="lerr" id="admin-err"></p>
-        <button type="submit" class="lbtn admin-lbtn" id="admin-sub">
-          <span class="lbtn-text">Sign In as Admin</span>
-          <span class="lbtn-arrow">→</span>
-        </button>
-      </form>
+
+        <!-- Tabs -->
+        <div class="rp-tabs">
+          <button class="rp-tab rp-tab-active" id="tab-player" onclick="switchTab('player')">
+            Player
+          </button>
+          <button class="rp-tab" id="tab-admin" onclick="switchTab('admin')">
+            Admin
+          </button>
+        </div>
+
+        <!-- Player form -->
+        <div id="panel-player">
+          <div class="rp-role-hint">
+            <span class="rp-dot"></span>
+            Start matches · Enter scores · Edit rounds
+          </div>
+          <form id="player-form">
+            <input type="hidden" class="nxt" value={next} />
+            <div class="rp-field">
+              <label class="rp-label">Password</label>
+              <div class="rp-input-wrap" id="iw-player">
+                <input type="password" class="rp-input" id="player-pw"
+                  placeholder="Enter player password"
+                  autocomplete="current-password"
+                  onfocus="document.getElementById('iw-player').classList.add('focus')"
+                  onblur="document.getElementById('iw-player').classList.remove('focus')" />
+                <button type="button" class="rp-eye" onclick="togglePw('player-pw',this)">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </div>
+            <p class="rp-err" id="player-err"></p>
+            <button type="submit" class="rp-btn rp-btn-gold" id="player-sub">
+              Sign In as Player
+            </button>
+          </form>
+        </div>
+
+        <!-- Admin form -->
+        <div id="panel-admin" style="display:none">
+          <div class="rp-role-hint rp-role-admin">
+            <span class="rp-dot rp-dot-red"></span>
+            Full access · Manage players · All settings
+          </div>
+          <form id="admin-form">
+            <input type="hidden" class="nxt" value={next} />
+            <div class="rp-field">
+              <label class="rp-label">Password</label>
+              <div class="rp-input-wrap" id="iw-admin">
+                <input type="password" class="rp-input" id="admin-pw"
+                  placeholder="Enter admin password"
+                  autocomplete="current-password"
+                  onfocus="document.getElementById('iw-admin').classList.add('focus')"
+                  onblur="document.getElementById('iw-admin').classList.remove('focus')" />
+                <button type="button" class="rp-eye" onclick="togglePw('admin-pw',this)">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </div>
+            <p class="rp-err" id="admin-err"></p>
+            <button type="submit" class="rp-btn rp-btn-ember" id="admin-sub">
+              Sign In as Admin
+            </button>
+          </form>
+        </div>
+
+        <div class="rp-footer">♠ ♥ ♣ ♦ &nbsp; Gin Rummy Competition</div>
+      </div>
     </div>
 
   </div>
-
-  <p class="footer-text">♠ ♥ ♣ ♦ &nbsp; Gin Rummy Competition Tracker</p>
-
 </div>
 
 <script>
-  // Tab switching
   function switchTab(r) {
     const p = r === 'player';
     document.getElementById('panel-player').style.display = p ? '' : 'none';
     document.getElementById('panel-admin').style.display = p ? 'none' : '';
-    document.getElementById('tab-player').classList.toggle('ltab-active', p);
-    document.getElementById('tab-admin').classList.toggle('ltab-active', !p);
+    document.getElementById('tab-player').classList.toggle('rp-tab-active', p);
+    document.getElementById('tab-admin').classList.toggle('rp-tab-active', !p);
   }
-
-  // Show/hide password
   function togglePw(id, btn) {
     const i = document.getElementById(id);
     i.type = i.type === 'password' ? 'text' : 'password';
-    btn.textContent = i.type === 'password' ? '👁' : '🙈';
+    btn.querySelector('svg').style.opacity = i.type === 'text' ? '0.4' : '1';
   }
-
-  // Login logic
-  async function doLogin(pw, next, errEl, btn) {
+  async function doLogin(pw, nxt, errEl, btn) {
     errEl.textContent = '';
     btn.disabled = true;
-    const orig = btn.innerHTML;
-    btn.innerHTML = '<span class="lbtn-text">Signing in…</span>';
+    const orig = btn.textContent;
+    btn.textContent = 'Signing in…';
     try {
       const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ password: pw }),
       });
-      if (res.ok) { window.location.href = next || '/'; }
+      if (res.ok) { window.location.href = nxt || '/'; }
       else {
         const d = await res.json();
         errEl.textContent = d.error || 'Incorrect password';
-        btn.disabled = false;
-        btn.innerHTML = orig;
+        btn.disabled = false; btn.textContent = orig;
       }
     } catch {
-      errEl.textContent = 'Network error — please try again';
-      btn.disabled = false;
-      btn.innerHTML = orig;
+      errEl.textContent = 'Network error';
+      btn.disabled = false; btn.textContent = orig;
     }
   }
-
   document.getElementById('player-form').addEventListener('submit', e => {
     e.preventDefault();
     doLogin(document.getElementById('player-pw').value,
@@ -227,44 +205,23 @@ const next = Astro.url.searchParams.get('next') ?? '/';
       document.getElementById('admin-sub'));
   });
 
-  // Canvas particle effect
-  const canvas = document.getElementById('bg-canvas');
+  // Gold dust particles
+  const canvas = document.getElementById('particles');
   const ctx = canvas.getContext('2d');
-  let W, H, particles = [];
-
-  function resize() {
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-  }
-  resize();
-  window.addEventListener('resize', resize);
-
-  // Create golden dust particles
-  for (let i = 0; i < 60; i++) {
-    particles.push({
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
-      r: Math.random() * 1.5 + 0.3,
-      dx: (Math.random() - 0.5) * 0.3,
-      dy: -Math.random() * 0.4 - 0.1,
-      o: Math.random() * 0.5 + 0.1,
-      do: (Math.random() - 0.5) * 0.005,
-    });
-  }
-
+  function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+  resize(); window.addEventListener('resize', resize);
+  const pts = Array.from({length:50}, () => ({
+    x: Math.random()*innerWidth, y: Math.random()*innerHeight,
+    r: Math.random()*1.2+0.3, vx:(Math.random()-.5)*.25,
+    vy:-Math.random()*.3-.05, o: Math.random()*.4+.05,
+  }));
   function draw() {
-    ctx.clearRect(0, 0, W, H);
-    particles.forEach(p => {
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(212,175,55,${p.o})`;
-      ctx.fill();
-      p.x += p.dx; p.y += p.dy;
-      p.o += p.do;
-      if (p.o < 0.05 || p.o > 0.6) p.do *= -1;
-      if (p.y < -5) { p.y = H + 5; p.x = Math.random() * W; }
-      if (p.x < -5) p.x = W + 5;
-      if (p.x > W + 5) p.x = -5;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pts.forEach(p => {
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle = `rgba(212,175,55,${p.o})`; ctx.fill();
+      p.x+=p.vx; p.y+=p.vy;
+      if (p.y<-5) { p.y=canvas.height+5; p.x=Math.random()*canvas.width; }
     });
     requestAnimationFrame(draw);
   }
@@ -272,443 +229,220 @@ const next = Astro.url.searchParams.get('next') ?? '/';
 </script>
 
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
 
+/* ── Background ── */
 body {
-  font-family: 'Quicksand', system-ui, sans-serif;
-  background: #080C14;
-  color: #DDD1BF;
-  min-height: 100dvh;
-  overflow-x: hidden;
+  font-family:'Quicksand',system-ui,sans-serif;
+  background:#06090F;
+  min-height:100dvh; overflow:hidden;
 }
-
-/* Canvas */
-#bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-
-/* Background gradients */
-.bg-grad-1, .bg-grad-2, .bg-grad-3 {
-  position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
-  filter: blur(100px);
+.bg {
+  position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 70% 60% at 20% 50%, rgba(212,175,55,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 70% at 80% 50%, rgba(10,20,40,0.8) 0%, transparent 70%),
+    #06090F;
 }
-.bg-grad-1 { width: 600px; height: 600px; top: -200px; left: -150px; background: rgba(212,175,55,0.05); animation: bg-drift 12s ease-in-out infinite alternate; }
-.bg-grad-2 { width: 500px; height: 500px; bottom: -150px; right: -100px; background: rgba(200,16,46,0.05); animation: bg-drift 15s ease-in-out infinite alternate-reverse; }
-.bg-grad-3 { width: 400px; height: 400px; top: 40%; left: 30%; background: rgba(43,79,55,0.06); animation: bg-drift 10s ease-in-out infinite alternate; }
-@keyframes bg-drift { from { transform: translate(0,0) scale(1); } to { transform: translate(30px,20px) scale(1.1); } }
-
-  50%,85%     { transform: rotateY(180deg); }
+.bg-blob {
+  position:fixed;border-radius:50%;filter:blur(100px);pointer-events:none;
 }
+.bg-blob-1{width:500px;height:500px;top:-100px;left:-100px;background:rgba(212,175,55,0.05);animation:bdrift 14s ease-in-out infinite alternate}
+.bg-blob-2{width:400px;height:400px;bottom:-80px;right:-60px;background:rgba(120,39,13,0.06);animation:bdrift 18s ease-in-out infinite alternate-reverse}
+@keyframes bdrift{from{transform:translate(0,0)}to{transform:translate(30px,20px)}}
+#particles{position:fixed;inset:0;pointer-events:none;z-index:0}
 
-/* ═══ PAGE ═══ */
-html, body { min-height: 100dvh; width: 100%; }
-
+/* ── Page ── */
 .page {
-  position: relative; z-index: 10;
-  min-height: 100dvh; width: 100%;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 1.5rem 1.25rem 2rem;
-  gap: 1.25rem;
-  box-sizing: border-box;
+  position:relative;z-index:10;
+  min-height:100dvh;
+  display:flex;align-items:center;justify-content:center;
+  padding:1.5rem;
 }
 
-/* Mobile: hide trophy between brand & card */
-.trophy-showcase { display: none; }
-
-/* ═══ BRAND ═══ */
-.brand { text-align: center; }
-
-/* Logo stage */
-.logo-stage {
-  position: relative; width: 150px; height: 150px;
-  margin: 0 auto 1.25rem;
-}
-
-/* Orbiting rings */
-.orbit {
-  position: absolute; border-radius: 50%; pointer-events: none;
-  border-style: solid;
-}
-.orbit-1 {
-  inset: -14px;
-  border-width: 1.5px;
-  border-color: rgba(212,175,55,0.35) rgba(212,175,55,0.1) rgba(212,175,55,0.35) rgba(212,175,55,0.1);
-  animation: orbit-spin 6s linear infinite;
-}
-.orbit-2 {
-  inset: -24px;
-  border-width: 1px;
-  border-color: rgba(200,16,46,0.2) transparent rgba(200,16,46,0.2) transparent;
-  animation: orbit-spin 10s linear infinite reverse;
-}
-.orbit-3 {
-  inset: -34px;
-  border-width: 0.5px;
-  border-color: rgba(212,175,55,0.1) transparent rgba(212,175,55,0.1) transparent;
-  animation: orbit-spin 16s linear infinite;
-}
-@keyframes orbit-spin { to { transform: rotate(360deg); } }
-
-/* Glow */
-.logo-glow {
-  position: absolute; inset: -25px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(212,175,55,0.22) 0%, transparent 70%);
-  animation: logo-breathe 3s ease-in-out infinite;
-  pointer-events: none;
-}
-@keyframes logo-breathe {
-  0%,100% { transform: scale(1);   opacity: 0.8; }
-  50%      { transform: scale(1.2); opacity: 1;   }
-}
-
-.brand-logo {
-  width: 150px; height: 150px; border-radius: 22px;
-  position: relative; z-index: 2; object-fit: cover;
+/* ── Split card ── */
+.split-card {
+  display:flex;
+  width:100%;max-width:900px;
+  min-height:min(560px, 90dvh);
+  border-radius:24px;
+  overflow:hidden;
   box-shadow:
-    0 0 0 2px rgba(212,175,55,0.5),
-    0 0 0 4px rgba(212,175,55,0.12),
-    0 20px 60px rgba(0,0,0,0.8),
-    0 0 60px rgba(212,175,55,0.25);
-  animation: logo-levitate 4s ease-in-out infinite;
+    0 0 0 1px rgba(212,175,55,0.2),
+    0 40px 100px rgba(0,0,0,0.8),
+    0 0 60px rgba(212,175,55,0.06);
+  animation:card-in .6s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes card-in{from{opacity:0;transform:scale(.94) translateY(24px)}to{opacity:1;transform:none}}
+
+/* ══ LEFT PANEL ══ */
+.left-panel {
+  flex:1;
+  background:linear-gradient(145deg, #0D1928 0%, #0A1020 60%, #070C18 100%);
+  border-right:1px solid rgba(212,175,55,0.15);
+  position:relative;overflow:hidden;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:2rem 1.5rem;
+  min-height:320px;
 }
 
-/* Desktop: brand left, card right, trophy visible */
-@media (min-width: 800px) {
-  .page {
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    gap: 5rem;
-    padding: 2rem 3rem;
-  }
-  .brand { text-align: center; flex-shrink: 0; }
-  .trophy-showcase { display: flex; } /* Show trophy on desktop */
-  .lcard { max-width: 420px; }
-  .footer-text { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); }
+/* Organic blobs */
+.blob {
+  position:absolute;border-radius:50%;pointer-events:none;
 }
-@keyframes logo-levitate {
-  0%,100% { transform: translateY(0);    box-shadow: 0 0 0 2px rgba(212,175,55,0.4), 0 20px 60px rgba(0,0,0,.8), 0 0 60px rgba(212,175,55,.2); }
-  50%      { transform: translateY(-8px); box-shadow: 0 0 0 2px rgba(212,175,55,0.6), 0 28px 70px rgba(0,0,0,.7), 0 0 80px rgba(212,175,55,.35); }
+.blob-1 {
+  width:280px;height:280px;
+  background:radial-gradient(circle, rgba(212,175,55,0.09) 0%, transparent 70%);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  animation:blob-pulse 5s ease-in-out infinite;
+}
+.blob-2 {
+  width:200px;height:200px;
+  background:radial-gradient(circle, rgba(212,175,55,0.06) 0%, transparent 70%);
+  top:30%;left:40%;
+  animation:blob-pulse 7s ease-in-out infinite reverse;
+}
+.blob-3 {
+  width:160px;height:160px;
+  background:radial-gradient(circle, rgba(120,39,13,0.08) 0%, transparent 70%);
+  bottom:20%;right:15%;
+  animation:blob-pulse 6s ease-in-out infinite 2s;
+}
+@keyframes blob-pulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.2)}}
+.blob-2,.blob-3{transform:none}
+@keyframes blob-pulse2{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+.blob-2,.blob-3{animation-name:blob-pulse2}
+
+/* Logo */
+.lp-logo {
+  position:absolute;top:1.25rem;left:1.25rem;
+  display:flex;align-items:center;gap:.625rem;z-index:2;
+}
+.lp-logo-img{width:36px;height:36px;border-radius:9px;object-fit:cover;box-shadow:0 0 12px rgba(212,175,55,0.3)}
+.lp-name{font-family:'Cinzel',serif;font-size:.8125rem;font-weight:700;color:#D4AF37;letter-spacing:.08em}
+.lp-sub{font-size:.45rem;color:rgba(212,175,55,0.4);font-weight:600;letter-spacing:.1em}
+
+/* Trophy */
+.lp-trophy {
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;align-items:center;gap:.875rem;
+  margin-top:1.5rem;
+}
+.trophy-glow-ring {
+  position:absolute;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle, rgba(212,175,55,0.14) 0%, transparent 65%);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  animation:ring-pulse 3s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes ring-pulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.8}50%{transform:translate(-50%,-50%) scale(1.15);opacity:1}}
+.trophy-glow-floor {
+  position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);
+  width:100px;height:12px;
+  background:radial-gradient(ellipse, rgba(212,175,55,0.5) 0%, transparent 70%);
+  filter:blur(6px);
+  animation:floor-pulse 3s ease-in-out infinite;
+}
+@keyframes floor-pulse{0%,100%{opacity:.6;transform:translateX(-50%) scaleX(.9)}50%{opacity:1;transform:translateX(-50%) scaleX(1.2)}}
+.lp-trophy-img {
+  width:160px;height:auto;
+  mix-blend-mode:multiply;
+  filter:drop-shadow(0 0 18px rgba(212,175,55,.7)) drop-shadow(0 6px 20px rgba(0,0,0,.8));
+  animation:trophy-float 4s ease-in-out infinite;
+  position:relative;z-index:1;
+}
+@keyframes trophy-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.trophy-badge {
+  display:flex;align-items:center;gap:.375rem;
+  background:linear-gradient(135deg,rgba(212,175,55,.1),rgba(212,175,55,.06));
+  border:1px solid rgba(212,175,55,.3);border-radius:30px;
+  padding:.35rem .875rem;
+  font-size:.6875rem;font-weight:700;color:rgba(212,175,55,.85);
+  font-family:'Cinzel',serif;letter-spacing:.04em;
+  white-space:nowrap;
 }
 
-/* Sparkles */
-.sparkle {
-  position: absolute; z-index: 3; color: #D4AF37;
-  font-size: 0.875rem; pointer-events: none;
-  animation: sparkle-pulse 2s ease-in-out infinite;
+/* Bottom suits */
+.lp-suits {
+  position:absolute;bottom:1.125rem;
+  display:flex;gap:.625rem;
+  font-size:1rem;font-family:Georgia,serif;
 }
-.sp1 { top:-8px;  left:50%; transform:translateX(-50%); animation-delay:0s; }
-.sp2 { top:50%;   right:-10px; transform:translateY(-50%); animation-delay:0.5s; }
-.sp3 { bottom:-8px; left:50%; transform:translateX(-50%); animation-delay:1s; }
-.sp4 { top:50%;   left:-10px; transform:translateY(-50%); animation-delay:1.5s; }
-@keyframes sparkle-pulse {
-  0%,100% { opacity:0.3; transform:scale(0.8) translateX(-50%); }
-  50%      { opacity:1;   transform:scale(1.3) translateX(-50%); }
-}
-.sp2, .sp4 { transform: translateY(-50%) !important; }
-@keyframes sparkle-pulse2 {
-  0%,100% { opacity:0.3; transform:scale(0.8) translateY(-50%); }
-  50%      { opacity:1;   transform:scale(1.3) translateY(-50%); }
-}
-.sp2 { animation-name: sparkle-pulse2; }
-.sp4 { animation-name: sparkle-pulse2; }
+.s-black{color:rgba(220,210,190,.25)}
+.s-red{color:rgba(200,16,46,.3)}
 
-/* Brand text */
-.brand-text { text-align: center; }
+/* ══ RIGHT PANEL ══ */
+.right-panel {
+  width:340px;flex-shrink:0;
+  background:linear-gradient(160deg,#0B1520 0%,#080F1A 100%);
+  display:flex;align-items:center;justify-content:center;
+  padding:2rem 2rem;
+}
+.rp-inner{width:100%}
 
-.brand-name {
-  font-family: 'Cinzel Decorative', serif;
-  font-size: clamp(1.75rem, 7vw, 2.5rem);
-  font-weight: 900; color: #D4AF37;
-  letter-spacing: 0.04em; line-height: 1.1;
-  text-shadow:
-    0 0 30px rgba(212,175,55,0.5),
-    0 0 60px rgba(212,175,55,0.2),
-    0 2px 4px rgba(0,0,0,0.8);
-  animation: name-glow 4s ease-in-out infinite;
-  margin-bottom: 0.75rem;
+.rp-header{margin-bottom:1.5rem}
+.rp-title {
+  font-family:'Cinzel Decorative',serif;
+  font-size:1.75rem;font-weight:900;
+  color:#D4AF37;letter-spacing:.04em;
+  text-shadow:0 0 30px rgba(212,175,55,.4);
+  margin-bottom:.25rem;
 }
-@keyframes name-glow {
-  0%,100% { text-shadow: 0 0 30px rgba(212,175,55,0.5), 0 0 60px rgba(212,175,55,0.2), 0 2px 4px rgba(0,0,0,.8); }
-  50%      { text-shadow: 0 0 40px rgba(212,175,55,0.7), 0 0 80px rgba(212,175,55,0.35), 0 2px 4px rgba(0,0,0,.8); }
-}
-
-.brand-rule {
-  display: flex; align-items: center; justify-content: center;
-  gap: 0.625rem; margin-bottom: 0.625rem;
-}
-.rule-line {
-  height: 1px; width: 50px;
-  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.5), transparent);
-}
-.rule-suit { color: #D4AF37; font-size: 0.75rem; opacity: 0.7; }
-
-.brand-motto {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 0.75rem; font-weight: 600;
-  color: rgba(212,175,55,0.6);
-  letter-spacing: 0.18em; text-transform: uppercase;
-  font-style: italic;
-}
-
-/* ═══ LOGIN CARD ═══ */
-.lcard {
-  width: 100%; max-width: 400px;
-  background: linear-gradient(160deg, #0F1828 0%, #090E1C 100%);
-  border: 1.5px solid rgba(212,175,55,0.45);
-  border-radius: 22px;
-  padding: 1.875rem 1.75rem 2rem;
-  position: relative; overflow: hidden;
-  box-shadow:
-    0 0 0 1px rgba(212,175,55,0.08),
-    0 0 60px rgba(212,175,55,0.12),
-    0 30px 80px rgba(0,0,0,0.8),
-    inset 0 1px 0 rgba(255,255,255,0.06),
-    inset 0 -1px 0 rgba(212,175,55,0.05);
-  animation: card-in 0.7s cubic-bezier(0.34,1.56,0.64,1) both 0.2s;
-}
-@keyframes card-in {
-  from { opacity:0; transform: translateY(40px) scale(0.94); }
-  to   { opacity:1; transform: none; }
-}
-
-/* Shimmer sweep */
-.card-shine {
-  position: absolute; top: 0; left: -100%;
-  width: 60%; height: 100%;
-  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.03) 50%, transparent 60%);
-  animation: shine-sweep 4s ease-in-out infinite 1s;
-  pointer-events: none;
-}
-@keyframes shine-sweep { 0%,100% { left:-100%; } 50% { left:150%; } }
-
-/* Card header */
-.lcard-header {
-  display: flex; align-items: center; gap: 0.75rem;
-  margin-bottom: 1.25rem;
-}
-.lcard-suits { display: flex; gap: 0.3rem; }
-.ls { font-size: 0.9375rem; font-family: Georgia, serif; opacity: 0.6; }
-.ls.black { color: #DDD1BF; }
-.ls.red   { color: #C8102E; }
-.lcard-title {
-  font-family: 'Cinzel', serif;
-  font-size: 1.0625rem; font-weight: 700; color: #DDD1BF;
-  letter-spacing: 0.1em; text-transform: uppercase;
-}
+.rp-sub{font-size:.75rem;color:rgba(200,180,140,.4);font-weight:600;letter-spacing:.06em}
 
 /* Tabs */
-.ltabs {
-  display: flex; align-items: center;
-  gap: 0; margin-bottom: 1.25rem;
-  border-bottom: 1px solid rgba(212,175,55,0.12);
-  padding-bottom: 0;
-}
-.ltab {
-  flex: 1; display: flex; align-items: center; justify-content: center;
-  gap: 0.5rem; padding: 0.625rem 0.5rem 0.75rem;
-  font-size: 0.9375rem; font-weight: 700; cursor: pointer;
-  color: rgba(200,180,140,0.4); transition: all 0.2s;
-  font-family: 'Quicksand', sans-serif;
-  position: relative;
-}
-.ltab-bar {
-  position: absolute; bottom: -1px; left: 10%; right: 10%; height: 2px;
-  background: linear-gradient(90deg, transparent, #D4AF37, transparent);
-  border-radius: 2px; opacity: 0;
-  box-shadow: 0 0 8px rgba(212,175,55,0.6);
-  transition: opacity 0.2s;
-}
-.ltab-active { color: #D4AF37; }
-.ltab-active .ltab-bar { opacity: 1; }
-.ltab-divider { color: rgba(212,175,55,0.15); font-size: 1.25rem; padding: 0 0.25rem; }
-.ltab-icon { font-size: 1rem; }
-.ltab-label { font-size: 0.875rem; }
+.rp-tabs{display:flex;gap:4px;background:rgba(0,0,0,.4);border:1px solid rgba(212,175,55,.14);border-radius:10px;padding:3px;margin-bottom:1.25rem}
+.rp-tab{flex:1;padding:.5625rem;border-radius:8px;font-family:'Cinzel',serif;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;color:rgba(212,175,55,.35);transition:all .2s}
+.rp-tab-active{background:linear-gradient(135deg,rgba(212,175,55,.16),rgba(212,175,55,.08));color:#D4AF37;box-shadow:inset 0 1px 0 rgba(212,175,55,.1)}
 
-/* Access badge */
-.access-badge {
-  display: flex; align-items: center; gap: 0.75rem;
-  padding: 0.6rem 0.875rem; border-radius: 10px;
-  margin-bottom: 1.125rem;
-  font-size: 0.75rem; font-weight: 600; color: rgba(200,180,140,0.6);
-}
-.player-badge { background: rgba(212,175,55,0.05); border: 1px solid rgba(212,175,55,0.12); }
-.admin-badge  { background: rgba(120,39,13,0.08);  border: 1px solid rgba(120,39,13,0.22); }
-.ab-dot {
-  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-  background: #D4AF37; box-shadow: 0 0 6px rgba(212,175,55,0.6);
-  animation: dot-pulse 2s ease-in-out infinite;
-}
-.ab-dot.ab-red { background: #C8102E; box-shadow: 0 0 6px rgba(200,16,46,0.6); }
-@keyframes dot-pulse { 0%,100% { transform:scale(1); opacity:1; } 50% { transform:scale(1.3); opacity:0.8; } }
+/* Role hint */
+.rp-role-hint{display:flex;align-items:center;gap:.5rem;font-size:.6875rem;font-weight:600;color:rgba(200,180,140,.4);margin-bottom:1rem}
+.rp-role-admin{color:rgba(220,140,100,.4)}
+.rp-dot{width:6px;height:6px;border-radius:50%;background:#D4AF37;box-shadow:0 0 5px rgba(212,175,55,.7);flex-shrink:0;animation:dot-beat 2s ease-in-out infinite}
+.rp-dot-red{background:#C8102E;box-shadow:0 0 5px rgba(200,16,46,.7)}
+@keyframes dot-beat{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
 
 /* Field */
-.lfield { margin-bottom: 0.875rem; }
-.llabel {
-  display: block; font-size: 0.5625rem; font-weight: 800;
-  text-transform: uppercase; letter-spacing: 0.16em;
-  color: rgba(200,180,140,0.5); margin-bottom: 0.5rem;
-  font-family: 'Cinzel', serif;
-}
-.linput-wrap {
-  display: flex; align-items: center;
-  background: rgba(0,0,0,0.4);
-  border: 1.5px solid rgba(212,175,55,0.12);
-  border-radius: 12px; overflow: hidden;
-  transition: all 0.25s;
-}
-.linput-wrap.focused {
-  border-color: rgba(212,175,55,0.45);
-  box-shadow: 0 0 0 3px rgba(212,175,55,0.07), 0 0 16px rgba(212,175,55,0.08);
-  background: rgba(0,0,0,0.5);
-}
-.linput-icon { padding: 0 0.875rem; font-size: 1rem; flex-shrink: 0; }
-.linput {
-  flex: 1; background: none; border: none; outline: none;
-  color: #E8D8B8; font-size: 1rem; font-family: 'Quicksand', sans-serif;
-  padding: 0.8125rem 0; font-weight: 600; min-width: 0; letter-spacing: 0.05em;
-}
-.linput::placeholder { color: rgba(200,180,140,0.2); letter-spacing: 0; }
-.leye { padding: 0 0.875rem; font-size: 1rem; cursor: pointer; color: rgba(200,180,140,0.4); flex-shrink: 0; transition: color 0.15s; }
-.leye:hover { color: #D4AF37; }
+.rp-field{margin-bottom:.875rem}
+.rp-label{display:block;font-size:.5rem;font-weight:800;text-transform:uppercase;letter-spacing:.18em;color:rgba(212,175,55,.45);margin-bottom:.4375rem;font-family:'Cinzel',serif}
+.rp-input-wrap{display:flex;align-items:center;background:rgba(0,0,0,.5);border:1px solid rgba(212,175,55,.16);border-radius:10px;overflow:hidden;transition:all .2s}
+.rp-input-wrap.focus{border-color:rgba(212,175,55,.5);box-shadow:0 0 0 3px rgba(212,175,55,.07)}
+.rp-input{flex:1;background:none;border:none;outline:none;color:#E8D8B8;font-size:.9375rem;font-family:'Quicksand',sans-serif;padding:.75rem 1rem;font-weight:600;min-width:0;letter-spacing:.04em}
+.rp-input::placeholder{color:rgba(200,180,140,.18);letter-spacing:0;font-weight:500}
+.rp-eye{padding:0 .875rem;cursor:pointer;color:rgba(200,180,140,.35);transition:color .15s;display:flex;align-items:center;flex-shrink:0}
+.rp-eye:hover{color:#D4AF37}
 
 /* Error */
-.lerr {
-  font-size: 0.8125rem; color: #C8102E; font-weight: 700;
-  min-height: 1.25em; margin-bottom: 0.625rem;
-  font-family: 'Quicksand', sans-serif;
-}
+.rp-err{font-size:.75rem;color:#e05555;font-weight:700;min-height:1.2em;margin-bottom:.5rem}
 
-/* Submit buttons */
-.lbtn {
-  width: 100%; padding: 1rem; border-radius: 12px; border: none;
-  font-size: 1rem; font-weight: 800; cursor: pointer;
-  font-family: 'Quicksand', sans-serif;
-  transition: all 0.25s; min-height: 54px;
-  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-  position: relative; overflow: hidden;
-}
-.lbtn::before {
-  content: ''; position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 50%);
-  pointer-events: none;
-}
-.lbtn-text { flex: 1; text-align: center; }
-.lbtn-arrow { font-size: 1.125rem; transition: transform 0.2s; }
-.lbtn:hover .lbtn-arrow { transform: translateX(4px); }
+/* Buttons */
+.rp-btn{width:100%;padding:.875rem;border-radius:10px;border:none;font-size:.875rem;font-weight:800;cursor:pointer;font-family:'Cinzel',serif;letter-spacing:.1em;text-transform:uppercase;transition:all .22s;min-height:50px;position:relative;overflow:hidden}
+.rp-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.1) 0%,transparent 55%);pointer-events:none}
+.rp-btn-gold{background:linear-gradient(135deg,#8A6A00,#BFA000,#D4AF37,#EDD060);background-size:200%;color:#120E00;box-shadow:0 4px 20px rgba(212,175,55,.4);animation:gold-shift 3s linear infinite}
+@keyframes gold-shift{0%{background-position:0%}100%{background-position:200%}}
+.rp-btn-gold:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 28px rgba(212,175,55,.6)}
+.rp-btn-ember{background:linear-gradient(135deg,#3D0C04,#6E1F0B,#9A3018);color:#F5C4A8;box-shadow:0 4px 20px rgba(120,39,13,.5)}
+.rp-btn-ember:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 28px rgba(120,39,13,.65)}
+.rp-btn:active{transform:translateY(0)!important}
+.rp-btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 
-.player-lbtn {
-  background: linear-gradient(135deg, #9A7800, #C8A400, #D4AF37, #E8CC60, #D4AF37);
-  background-size: 200% 100%;
-  color: #1A1200;
-  box-shadow: 0 6px 28px rgba(212,175,55,0.45), 0 2px 8px rgba(0,0,0,0.4);
-  animation: btn-shimmer 3s linear infinite;
-}
-@keyframes btn-shimmer { 0% { background-position: 0% 0%; } 100% { background-position: 200% 0%; } }
-.player-lbtn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 36px rgba(212,175,55,0.6), 0 2px 8px rgba(0,0,0,0.4);
-}
+.rp-footer{margin-top:1.5rem;font-size:.5625rem;color:rgba(212,175,55,.2);letter-spacing:.12em;font-family:'Cinzel',serif;text-align:center}
 
-.admin-lbtn {
-  background: linear-gradient(135deg, #4A0F04, #78270D, #A03418);
-  color: #FFD8C0;
-  box-shadow: 0 6px 28px rgba(120,39,13,0.55), 0 2px 8px rgba(0,0,0,0.4);
-}
-.admin-lbtn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 36px rgba(120,39,13,0.7), 0 2px 8px rgba(0,0,0,0.4);
-}
-
-.lbtn:active { transform: translateY(0) !important; }
-.lbtn:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; }
-
-/* Footer */
-/* ═══ TROPHY SHOWCASE ═══ */
-.trophy-showcase {
-  margin-top: 1.25rem;
-  display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
-}
-
-.trophy-label {
-  display: flex; align-items: center; gap: 0.625rem;
-}
-.trophy-label-line {
-  height: 1px; width: 40px;
-  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.5));
-}
-.trophy-label-line:last-child {
-  background: linear-gradient(90deg, rgba(212,175,55,0.5), transparent);
-}
-.trophy-label-text {
-  font-family: 'Cinzel', serif;
-  font-size: 0.5625rem; font-weight: 700;
-  letter-spacing: 0.18em; text-transform: uppercase;
-  color: rgba(212,175,55,0.65);
-  white-space: nowrap;
-}
-
-.trophy-img-wrap {
-  position: relative;
-  display: flex; justify-content: center; align-items: flex-end;
-  animation: trophy-hover 4s ease-in-out infinite;
-}
-.trophy-ground-glow {
-  position: absolute; bottom: -4px; left: 50%;
-  transform: translateX(-50%);
-  width: 120px; height: 16px;
-  background: radial-gradient(ellipse, rgba(212,175,55,0.5) 0%, transparent 70%);
-  filter: blur(6px);
-  animation: glow-pulse 4s ease-in-out infinite;
-}
-.trophy-img {
-  width: 160px; height: auto;
-  display: block; position: relative; z-index: 1;
-  mix-blend-mode: multiply;
-  filter:
-    drop-shadow(0 0 16px rgba(212,175,55,0.7))
-    drop-shadow(0 0 32px rgba(212,175,55,0.35))
-    drop-shadow(0 12px 24px rgba(0,0,0,0.8));
-}
-@keyframes trophy-hover {
-  0%,100% { transform: translateY(0); }
-  50%      { transform: translateY(-10px); }
-}
-@keyframes glow-pulse {
-  0%,100% { opacity: 0.6; transform: translateX(-50%) scaleX(0.9); }
-  50%      { opacity: 1;   transform: translateX(-50%) scaleX(1.2); }
-}
-
-.trophy-winner {
-  display: flex; align-items: center; gap: 0.5rem;
-  background: linear-gradient(135deg, rgba(212,175,55,0.1), rgba(212,175,55,0.06));
-  border: 1px solid rgba(212,175,55,0.3);
-  border-radius: 30px; padding: 0.4rem 1rem;
-}
-.trophy-crown { font-size: 0.875rem; }
-.trophy-winner-name {
-  font-family: 'Cinzel', serif;
-  font-size: 0.75rem; font-weight: 700;
-  color: #D4AF37; letter-spacing: 0.06em;
-}
-
-/* Desktop: trophy below brand text, all in left column */
-@media (min-width: 800px) {
-  .trophy-img { width: 180px; }
-}
-
-/* Small mobile: compact brand */
-@media (max-width: 480px) {
-  .logo-stage { width: 120px; height: 120px; }
-  .brand-logo { width: 120px; height: 120px; }
-  .brand-name { font-size: 1.75rem; }
-  .page { gap: 1rem; padding: 1.25rem 1rem 1.5rem; }
-}
-
-.footer-text {
-  font-size: 0.6875rem; color: rgba(212,175,55,0.25);
-  letter-spacing: 0.12em; font-family: 'Cinzel', serif;
-  text-transform: uppercase;
+/* ── MOBILE ── */
+@media(max-width:720px){
+  html,body{overflow-y:auto}
+  .page{padding:1rem;align-items:flex-start;min-height:100dvh}
+  .split-card{flex-direction:column;max-width:440px;margin:0 auto}
+  .left-panel{min-height:260px;padding:1.25rem 1rem 1rem}
+  .lp-trophy-img{width:120px}
+  .lp-logo-img{width:28px;height:28px}
+  .lp-name{font-size:.6875rem}
+  .lp-sub{display:none}
+  .trophy-badge{font-size:.5625rem;padding:.25rem .625rem}
+  .right-panel{width:100%;padding:1.5rem 1.25rem}
+  .rp-title{font-size:1.375rem}
 }
 </style>
 
