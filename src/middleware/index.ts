@@ -1,27 +1,41 @@
 import { defineMiddleware } from 'astro:middleware';
 import { verifySession } from '../lib/auth';
 
-// Pages only admins can reach
+const PUBLIC_PATHS = [
+  '/login',
+  '/api/auth/login',
+  '/api/auth/logout',
+  '/manifest.webmanifest',
+  '/sw.js',
+  '/logo.png',
+  '/logo.svg',
+  '/favicon.ico',
+  '/robots.txt',
+];
+
 const ADMIN_ONLY_PAGES = ['/players'];
 
-// APIs only admins can call
-const ADMIN_ONLY_API_PREFIXES = [
-  '/api/players',
-  '/api/seasons',
-  '/api/scheduled',
-];
-
-// APIs players + admins can call
-const PLAYER_API_METHODS = ['POST', 'PATCH', 'DELETE'];
-const PLAYER_API_PREFIXES = [
-  '/api/games',
-];
+const ADMIN_ONLY_API = ['/api/players', '/api/seasons', '/api/scheduled'];
 
 function getSecret(locals: unknown): string | undefined {
   const l = locals as Record<string, unknown>;
-  return (l.runtime
-    ? (l.runtime as { env: Record<string, string> }).env.SESSION_SECRET
-    : (import.meta.env.SESSION_SECRET as string | undefined))?.trim();
+  const runtime = l.runtime as { env?: Record<string, string> } | undefined;
+  const fromRuntime = runtime?.env?.SESSION_SECRET;
+  const fromMeta = import.meta.env.SESSION_SECRET as string | undefined;
+  return (fromRuntime ?? fromMeta)?.trim();
+}
+
+function isPublic(pathname: string): boolean {
+  if (PUBLIC_PATHS.includes(pathname)) return true;
+  if (pathname.startsWith('/_astro/')) return true;
+  if (pathname.startsWith('/badges/')) return true;
+  if (/\.(png|svg|ico|jpg|jpeg|webp|woff2?|ttf|css|js)$/.test(pathname)) return true;
+  return false;
+}
+
+function hasCookie(cookieHeader: string | null): boolean {
+  if (!cookieHeader) return false;
+  return cookieHeader.includes('dl_session=');
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
@@ -29,29 +43,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const pathname = url.pathname;
   const method = request.method;
 
-  // Always allow login page, auth API, static assets
-  if (
-    pathname === '/login' ||
-    pathname.startsWith('/api/auth/') ||
-    pathname.startsWith('/_astro/') ||
-    pathname.startsWith('/badges/') ||
-    pathname === '/manifest.webmanifest' ||
-    pathname === '/sw.js' ||
-    pathname === '/logo.png' ||
-    pathname === '/logo.svg' ||
-    pathname === '/favicon.ico'
-  ) {
-    return next();
-  }
-
-  const secret = getSecret(context.locals);
-  if (!secret) return next(); // dev: no secret → open
+  // Always allow public paths
+  if (isPublic(pathname)) return next();
 
   const cookieHeader = request.headers.get('cookie');
-  const { valid, role } = await verifySession(cookieHeader, secret);
 
-  // ── Not logged in → redirect all pages to login ──
-  if (!valid) {
+  // Fast gate: no cookie at all → redirect immediately (no need to check secret)
+  if (!hasCookie(cookieHeader)) {
     if (pathname.startsWith('/api/')) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
@@ -61,11 +59,37 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return redirect(`/login?next=${encodeURIComponent(pathname)}`);
   }
 
-  // ── Logged in ──────────────────────────────────────
+  // Full verification (only if secret is available — skip HMAC check in dev/missing secret)
+  const secret = getSecret(context.locals);
+
+  let role: 'admin' | 'player' | null = null;
+  let valid = false;
+
+  if (secret) {
+    const result = await verifySession(cookieHeader, secret);
+    valid = result.valid;
+    role = result.role;
+  } else {
+    // No secret configured — treat cookie presence as valid (dev mode fallback)
+    valid = true;
+    role = 'admin';
+  }
+
+  if (!valid) {
+    if (pathname.startsWith('/api/')) {
+      return new Response(JSON.stringify({ error: 'Session expired' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    return redirect(`/login?next=${encodeURIComponent(pathname)}`);
+  }
 
   // Admin-only pages
   if (ADMIN_ONLY_PAGES.some(p => pathname.startsWith(p))) {
-    if (role !== 'admin') return redirect('/login?next=' + encodeURIComponent(pathname));
+    if (role !== 'admin') {
+      return redirect('/login?next=' + encodeURIComponent(pathname));
+    }
     return next();
   }
 
@@ -73,21 +97,28 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (pathname.startsWith('/api/')) {
     if (method === 'GET') return next();
 
-    const isPlayerApi = PLAYER_API_PREFIXES.some(p => pathname.startsWith(p)) &&
-      PLAYER_API_METHODS.includes(method);
+    // Admin-only API mutations
+    if (ADMIN_ONLY_API.some(p => pathname.startsWith(p))) {
+      if (role !== 'admin') {
+        return new Response(JSON.stringify({ error: 'Admin only' }), {
+          status: 403, headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return next();
+    }
+
+    // Player + admin allowed mutations
+    const isGameMutation = pathname.startsWith('/api/games') && ['POST','PATCH','DELETE'].includes(method);
     const isCreateMatch = pathname === '/api/matches' && method === 'POST';
     const isAddGame = /^\/api\/matches\/[^/]+\/games$/.test(pathname) && method === 'POST';
     const isFinishMatch = /^\/api\/matches\/[^/]+\/finish$/.test(pathname) && method === 'POST';
 
-    if (isPlayerApi || isCreateMatch || isAddGame || isFinishMatch) {
-      return next(); // both roles allowed
-    }
+    if (isGameMutation || isCreateMatch || isAddGame || isFinishMatch) return next();
 
-    // Admin-only API actions
+    // Everything else: admin only
     if (role !== 'admin') {
-      return new Response(JSON.stringify({ error: 'Admin access required' }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' },
+      return new Response(JSON.stringify({ error: 'Admin only' }), {
+        status: 403, headers: { 'Content-Type': 'application/json' },
       });
     }
   }
