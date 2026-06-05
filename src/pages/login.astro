@@ -9,44 +9,83 @@ const next = Astro.url.searchParams.get('next') ?? '/';
   <div class="container">
     <div class="login-wrap">
       <img src="/logo.png" alt="Digu League" class="login-logo" />
-      <h1>Sign In</h1>
-      <p>Enter your password to access the scoresheet.</p>
+      <h1 class="login-title">Digu League</h1>
+      <p class="login-sub">Sign in to enter scores and track matches</p>
 
-      <form id="login-form" class="login-form">
-        <input type="hidden" id="next-url" value={next} />
-        <div class="form-group">
-          <label class="form-label" for="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            class="form-input"
-            placeholder="Enter admin password"
-            autocomplete="current-password"
-            required
-          />
-        </div>
-        <div id="error-msg" class="error-message" style="display:none"></div>
-        <button type="submit" class="btn btn-primary btn-lg btn-block" id="submit-btn">
-          Sign In
+      <!-- Role tabs -->
+      <div class="role-tabs">
+        <button class="role-tab active" id="tab-player" onclick="switchTab('player')">
+          🎴 Player Login
         </button>
-      </form>
+        <button class="role-tab" id="tab-admin" onclick="switchTab('admin')">
+          ⚙️ Admin Login
+        </button>
+      </div>
+
+      <!-- Player login -->
+      <div id="panel-player" class="login-panel">
+        <div class="login-desc-box">
+          <div class="desc-icon">🎴</div>
+          <div>
+            <strong>Players</strong>
+            <p>Start matches · Enter scores · Edit rounds</p>
+          </div>
+        </div>
+        <form id="player-form" class="login-form">
+          <input type="hidden" value={next} class="next-url" />
+          <div class="form-group">
+            <label class="form-label" for="player-password">Player Password</label>
+            <input type="password" id="player-password" class="form-input"
+              placeholder="Enter player password" autocomplete="current-password" />
+          </div>
+          <div class="error-message" style="display:none"></div>
+          <button type="submit" class="btn btn-primary btn-lg btn-block">
+            🎴 Sign In as Player
+          </button>
+        </form>
+      </div>
+
+      <!-- Admin login -->
+      <div id="panel-admin" class="login-panel" style="display:none">
+        <div class="login-desc-box admin">
+          <div class="desc-icon">⚙️</div>
+          <div>
+            <strong>Admin</strong>
+            <p>Full access · Manage players · All settings</p>
+          </div>
+        </div>
+        <form id="admin-form" class="login-form">
+          <input type="hidden" value={next} class="next-url" />
+          <div class="form-group">
+            <label class="form-label" for="admin-password">Admin Password</label>
+            <input type="password" id="admin-password" class="form-input"
+              placeholder="Enter admin password" autocomplete="current-password" />
+          </div>
+          <div class="error-message" style="display:none"></div>
+          <button type="submit" class="btn btn-primary btn-lg btn-block admin-btn">
+            ⚙️ Sign In as Admin
+          </button>
+        </form>
+      </div>
+
     </div>
   </div>
 </BaseLayout>
 
 <script>
-  const form = document.getElementById('login-form') as HTMLFormElement;
-  const errorMsg = document.getElementById('error-msg') as HTMLElement;
-  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
-  const nextUrl = (document.getElementById('next-url') as HTMLInputElement).value;
+  function switchTab(role: string) {
+    const isPlayer = role === 'player';
+    (document.getElementById('panel-player') as HTMLElement).style.display = isPlayer ? '' : 'none';
+    (document.getElementById('panel-admin') as HTMLElement).style.display = isPlayer ? 'none' : '';
+    (document.getElementById('tab-player') as HTMLElement).classList.toggle('active', isPlayer);
+    (document.getElementById('tab-admin') as HTMLElement).classList.toggle('active', !isPlayer);
+  }
 
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const password = (document.getElementById('password') as HTMLInputElement).value;
-    errorMsg.style.display = 'none';
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Signing in…';
-
+  async function doLogin(password: string, nextUrl: string, errorEl: HTMLElement, btn: HTMLButtonElement) {
+    errorEl.style.display = 'none';
+    btn.disabled = true;
+    const orig = btn.textContent;
+    btn.textContent = 'Signing in…';
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -54,44 +93,89 @@ const next = Astro.url.searchParams.get('next') ?? '/';
         body: JSON.stringify({ password }),
       });
       if (res.ok) {
-        window.location.href = nextUrl;
+        window.location.href = nextUrl || '/';
       } else {
         const data = await res.json() as { error?: string };
-        errorMsg.textContent = data.error ?? 'Invalid password';
-        errorMsg.style.display = 'block';
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Sign In';
+        errorEl.textContent = data.error ?? 'Invalid password';
+        errorEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = orig;
       }
     } catch {
-      errorMsg.textContent = 'Network error. Please try again.';
-      errorMsg.style.display = 'block';
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Sign In';
+      errorEl.textContent = 'Network error. Please try again.';
+      errorEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = orig;
     }
+  }
+
+  document.getElementById('player-form')!.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.currentTarget as HTMLFormElement;
+    const pw = (form.querySelector('#player-password') as HTMLInputElement).value;
+    const next = (form.querySelector('.next-url') as HTMLInputElement).value;
+    const err = form.querySelector('.error-message') as HTMLElement;
+    const btn = form.querySelector('button[type=submit]') as HTMLButtonElement;
+    await doLogin(pw, next, err, btn);
+  });
+
+  document.getElementById('admin-form')!.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.currentTarget as HTMLFormElement;
+    const pw = (form.querySelector('#admin-password') as HTMLInputElement).value;
+    const next = (form.querySelector('.next-url') as HTMLInputElement).value;
+    const err = form.querySelector('.error-message') as HTMLElement;
+    const btn = form.querySelector('button[type=submit]') as HTMLButtonElement;
+    await doLogin(pw, next, err, btn);
   });
 </script>
 
 <style>
   .login-wrap {
-    max-width: 380px;
-    margin: 3rem auto 0;
-    text-align: center;
+    max-width: 400px;
+    margin: 2.5rem auto 0;
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    align-items: center;
+  }
+  .login-logo { width: 80px; border-radius: 16px; }
+  .login-title { font-size: 1.75rem; font-weight: 900; color: var(--gold); letter-spacing: -0.02em; margin: 0; }
+  .login-sub { font-size: 0.875rem; color: var(--text-secondary); margin: 0; }
+
+  .role-tabs {
+    display: flex; gap: 0; width: 100%;
+    background: var(--card); border-radius: var(--radius-sm);
+    padding: 4px; border: 1px solid var(--border);
+  }
+  .role-tab {
+    flex: 1; padding: 0.6rem 0.5rem; border-radius: calc(var(--radius-sm) - 2px);
+    font-size: 0.875rem; font-weight: 700; cursor: pointer;
+    color: var(--text-secondary); transition: all 0.2s;
+    font-family: inherit;
+  }
+  .role-tab.active {
+    background: var(--surface);
+    color: var(--gold);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
   }
 
-  .login-logo {
-    width: 90px;
-    margin: 0 auto;
-    border-radius: 10px;
-  }
+  .login-panel { width: 100%; }
 
-  .login-form {
-    text-align: left;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-top: 0.5rem;
+  .login-desc-box {
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(212,175,55,0.08); border: 1px solid rgba(212,175,55,0.2);
+    border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 1rem;
   }
+  .login-desc-box.admin {
+    background: rgba(120,39,13,0.08); border-color: rgba(120,39,13,0.25);
+  }
+  .desc-icon { font-size: 1.75rem; flex-shrink: 0; }
+  .login-desc-box strong { display: block; font-size: 0.9375rem; font-weight: 800; color: var(--cream); }
+  .login-desc-box p { font-size: 0.75rem; color: var(--text-secondary); margin: 2px 0 0; }
+
+  .login-form { display: flex; flex-direction: column; gap: 0.875rem; width: 100%; }
+
+  .admin-btn { background: var(--ember) !important; }
+  .admin-btn:hover { background: #9a3310 !important; }
 </style>
