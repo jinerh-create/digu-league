@@ -52,22 +52,25 @@ const next = Astro.url.searchParams.get('next') ?? '/';
         <div class="trophy-glow-ring"></div>
         <div class="trophy-glow-floor"></div>
 
-        <!-- Canvas for bg-removed trophy -->
-        <div class="trophy-canvas-wrap" id="trophy-wrap">
-          <!-- Loading: card suit spinner -->
-          <div class="suit-loader" id="suit-loader">
-            <span class="sl-suit sl-s1">♠</span>
-            <span class="sl-suit sl-s2">♥</span>
-            <span class="sl-suit sl-s3">♣</span>
-            <span class="sl-suit sl-s4">♦</span>
-          </div>
-          <canvas id="trophy-canvas" class="trophy-canvas" style="display:none"></canvas>
+        <!-- Card suit loader (shows briefly while image loads) -->
+        <div class="suit-loader" id="suit-loader">
+          <span class="sl-suit sl-s1">♠</span>
+          <span class="sl-suit sl-s2">♥</span>
+          <span class="sl-suit sl-s3">♣</span>
+          <span class="sl-suit sl-s4">♦</span>
         </div>
 
-        <!-- Hidden source image -->
-        <img id="trophy-src" src="/badges/champion-may-2026.png"
-          alt="Trophy" style="display:none" crossorigin="anonymous"
-          onload="processTrophy(this)" />
+        <!-- Transparent PNG trophy - no bg removal needed -->
+        <div class="trophy-canvas-wrap">
+          <img
+            src="/trophy.png"
+            alt="Digu League Trophy"
+            class="trophy-canvas"
+            id="trophy-img"
+            style="display:none"
+            onload="this.style.display='block';document.getElementById('suit-loader').style.display='none'"
+          />
+        </div>
 
         <div class="trophy-league-name">
           <span class="tln-suit">♠</span>
@@ -91,72 +94,75 @@ const next = Astro.url.searchParams.get('next') ?? '/';
 
         <!-- Header -->
         <div class="rp-header">
+          <div class="rp-crown">♔</div>
           <h1 class="rp-title">Sign In</h1>
           <p class="rp-sub">Welcome back to the league</p>
         </div>
 
-        <!-- Tabs -->
+        <!-- Role selector -->
         <div class="rp-tabs">
-          <button class="rp-tab rp-tab-active" id="tab-player" onclick="switchTab('player')">
-            Player
+          <button type="button" class="rp-tab rp-tab-active" id="tab-player" onclick="switchTab('player')">
+            <span class="rp-tab-icon">🎴</span> Player
           </button>
-          <button class="rp-tab" id="tab-admin" onclick="switchTab('admin')">
-            Admin
+          <button type="button" class="rp-tab" id="tab-admin" onclick="switchTab('admin')">
+            <span class="rp-tab-icon">⚔️</span> Admin
           </button>
         </div>
 
         <!-- Player form -->
         <div id="panel-player">
-          <div class="rp-role-hint">
-            <span class="rp-dot"></span>
-            Start matches · Enter scores · Edit rounds
+          <div class="rp-hint">
+            <div class="rp-hint-dot"></div>
+            <span>Start matches · Enter scores · Edit rounds</span>
           </div>
-          <form id="player-form">
+          <form id="player-form" onsubmit="handleSubmit(event,'player')">
             <input type="hidden" class="nxt" value={next} />
             <div class="rp-field">
-              <label class="rp-label">Password</label>
-              <div class="rp-input-wrap" id="iw-player">
-                <input type="password" class="rp-input" id="player-pw"
-                  placeholder="Enter player password"
+              <label class="rp-label">Player Password</label>
+              <div class="rp-iw" id="iw-player">
+                <span class="rp-iw-icon">🔑</span>
+                <input type="password" id="player-pw" class="rp-input"
+                  placeholder="Enter password"
                   autocomplete="current-password"
-                  onfocus="document.getElementById('iw-player').classList.add('focus')"
-                  onblur="document.getElementById('iw-player').classList.remove('focus')" />
-                <button type="button" class="rp-eye" onclick="togglePw('player-pw',this)">
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  onfocus="document.getElementById('iw-player').classList.add('rp-iw-focus')"
+                  onblur="document.getElementById('iw-player').classList.remove('rp-iw-focus')" />
+                <button type="button" class="rp-eye" onclick="togglePw('player-pw',this)" tabindex="-1">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </button>
               </div>
             </div>
             <p class="rp-err" id="player-err"></p>
-            <button type="submit" class="rp-btn rp-btn-gold" id="player-sub">
-              Sign In as Player
+            <button type="submit" class="rp-btn rp-gold-btn" id="player-sub">
+              Sign In as Player →
             </button>
           </form>
         </div>
 
         <!-- Admin form -->
         <div id="panel-admin" style="display:none">
-          <div class="rp-role-hint rp-role-admin">
-            <span class="rp-dot rp-dot-red"></span>
-            Full access · Manage players · All settings
+          <div class="rp-hint rp-hint-red">
+            <div class="rp-hint-dot rp-hint-dot-red"></div>
+            <span>Full access · Manage players · Settings</span>
           </div>
-          <form id="admin-form">
+          <form id="admin-form" onsubmit="handleSubmit(event,'admin')">
             <input type="hidden" class="nxt" value={next} />
             <div class="rp-field">
-              <label class="rp-label">Password</label>
-              <div class="rp-input-wrap" id="iw-admin">
-                <input type="password" class="rp-input" id="admin-pw"
-                  placeholder="Enter admin password"
+              <label class="rp-label">Admin Password</label>
+              <div class="rp-iw" id="iw-admin">
+                <span class="rp-iw-icon">🔐</span>
+                <input type="password" id="admin-pw" class="rp-input"
+                  placeholder="Enter password"
                   autocomplete="current-password"
-                  onfocus="document.getElementById('iw-admin').classList.add('focus')"
-                  onblur="document.getElementById('iw-admin').classList.remove('focus')" />
-                <button type="button" class="rp-eye" onclick="togglePw('admin-pw',this)">
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  onfocus="document.getElementById('iw-admin').classList.add('rp-iw-focus')"
+                  onblur="document.getElementById('iw-admin').classList.remove('rp-iw-focus')" />
+                <button type="button" class="rp-eye" onclick="togglePw('admin-pw',this)" tabindex="-1">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </button>
               </div>
             </div>
             <p class="rp-err" id="admin-err"></p>
-            <button type="submit" class="rp-btn rp-btn-ember" id="admin-sub">
-              Sign In as Admin
+            <button type="submit" class="rp-btn rp-ember-btn" id="admin-sub">
+              Sign In as Admin →
             </button>
           </form>
         </div>
@@ -169,53 +175,53 @@ const next = Astro.url.searchParams.get('next') ?? '/';
 </div>
 
 <script>
-  function switchTab(r) {
-    const p = r === 'player';
-    document.getElementById('panel-player').style.display = p ? '' : 'none';
-    document.getElementById('panel-admin').style.display = p ? 'none' : '';
-    document.getElementById('tab-player').classList.toggle('rp-tab-active', p);
-    document.getElementById('tab-admin').classList.toggle('rp-tab-active', !p);
+  function switchTab(role) {
+    const isPlayer = role === 'player';
+    document.getElementById('panel-player').style.display = isPlayer ? 'block' : 'none';
+    document.getElementById('panel-admin').style.display = isPlayer ? 'none' : 'block';
+    document.getElementById('tab-player').className = 'rp-tab' + (isPlayer ? ' rp-tab-active' : '');
+    document.getElementById('tab-admin').className = 'rp-tab' + (!isPlayer ? ' rp-tab-active rp-tab-admin-active' : '');
   }
+
   function togglePw(id, btn) {
-    const i = document.getElementById(id);
-    i.type = i.type === 'password' ? 'text' : 'password';
-    btn.querySelector('svg').style.opacity = i.type === 'text' ? '0.4' : '1';
+    const input = document.getElementById(id);
+    input.type = input.type === 'password' ? 'text' : 'password';
   }
-  async function doLogin(pw, nxt, errEl, btn) {
+
+  async function handleSubmit(e, role) {
+    e.preventDefault();
+    const pwId = role === 'player' ? 'player-pw' : 'admin-pw';
+    const btnId = role === 'player' ? 'player-sub' : 'admin-sub';
+    const errId = role === 'player' ? 'player-err' : 'admin-err';
+    const nxtEl = e.currentTarget.querySelector('.nxt');
+    const pw = document.getElementById(pwId).value;
+    const btn = document.getElementById(btnId);
+    const errEl = document.getElementById(errId);
+    const nxt = nxtEl ? nxtEl.value : '/';
     errEl.textContent = '';
     btn.disabled = true;
     const orig = btn.textContent;
     btn.textContent = 'Signing in…';
     try {
       const res = await fetch('/api/auth/login', {
-        method: 'POST', headers: {'Content-Type':'application/json'},
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: pw }),
       });
-      if (res.ok) { window.location.href = nxt || '/'; }
-      else {
+      if (res.ok) {
+        window.location.href = nxt || '/';
+      } else {
         const d = await res.json();
         errEl.textContent = d.error || 'Incorrect password';
-        btn.disabled = false; btn.textContent = orig;
+        btn.disabled = false;
+        btn.textContent = orig;
       }
     } catch {
-      errEl.textContent = 'Network error';
-      btn.disabled = false; btn.textContent = orig;
+      errEl.textContent = 'Network error — try again';
+      btn.disabled = false;
+      btn.textContent = orig;
     }
   }
-  document.getElementById('player-form').addEventListener('submit', e => {
-    e.preventDefault();
-    doLogin(document.getElementById('player-pw').value,
-      e.currentTarget.querySelector('.nxt').value,
-      document.getElementById('player-err'),
-      document.getElementById('player-sub'));
-  });
-  document.getElementById('admin-form').addEventListener('submit', e => {
-    e.preventDefault();
-    doLogin(document.getElementById('admin-pw').value,
-      e.currentTarget.querySelector('.nxt').value,
-      document.getElementById('admin-err'),
-      document.getElementById('admin-sub'));
-  });
 
   // Remove white background from trophy using canvas
   function processTrophy(img) {
@@ -472,59 +478,116 @@ body {
 /* ══ RIGHT PANEL ══ */
 .right-panel {
   width:340px;flex-shrink:0;
-  background:linear-gradient(160deg,#0B1520 0%,#080F1A 100%);
+  background:linear-gradient(160deg,#0C1828 0%,#080E1A 100%);
   display:flex;align-items:center;justify-content:center;
-  padding:2rem 2rem;
+  padding:2rem 1.875rem;
+  position:relative;
 }
-.rp-inner{width:100%}
+.right-panel::before {
+  content:'';position:absolute;top:0;left:0;bottom:0;width:1px;
+  background:linear-gradient(180deg,transparent,rgba(212,175,55,0.3),transparent);
+}
+.rp-inner{width:100%;position:relative;z-index:1}
 
-.rp-header{margin-bottom:1.5rem}
-.rp-title {
+/* Header */
+.rp-header{margin-bottom:1.625rem;text-align:center}
+.rp-crown{font-size:1.5rem;margin-bottom:.375rem;filter:drop-shadow(0 0 8px rgba(212,175,55,.5))}
+.rp-title{
   font-family:'Cinzel Decorative',serif;
-  font-size:1.75rem;font-weight:900;
-  color:#D4AF37;letter-spacing:.04em;
-  text-shadow:0 0 30px rgba(212,175,55,.4);
-  margin-bottom:.25rem;
+  font-size:1.625rem;font-weight:900;color:#D4AF37;
+  letter-spacing:.06em;line-height:1;margin-bottom:.375rem;
+  text-shadow:0 0 24px rgba(212,175,55,.4),0 2px 4px rgba(0,0,0,.6);
 }
-.rp-sub{font-size:.75rem;color:rgba(200,180,140,.4);font-weight:600;letter-spacing:.06em}
+.rp-sub{font-size:.6875rem;color:rgba(200,180,140,.35);font-weight:600;letter-spacing:.06em;font-style:italic}
 
 /* Tabs */
-.rp-tabs{display:flex;gap:4px;background:rgba(0,0,0,.4);border:1px solid rgba(212,175,55,.14);border-radius:10px;padding:3px;margin-bottom:1.25rem}
-.rp-tab{flex:1;padding:.5625rem;border-radius:8px;font-family:'Cinzel',serif;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;color:rgba(212,175,55,.35);transition:all .2s}
-.rp-tab-active{background:linear-gradient(135deg,rgba(212,175,55,.16),rgba(212,175,55,.08));color:#D4AF37;box-shadow:inset 0 1px 0 rgba(212,175,55,.1)}
+.rp-tabs{display:flex;background:rgba(0,0,0,.45);border:1px solid rgba(212,175,55,.2);border-radius:12px;padding:4px;gap:4px;margin-bottom:1.375rem}
+.rp-tab{
+  flex:1;padding:.625rem .5rem;border-radius:9px;
+  font-family:'Cinzel',serif;font-size:.75rem;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
+  color:rgba(212,175,55,.35);transition:all .25s;
+  display:flex;align-items:center;justify-content:center;gap:.375rem;
+  border:1px solid transparent;
+}
+.rp-tab-icon{font-size:.875rem}
+.rp-tab-active{
+  background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.09));
+  color:#D4AF37;
+  border-color:rgba(212,175,55,.2);
+  box-shadow:inset 0 1px 0 rgba(212,175,55,.12),0 2px 8px rgba(0,0,0,.3);
+}
+.rp-tab-admin-active{
+  background:linear-gradient(135deg,rgba(120,39,13,.3),rgba(120,39,13,.15));
+  color:#E88060;
+  border-color:rgba(120,39,13,.35);
+}
 
-/* Role hint */
-.rp-role-hint{display:flex;align-items:center;gap:.5rem;font-size:.6875rem;font-weight:600;color:rgba(200,180,140,.4);margin-bottom:1rem}
-.rp-role-admin{color:rgba(220,140,100,.4)}
-.rp-dot{width:6px;height:6px;border-radius:50%;background:#D4AF37;box-shadow:0 0 5px rgba(212,175,55,.7);flex-shrink:0;animation:dot-beat 2s ease-in-out infinite}
-.rp-dot-red{background:#C8102E;box-shadow:0 0 5px rgba(200,16,46,.7)}
+/* Hint */
+.rp-hint{display:flex;align-items:center;gap:.5rem;font-size:.6875rem;font-weight:600;color:rgba(200,180,140,.4);margin-bottom:1rem;padding:.5rem .75rem;background:rgba(212,175,55,.04);border:1px solid rgba(212,175,55,.08);border-radius:8px}
+.rp-hint-red{background:rgba(120,39,13,.06);border-color:rgba(120,39,13,.15)}
+.rp-hint-dot{width:6px;height:6px;border-radius:50%;background:#D4AF37;box-shadow:0 0 5px rgba(212,175,55,.7);flex-shrink:0;animation:dot-beat 2s ease-in-out infinite}
+.rp-hint-dot-red{background:#C8102E;box-shadow:0 0 5px rgba(200,16,46,.7)}
 @keyframes dot-beat{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
 
 /* Field */
-.rp-field{margin-bottom:.875rem}
-.rp-label{display:block;font-size:.5rem;font-weight:800;text-transform:uppercase;letter-spacing:.18em;color:rgba(212,175,55,.45);margin-bottom:.4375rem;font-family:'Cinzel',serif}
-.rp-input-wrap{display:flex;align-items:center;background:rgba(0,0,0,.5);border:1px solid rgba(212,175,55,.16);border-radius:10px;overflow:hidden;transition:all .2s}
-.rp-input-wrap.focus{border-color:rgba(212,175,55,.5);box-shadow:0 0 0 3px rgba(212,175,55,.07)}
-.rp-input{flex:1;background:none;border:none;outline:none;color:#E8D8B8;font-size:.9375rem;font-family:'Quicksand',sans-serif;padding:.75rem 1rem;font-weight:600;min-width:0;letter-spacing:.04em}
-.rp-input::placeholder{color:rgba(200,180,140,.18);letter-spacing:0;font-weight:500}
-.rp-eye{padding:0 .875rem;cursor:pointer;color:rgba(200,180,140,.35);transition:color .15s;display:flex;align-items:center;flex-shrink:0}
+.rp-field{margin-bottom:1rem}
+.rp-label{display:block;font-size:.5rem;font-weight:800;text-transform:uppercase;letter-spacing:.18em;color:rgba(212,175,55,.4);margin-bottom:.5rem;font-family:'Cinzel',serif}
+.rp-iw{
+  display:flex;align-items:center;
+  background:#060C18;
+  border:1.5px solid rgba(212,175,55,.2);
+  border-radius:10px;overflow:hidden;transition:all .2s;
+  box-shadow:inset 0 1px 4px rgba(0,0,0,.4);
+}
+.rp-iw.rp-iw-focus{border-color:rgba(212,175,55,.55);box-shadow:0 0 0 3px rgba(212,175,55,.08),inset 0 1px 4px rgba(0,0,0,.3)}
+.rp-iw-icon{padding:0 .875rem;font-size:.9375rem;flex-shrink:0;opacity:.6}
+.rp-input{
+  flex:1;border:none;outline:none;
+  background:#060C18 !important;
+  color:#E8D8B8 !important;
+  font-size:.9375rem;font-family:'Quicksand',sans-serif;
+  padding:.8125rem .5rem .8125rem 0;font-weight:600;min-width:0;
+  -webkit-text-fill-color:#E8D8B8 !important;
+}
+.rp-input::placeholder{color:rgba(200,180,140,.2) !important;font-weight:500}
+.rp-input:-webkit-autofill,
+.rp-input:-webkit-autofill:hover,
+.rp-input:-webkit-autofill:focus{
+  -webkit-box-shadow:0 0 0 1000px #060C18 inset !important;
+  -webkit-text-fill-color:#E8D8B8 !important;
+}
+.rp-eye{padding:0 .875rem;cursor:pointer;color:rgba(200,180,140,.3);transition:color .15s;display:flex;align-items:center;flex-shrink:0;border:none;background:none}
 .rp-eye:hover{color:#D4AF37}
 
 /* Error */
-.rp-err{font-size:.75rem;color:#e05555;font-weight:700;min-height:1.2em;margin-bottom:.5rem}
+.rp-err{font-size:.75rem;color:#e05555;font-weight:700;min-height:1.2em;margin-bottom:.5rem;padding:0 .25rem}
 
 /* Buttons */
-.rp-btn{width:100%;padding:.875rem;border-radius:10px;border:none;font-size:.875rem;font-weight:800;cursor:pointer;font-family:'Cinzel',serif;letter-spacing:.1em;text-transform:uppercase;transition:all .22s;min-height:50px;position:relative;overflow:hidden}
+.rp-btn{
+  width:100%;padding:.9375rem;border-radius:10px;border:none;
+  font-size:.8125rem;font-weight:800;cursor:pointer;
+  font-family:'Cinzel',serif;letter-spacing:.1em;text-transform:uppercase;
+  transition:all .22s;min-height:50px;position:relative;overflow:hidden;
+}
 .rp-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.1) 0%,transparent 55%);pointer-events:none}
-.rp-btn-gold{background:linear-gradient(135deg,#8A6A00,#BFA000,#D4AF37,#EDD060);background-size:200%;color:#120E00;box-shadow:0 4px 20px rgba(212,175,55,.4);animation:gold-shift 3s linear infinite}
+.rp-gold-btn{
+  background:linear-gradient(135deg,#8A6A00,#BFA000,#D4AF37,#F0D060,#D4AF37);
+  background-size:200%;color:#0E0900;
+  box-shadow:0 4px 22px rgba(212,175,55,.45);
+  animation:gold-shift 3s linear infinite;
+}
 @keyframes gold-shift{0%{background-position:0%}100%{background-position:200%}}
-.rp-btn-gold:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 28px rgba(212,175,55,.6)}
-.rp-btn-ember{background:linear-gradient(135deg,#3D0C04,#6E1F0B,#9A3018);color:#F5C4A8;box-shadow:0 4px 20px rgba(120,39,13,.5)}
-.rp-btn-ember:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 28px rgba(120,39,13,.65)}
+.rp-gold-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 30px rgba(212,175,55,.65)}
+.rp-ember-btn{
+  background:linear-gradient(135deg,#3D0C04,#6E1F0B,#9A3018);
+  color:#F5C4A8;box-shadow:0 4px 22px rgba(120,39,13,.5);
+}
+.rp-ember-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 30px rgba(120,39,13,.7)}
 .rp-btn:active{transform:translateY(0)!important}
 .rp-btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 
-.rp-footer{margin-top:1.5rem;font-size:.5625rem;color:rgba(212,175,55,.2);letter-spacing:.12em;font-family:'Cinzel',serif;text-align:center}
+.rp-footer{margin-top:1.5rem;font-size:.5rem;color:rgba(212,175,55,.2);letter-spacing:.14em;font-family:'Cinzel',serif;text-align:center;text-transform:uppercase}
 
 /* ── MOBILE ── */
 @media(max-width:720px){
