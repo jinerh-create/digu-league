@@ -1,88 +1,166 @@
 ---
 export const prerender = false;
-import BaseLayout from '../layouts/BaseLayout.astro';
-
 const next = Astro.url.searchParams.get('next') ?? '/';
 ---
 
-<BaseLayout title="Sign In" activeTab="home">
-  <div class="container">
-    <div class="login-wrap">
-      <img src="/logo.png" alt="Digu League" class="login-logo" />
-      <h1 class="login-title">Digu League</h1>
-      <p class="login-sub">Sign in to enter scores and track matches</p>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0B0F1A" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="icon" type="image/png" href="/logo.png" />
+  <link rel="apple-touch-icon" href="/logo.png" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet" />
+  <title>Sign In · Digu League</title>
+</head>
+<body>
 
-      <!-- Role tabs -->
-      <div class="role-tabs">
-        <button class="role-tab active" id="tab-player" onclick="switchTab('player')">
-          🎴 Player Login
+<!-- Background particles -->
+<div class="bg-overlay"></div>
+<div class="card-float card-float-1">♠</div>
+<div class="card-float card-float-2">♥</div>
+<div class="card-float card-float-3">♣</div>
+<div class="card-float card-float-4">♦</div>
+<div class="card-float card-float-5">♠</div>
+<div class="card-float card-float-6">♥</div>
+
+<div class="page">
+
+  <!-- Left panel — branding -->
+  <div class="brand-panel">
+    <div class="brand-inner">
+      <img src="/logo.png" alt="Digu League" class="brand-logo" />
+      <h1 class="brand-name">Digu League</h1>
+      <p class="brand-tagline">Gin Rummy · Competition Tracker</p>
+      <div class="brand-divider"></div>
+      <div class="brand-stats">
+        <div class="stat-item">
+          <div class="stat-icon">🏆</div>
+          <div class="stat-text">Track wins &amp; rankings</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon">🎴</div>
+          <div class="stat-text">Live scorekeeper</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon">📊</div>
+          <div class="stat-text">Stats &amp; leaderboards</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon">⚔️</div>
+          <div class="stat-text">Head-to-head records</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right panel — login forms -->
+  <div class="form-panel">
+    <div class="form-inner">
+
+      <!-- Mobile logo (hidden on desktop) -->
+      <div class="mobile-brand">
+        <img src="/logo.png" alt="Digu League" class="mobile-logo" />
+        <h2 class="mobile-title">Digu League</h2>
+      </div>
+
+      <h2 class="form-title">Welcome back</h2>
+      <p class="form-sub">Choose how you want to sign in</p>
+
+      <!-- Tab switcher -->
+      <div class="tabs">
+        <button class="tab active" id="tab-player" onclick="switchTab('player')">
+          <span class="tab-icon">🎴</span> Player
         </button>
-        <button class="role-tab" id="tab-admin" onclick="switchTab('admin')">
-          ⚙️ Admin Login
+        <button class="tab" id="tab-admin" onclick="switchTab('admin')">
+          <span class="tab-icon">⚙️</span> Admin
         </button>
       </div>
 
-      <!-- Player login -->
-      <div id="panel-player" class="login-panel">
-        <div class="login-desc-box">
-          <div class="desc-icon">🎴</div>
+      <!-- Player form -->
+      <div id="panel-player" class="panel">
+        <div class="role-badge player-badge">
+          <div class="role-icon">🎴</div>
           <div>
-            <strong>Players</strong>
-            <p>Start matches · Enter scores · Edit rounds</p>
+            <div class="role-title">Player Access</div>
+            <div class="role-desc">Start matches · Enter scores · Edit rounds</div>
           </div>
         </div>
-        <form id="player-form" class="login-form">
-          <input type="hidden" value={next} class="next-url" />
-          <div class="form-group">
-            <label class="form-label" for="player-password">Player Password</label>
-            <input type="password" id="player-password" class="form-input"
-              placeholder="Enter player password" autocomplete="current-password" />
+        <form id="player-form">
+          <input type="hidden" class="next-val" value={next} />
+          <div class="field">
+            <label class="field-label">Player Password</label>
+            <div class="input-wrap">
+              <span class="input-icon">🔑</span>
+              <input type="password" class="pw-input" id="player-pw"
+                placeholder="Enter player password"
+                autocomplete="current-password" />
+              <button type="button" class="eye-btn" onclick="togglePw('player-pw', this)">👁</button>
+            </div>
           </div>
-          <div class="error-message" style="display:none"></div>
-          <button type="submit" class="btn btn-primary btn-lg btn-block">
-            🎴 Sign In as Player
+          <div class="err-msg" id="player-err"></div>
+          <button type="submit" class="sign-btn player-btn" id="player-submit">
+            Sign In as Player →
           </button>
         </form>
       </div>
 
-      <!-- Admin login -->
-      <div id="panel-admin" class="login-panel" style="display:none">
-        <div class="login-desc-box admin">
-          <div class="desc-icon">⚙️</div>
+      <!-- Admin form -->
+      <div id="panel-admin" class="panel" style="display:none">
+        <div class="role-badge admin-badge">
+          <div class="role-icon">⚙️</div>
           <div>
-            <strong>Admin</strong>
-            <p>Full access · Manage players · All settings</p>
+            <div class="role-title">Admin Access</div>
+            <div class="role-desc">Full control · Manage players · All settings</div>
           </div>
         </div>
-        <form id="admin-form" class="login-form">
-          <input type="hidden" value={next} class="next-url" />
-          <div class="form-group">
-            <label class="form-label" for="admin-password">Admin Password</label>
-            <input type="password" id="admin-password" class="form-input"
-              placeholder="Enter admin password" autocomplete="current-password" />
+        <form id="admin-form">
+          <input type="hidden" class="next-val" value={next} />
+          <div class="field">
+            <label class="field-label">Admin Password</label>
+            <div class="input-wrap">
+              <span class="input-icon">🔐</span>
+              <input type="password" class="pw-input" id="admin-pw"
+                placeholder="Enter admin password"
+                autocomplete="current-password" />
+              <button type="button" class="eye-btn" onclick="togglePw('admin-pw', this)">👁</button>
+            </div>
           </div>
-          <div class="error-message" style="display:none"></div>
-          <button type="submit" class="btn btn-primary btn-lg btn-block admin-btn">
-            ⚙️ Sign In as Admin
+          <div class="err-msg" id="admin-err"></div>
+          <button type="submit" class="sign-btn admin-btn" id="admin-submit">
+            Sign In as Admin →
           </button>
         </form>
       </div>
 
     </div>
   </div>
-</BaseLayout>
+
+</div>
 
 <script>
-  function switchTab(role: string) {
+  function switchTab(role) {
     const isPlayer = role === 'player';
-    (document.getElementById('panel-player') as HTMLElement).style.display = isPlayer ? '' : 'none';
-    (document.getElementById('panel-admin') as HTMLElement).style.display = isPlayer ? 'none' : '';
-    (document.getElementById('tab-player') as HTMLElement).classList.toggle('active', isPlayer);
-    (document.getElementById('tab-admin') as HTMLElement).classList.toggle('active', !isPlayer);
+    document.getElementById('panel-player').style.display = isPlayer ? '' : 'none';
+    document.getElementById('panel-admin').style.display = isPlayer ? 'none' : '';
+    document.getElementById('tab-player').classList.toggle('active', isPlayer);
+    document.getElementById('tab-admin').classList.toggle('active', !isPlayer);
   }
 
-  async function doLogin(password: string, nextUrl: string, errorEl: HTMLElement, btn: HTMLButtonElement) {
-    errorEl.style.display = 'none';
+  function togglePw(id, btn) {
+    const inp = document.getElementById(id);
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+  }
+
+  async function doLogin(pw, nextUrl, errEl, btn) {
+    errEl.textContent = '';
     btn.disabled = true;
     const orig = btn.textContent;
     btn.textContent = 'Signing in…';
@@ -90,92 +168,230 @@ const next = Astro.url.searchParams.get('next') ?? '/';
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ password: pw }),
       });
       if (res.ok) {
         window.location.href = nextUrl || '/';
       } else {
-        const data = await res.json() as { error?: string };
-        errorEl.textContent = data.error ?? 'Invalid password';
-        errorEl.style.display = 'block';
+        const data = await res.json();
+        errEl.textContent = data.error || 'Incorrect password';
         btn.disabled = false;
         btn.textContent = orig;
       }
     } catch {
-      errorEl.textContent = 'Network error. Please try again.';
-      errorEl.style.display = 'block';
+      errEl.textContent = 'Network error — please try again';
       btn.disabled = false;
       btn.textContent = orig;
     }
   }
 
-  document.getElementById('player-form')!.addEventListener('submit', async (e) => {
+  document.getElementById('player-form').addEventListener('submit', e => {
     e.preventDefault();
-    const form = e.currentTarget as HTMLFormElement;
-    const pw = (form.querySelector('#player-password') as HTMLInputElement).value;
-    const next = (form.querySelector('.next-url') as HTMLInputElement).value;
-    const err = form.querySelector('.error-message') as HTMLElement;
-    const btn = form.querySelector('button[type=submit]') as HTMLButtonElement;
-    await doLogin(pw, next, err, btn);
+    const pw = document.getElementById('player-pw').value;
+    const next = e.currentTarget.querySelector('.next-val').value;
+    doLogin(pw, next, document.getElementById('player-err'), document.getElementById('player-submit'));
   });
 
-  document.getElementById('admin-form')!.addEventListener('submit', async (e) => {
+  document.getElementById('admin-form').addEventListener('submit', e => {
     e.preventDefault();
-    const form = e.currentTarget as HTMLFormElement;
-    const pw = (form.querySelector('#admin-password') as HTMLInputElement).value;
-    const next = (form.querySelector('.next-url') as HTMLInputElement).value;
-    const err = form.querySelector('.error-message') as HTMLElement;
-    const btn = form.querySelector('button[type=submit]') as HTMLButtonElement;
-    await doLogin(pw, next, err, btn);
+    const pw = document.getElementById('admin-pw').value;
+    const next = e.currentTarget.querySelector('.next-val').value;
+    doLogin(pw, next, document.getElementById('admin-err'), document.getElementById('admin-submit'));
+  });
+
+  // Enter key support
+  ['player-pw', 'admin-pw'].forEach(id => {
+    document.getElementById(id)?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') e.currentTarget.closest('form').dispatchEvent(new Event('submit'));
+    });
   });
 </script>
 
 <style>
-  .login-wrap {
-    max-width: 400px;
-    margin: 2.5rem auto 0;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    align-items: center;
-  }
-  .login-logo { width: 80px; border-radius: 16px; }
-  .login-title { font-size: 1.75rem; font-weight: 900; color: var(--gold); letter-spacing: -0.02em; margin: 0; }
-  .login-sub { font-size: 0.875rem; color: var(--text-secondary); margin: 0; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  .role-tabs {
-    display: flex; gap: 0; width: 100%;
-    background: var(--card); border-radius: var(--radius-sm);
-    padding: 4px; border: 1px solid var(--border);
+  body {
+    font-family: 'Quicksand', system-ui, sans-serif;
+    background: #0B0F1A;
+    color: #DDD1BF;
+    min-height: 100dvh;
+    overflow-x: hidden;
   }
-  .role-tab {
-    flex: 1; padding: 0.6rem 0.5rem; border-radius: calc(var(--radius-sm) - 2px);
+
+  /* Floating card suits */
+  .card-float {
+    position: fixed; font-size: clamp(4rem, 10vw, 8rem);
+    opacity: 0.03; pointer-events: none; user-select: none;
+    font-family: Georgia, serif; z-index: 0;
+    animation: float-card 12s ease-in-out infinite;
+  }
+  .card-float-1 { top: 5%; left: 3%; color: #C8102E; animation-delay: 0s; }
+  .card-float-2 { top: 20%; right: 5%; color: #C8102E; font-size: 6rem; animation-delay: 2s; }
+  .card-float-3 { top: 60%; left: 5%; color: #DDD1BF; font-size: 5rem; animation-delay: 4s; }
+  .card-float-4 { top: 75%; right: 8%; color: #C8102E; font-size: 7rem; animation-delay: 1s; }
+  .card-float-5 { top: 40%; left: 45%; color: #DDD1BF; font-size: 3rem; animation-delay: 3s; }
+  .card-float-6 { bottom: 10%; left: 30%; color: #C8102E; font-size: 4rem; animation-delay: 5s; }
+  @keyframes float-card {
+    0%,100% { transform: translateY(0) rotate(-5deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
+  }
+
+  /* Layout */
+  .page {
+    display: flex; min-height: 100dvh; position: relative; z-index: 1;
+  }
+
+  /* Brand panel */
+  .brand-panel {
+    flex: 0 0 45%; display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(160deg, #111827 0%, #0B0F1A 50%, #130C1C 100%);
+    padding: 3rem 2.5rem;
+    position: relative; overflow: hidden;
+  }
+  .brand-panel::after {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(200,16,46,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .brand-inner {
+    max-width: 340px; width: 100%; text-align: center; position: relative; z-index: 1;
+  }
+  .brand-logo {
+    width: 100px; height: 100px; border-radius: 24px; margin: 0 auto 1.25rem;
+    box-shadow: 0 0 0 1px rgba(212,175,55,0.2), 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(212,175,55,0.12);
+  }
+  .brand-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem; font-weight: 900; color: #D4AF37;
+    letter-spacing: -0.02em; line-height: 1; margin-bottom: 0.5rem;
+    text-shadow: 0 0 40px rgba(212,175,55,0.3);
+  }
+  .brand-tagline {
+    font-size: 0.875rem; font-weight: 600; color: #6a9bc8;
+    letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 2rem;
+  }
+  .brand-divider {
+    width: 60px; height: 2px; margin: 0 auto 2rem;
+    background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+  }
+  .brand-stats { display: flex; flex-direction: column; gap: 1rem; text-align: left; }
+  .stat-item {
+    display: flex; align-items: center; gap: 0.875rem;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px; padding: 0.75rem 1rem;
+  }
+  .stat-icon { font-size: 1.25rem; flex-shrink: 0; }
+  .stat-text { font-size: 0.875rem; font-weight: 600; color: #a0b4c8; }
+
+  /* Form panel */
+  .form-panel {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    padding: 2rem 1.5rem;
+    background: #0D1120;
+  }
+  .form-inner { width: 100%; max-width: 400px; }
+
+  .mobile-brand { display: none; text-align: center; margin-bottom: 1.5rem; }
+  .mobile-logo { width: 64px; border-radius: 16px; margin: 0 auto 0.75rem; }
+  .mobile-title { font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 900; color: #D4AF37; }
+
+  .form-title { font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 900; color: #DDD1BF; margin-bottom: 0.375rem; }
+  .form-sub { font-size: 0.875rem; color: #6a9bc8; margin-bottom: 1.5rem; }
+
+  /* Tabs */
+  .tabs {
+    display: flex; gap: 0.375rem; background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 12px;
+    padding: 4px; margin-bottom: 1.5rem;
+  }
+  .tab {
+    flex: 1; padding: 0.625rem; border-radius: 9px;
     font-size: 0.875rem; font-weight: 700; cursor: pointer;
-    color: var(--text-secondary); transition: all 0.2s;
-    font-family: inherit;
+    color: #6a9bc8; transition: all 0.2s; font-family: 'Quicksand', sans-serif;
+    display: flex; align-items: center; justify-content: center; gap: 0.375rem;
   }
-  .role-tab.active {
-    background: var(--surface);
-    color: var(--gold);
-    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  .tab.active { background: rgba(255,255,255,0.08); color: #DDD1BF; box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+  .tab-icon { font-size: 1rem; }
+
+  /* Role badge */
+  .role-badge {
+    display: flex; align-items: center; gap: 0.875rem;
+    border-radius: 12px; padding: 0.875rem 1rem; margin-bottom: 1.25rem;
+  }
+  .player-badge { background: rgba(212,175,55,0.06); border: 1px solid rgba(212,175,55,0.2); }
+  .admin-badge { background: rgba(120,39,13,0.1); border: 1px solid rgba(120,39,13,0.3); }
+  .role-icon { font-size: 1.75rem; flex-shrink: 0; }
+  .role-title { font-size: 0.9375rem; font-weight: 800; color: #DDD1BF; margin-bottom: 2px; }
+  .role-desc { font-size: 0.75rem; color: #6a9bc8; }
+
+  /* Field */
+  .field { margin-bottom: 1rem; }
+  .field-label {
+    display: block; font-size: 0.625rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    color: #6a9bc8; margin-bottom: 0.5rem;
+  }
+  .input-wrap {
+    display: flex; align-items: center; gap: 0;
+    background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 10px; overflow: hidden; transition: border-color 0.2s;
+  }
+  .input-wrap:focus-within { border-color: #D4AF37; box-shadow: 0 0 0 3px rgba(212,175,55,0.1); }
+  .input-icon { padding: 0 0.75rem; font-size: 1rem; color: #6a9bc8; flex-shrink: 0; }
+  .pw-input {
+    flex: 1; background: none; border: none; outline: none;
+    color: #DDD1BF; font-size: 0.9375rem; font-family: inherit;
+    padding: 0.75rem 0; font-weight: 600; min-width: 0;
+  }
+  .pw-input::placeholder { color: #2a4d78; }
+  .eye-btn {
+    padding: 0 0.75rem; font-size: 1rem; color: #6a9bc8;
+    cursor: pointer; background: none; border: none; flex-shrink: 0;
   }
 
-  .login-panel { width: 100%; }
-
-  .login-desc-box {
-    display: flex; align-items: center; gap: 12px;
-    background: rgba(212,175,55,0.08); border: 1px solid rgba(212,175,55,0.2);
-    border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 1rem;
+  /* Error */
+  .err-msg {
+    font-size: 0.8125rem; color: #C8102E; font-weight: 600;
+    min-height: 1.2em; margin-bottom: 0.75rem;
   }
-  .login-desc-box.admin {
-    background: rgba(120,39,13,0.08); border-color: rgba(120,39,13,0.25);
+
+  /* Sign in buttons */
+  .sign-btn {
+    width: 100%; padding: 0.875rem; border-radius: 10px; border: none;
+    font-size: 1rem; font-weight: 800; cursor: pointer;
+    font-family: 'Quicksand', sans-serif; letter-spacing: 0.02em;
+    transition: all 0.2s; min-height: 52px;
   }
-  .desc-icon { font-size: 1.75rem; flex-shrink: 0; }
-  .login-desc-box strong { display: block; font-size: 0.9375rem; font-weight: 800; color: var(--cream); }
-  .login-desc-box p { font-size: 0.75rem; color: var(--text-secondary); margin: 2px 0 0; }
+  .player-btn {
+    background: linear-gradient(135deg, #B8960C, #D4AF37, #F0CC60);
+    color: #0B0F1A;
+    box-shadow: 0 4px 20px rgba(212,175,55,0.35);
+  }
+  .player-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(212,175,55,0.5);
+  }
+  .admin-btn {
+    background: linear-gradient(135deg, #78270D, #9a3310, #C04020);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(120,39,13,0.4);
+  }
+  .admin-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(120,39,13,0.55);
+  }
+  .sign-btn:active { transform: translateY(0); }
+  .sign-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-  .login-form { display: flex; flex-direction: column; gap: 0.875rem; width: 100%; }
-
-  .admin-btn { background: var(--ember) !important; }
-  .admin-btn:hover { background: #9a3310 !important; }
+  /* Responsive */
+  @media (max-width: 700px) {
+    .brand-panel { display: none; }
+    .form-panel { background: #0B0F1A; padding: 2rem 1.25rem; }
+    .mobile-brand { display: block; }
+    .form-inner { max-width: 100%; }
+    .form-title { font-size: 1.5rem; }
+  }
 </style>
+
+</body>
+</html>
