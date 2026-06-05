@@ -51,16 +51,28 @@ const next = Astro.url.searchParams.get('next') ?? '/';
       <div class="lp-trophy">
         <div class="trophy-glow-ring"></div>
         <div class="trophy-glow-floor"></div>
-        <img
-          src="/badges/champion-may-2026.png"
-          alt="May 2026 Champion"
-          class="lp-trophy-img"
-        />
-        <div class="trophy-badge">
-          <span>👑</span>
-          <span>May 2026 Champion</span>
-          <span>·</span>
-          <span>Mohamed Shujau</span>
+
+        <!-- Canvas for bg-removed trophy -->
+        <div class="trophy-canvas-wrap" id="trophy-wrap">
+          <!-- Loading: card suit spinner -->
+          <div class="suit-loader" id="suit-loader">
+            <span class="sl-suit sl-s1">♠</span>
+            <span class="sl-suit sl-s2">♥</span>
+            <span class="sl-suit sl-s3">♣</span>
+            <span class="sl-suit sl-s4">♦</span>
+          </div>
+          <canvas id="trophy-canvas" class="trophy-canvas" style="display:none"></canvas>
+        </div>
+
+        <!-- Hidden source image -->
+        <img id="trophy-src" src="/badges/champion-may-2026.png"
+          alt="Trophy" style="display:none" crossorigin="anonymous"
+          onload="processTrophy(this)" />
+
+        <div class="trophy-league-name">
+          <span class="tln-suit">♠</span>
+          DIGU LEAGUE
+          <span class="tln-suit">♠</span>
         </div>
       </div>
 
@@ -204,6 +216,34 @@ const next = Astro.url.searchParams.get('next') ?? '/';
       document.getElementById('admin-err'),
       document.getElementById('admin-sub'));
   });
+
+  // Remove white background from trophy using canvas
+  function processTrophy(img) {
+    const canvas = document.getElementById('trophy-canvas');
+    const loader = document.getElementById('suit-loader');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    ctx.drawImage(img, 0, 0);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const d = imageData.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const r = d[i], g = d[i+1], b = d[i+2];
+      // Remove white/near-white pixels (background)
+      const brightness = (r + g + b) / 3;
+      const saturation = Math.max(r,g,b) - Math.min(r,g,b);
+      if (brightness > 210 && saturation < 40) {
+        // Smooth edge: partially transparent near white
+        const alpha = Math.max(0, 255 - (brightness - 210) * 8);
+        d[i+3] = Math.min(d[i+3], alpha);
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+    // Show canvas, hide loader
+    canvas.style.display = 'block';
+    if (loader) loader.style.display = 'none';
+  }
 
   // Gold dust particles
   const canvas = document.getElementById('particles');
@@ -360,14 +400,64 @@ body {
   border-radius:12px;
 }
 @keyframes trophy-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-.trophy-badge {
-  display:flex;align-items:center;gap:.375rem;
-  background:linear-gradient(135deg,rgba(212,175,55,.1),rgba(212,175,55,.06));
-  border:1px solid rgba(212,175,55,.3);border-radius:30px;
-  padding:.35rem .875rem;
-  font-size:.6875rem;font-weight:700;color:rgba(212,175,55,.85);
-  font-family:'Cinzel',serif;letter-spacing:.04em;
-  white-space:nowrap;
+
+/* Trophy canvas wrap */
+.trophy-canvas-wrap {
+  position:relative;z-index:1;
+  display:flex;justify-content:center;align-items:center;
+  min-height:160px;
+}
+
+/* Card suit loading spinner */
+.suit-loader {
+  display:flex;gap:.5rem;align-items:center;
+  height:60px;
+}
+.sl-suit {
+  font-size:1.5rem;font-family:Georgia,serif;
+  animation:suit-appear 1.2s ease-in-out infinite;
+}
+.sl-s1{color:#DDD1BF;animation-delay:0s}
+.sl-s2{color:#C8102E;animation-delay:.3s}
+.sl-s3{color:#DDD1BF;animation-delay:.6s}
+.sl-s4{color:#C8102E;animation-delay:.9s}
+@keyframes suit-appear{
+  0%,100%{opacity:.2;transform:scale(.7) translateY(4px)}
+  50%{opacity:1;transform:scale(1.2) translateY(-4px)}
+}
+
+/* Trophy canvas */
+.trophy-canvas {
+  width:160px;height:auto;
+  animation:trophy-float 4s ease-in-out infinite;
+  filter:
+    drop-shadow(0 0 12px rgba(212,175,55,.9))
+    drop-shadow(0 0 28px rgba(212,175,55,.5))
+    drop-shadow(0 8px 20px rgba(0,0,0,.7));
+}
+
+/* DIGU LEAGUE label */
+.trophy-league-name {
+  display:flex;align-items:center;gap:.5rem;
+  font-family:'Cinzel Decorative',serif;
+  font-size:.75rem;font-weight:900;
+  color:#D4AF37;letter-spacing:.14em;
+  text-shadow:0 0 20px rgba(212,175,55,.5);
+  margin-top:.25rem;
+}
+.tln-suit{font-size:.625rem;font-family:Georgia,serif;opacity:.6}
+
+/* Gold border pulsing ring around canvas */
+.trophy-canvas-wrap::before {
+  content:'';position:absolute;
+  inset:-8px;border-radius:16px;
+  border:1.5px solid rgba(212,175,55,0);
+  animation:gold-border-pulse 2.5s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes gold-border-pulse{
+  0%,100%{border-color:rgba(212,175,55,.2);box-shadow:0 0 0 rgba(212,175,55,0)}
+  50%{border-color:rgba(212,175,55,.6);box-shadow:0 0 20px rgba(212,175,55,.2),0 0 40px rgba(212,175,55,.1)}
 }
 
 /* Bottom suits */
