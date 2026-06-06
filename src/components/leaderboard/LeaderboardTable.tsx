@@ -556,7 +556,7 @@ export default function LeaderboardTable() {
                 ].filter(Boolean) as { player: PlayerStats; title: string; icon: string; color: string; stat: string }[];
 
                 return (
-                <div className="podium-section">
+                <div className="podium-section" style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", marginLeft: "-0.875rem", marginRight: "-0.875rem", paddingLeft: "0.875rem", paddingRight: "0.875rem" }}>
                   {/* One single HOF box */}
                   <div style={{
                     border: '2px solid rgba(212,175,55,0.55)',
@@ -886,12 +886,48 @@ export default function LeaderboardTable() {
         .hof-grid {
           display: flex; gap: 0.75rem; align-items: stretch;
         }
+        @media (max-width: 768px) {
+          /* HOF box: full width with proper side spacing */
+          .podium-section { margin: 0 0 1.25rem 0; }
+
+          /* HOF outer box: scroll horizontally on small screens */
+          .hof-outer-box {
+            margin: 0 !important;
+            border-radius: 14px !important;
+          }
+
+          /* HOF left panel: compact on mobile */
+          .hof-left-panel {
+            width: 100px !important;
+            min-width: 100px !important;
+            padding: 0.75rem 0.5rem !important;
+          }
+          .hof-left-panel img { width: 80px !important; height: auto !important; }
+          .hof-left-panel .hof-hall-text { font-size: 0.875rem !important; }
+          .hof-left-panel .hof-of-text { font-size: 0.625rem !important; }
+          .hof-left-panel .hof-fame-text { font-size: 0.875rem !important; }
+          .hof-left-panel .hof-tagline { display: none; }
+
+          /* Player strips: smaller on mobile */
+          .hof-strip { min-height: 220px !important; }
+          .hof-strip-avatar { width: 68px !important; height: 68px !important; }
+          .hof-strip-name { font-size: 0.875rem !important; }
+          .hof-strip-fullname { font-size: 0.5rem !important; }
+          .hof-strip-stat { font-size: 0.5rem !important; padding: 3px 8px !important; }
+          .hof-strip-title { font-size: 0.45rem !important; padding: 2px 7px !important; }
+          .hof-strip-icon { font-size: 1rem !important; margin-top: 0.625rem !important; margin-bottom: 0.375rem !important; }
+        }
+
         @media (max-width: 480px) {
           .podium-grid { flex-direction: column; }
           .podium-grid .podium-rank-0,
           .podium-grid .podium-rank-1,
           .podium-grid .podium-rank-2 { order: unset; }
           .hof-grid { flex-direction: column; }
+          .hof-left-panel { width: 85px !important; }
+          .hof-left-panel img { width: 65px !important; }
+          .hof-strip { min-height: 200px !important; }
+          .hof-strip-avatar { width: 58px !important; height: 58px !important; }
         }
 
         /* Table */

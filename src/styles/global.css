@@ -123,7 +123,14 @@ img {
   width: 100%;
   max-width: 640px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 0.875rem;
+  box-sizing: border-box;
+}
+
+@media (max-width: 480px) {
+  .container { padding: 0 0.75rem; }
+  body { overflow-x: hidden; }
+  * { max-width: 100%; }
 }
 
 .page-header {
