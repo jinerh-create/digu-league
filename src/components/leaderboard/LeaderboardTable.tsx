@@ -568,6 +568,13 @@ export default function LeaderboardTable() {
                     {/* Top shimmer bar */}
                     <div style={{ height: 3, background: 'linear-gradient(90deg,transparent,#D4AF37,#fff,#D4AF37,transparent)', backgroundSize: '200%',  }} />
 
+                    <div className="hof-mobile-header" style={{ display: 'none', alignItems: 'center', justifyContent: 'center', gap: '0.75rem', padding: '0.875rem 1rem 0.5rem', borderBottom: '1px solid rgba(212,175,55,0.15)' }}>
+                      <img src="/dl-logo-v2.png" alt="DL" style={{ width: 36, height: 36, objectFit: 'contain' }} />
+                      <div>
+                        <div style={{ fontFamily: "'Cinzel Decorative',serif", fontSize: '0.9375rem', fontWeight: 900, color: '#D4AF37' }}>HALL of FAME</div>
+                        <div style={{ fontFamily: "'Cinzel',serif", fontSize: '0.45rem', color: 'rgba(212,175,55,0.5)', letterSpacing: '0.2em' }}>DIGU LEAGUE · ONE CROWN · ONE CHAMPION</div>
+                      </div>
+                    </div>
                     <div style={{ display: 'flex', minHeight: 260 }}>
                       {/* LEFT: Shield panel */}
                       <div className="hof-left-panel" style={{
@@ -599,7 +606,7 @@ export default function LeaderboardTable() {
                       </div>
 
                       {/* RIGHT: Player strips */}
-                      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: `repeat(${hofPlayers.length}, 1fr)`, gap: 0 }}>
+                      <div className="hof-right-panel" style={{ flex: 1, display: 'grid', gridTemplateColumns: `repeat(${hofPlayers.length}, 1fr)`, gap: 0 }}>
                         {hofPlayers.map((h, i) => {
                           const isFirst = i === 0;
                           const initials = h.player.name.split(' ').map((w:string)=>w[0]).join('').slice(0,2).toUpperCase();
@@ -888,13 +895,16 @@ export default function LeaderboardTable() {
           display: flex; gap: 0.75rem; align-items: stretch;
         }
         @media (max-width: 768px) {
+          /* HOF: stack vertically on mobile */
           .podium-section { margin-bottom: 1rem; }
-          /* Hide 2nd and 3rd place on mobile — show only Champion + Digu King */
+          /* Hide 2nd and 3rd on mobile */
           .hof-strip-2nd, .hof-strip-3rd { display: none !important; }
-          /* Left panel compact */
-          .hof-left-panel { width: 110px !important; padding: 1rem 0.625rem !important; }
-          .hof-left-panel img { width: 80px !important; }
-          .hof-left-panel .hof-tagline, .hof-left-panel .hof-date { display: none !important; }
+          /* Hide left panel on mobile — use mobile header instead */
+          .hof-left-panel { display: none !important; }
+          /* Show mobile header */
+          .hof-mobile-header { display: flex !important; }
+          /* Make player strips bigger on mobile since only 2 showing */
+          .hof-right-panel { grid-template-columns: 1fr 1fr !important; }
         }
         @media (max-width: 480px) {
           .podium-grid { flex-direction: column; }
@@ -902,8 +912,6 @@ export default function LeaderboardTable() {
           .podium-grid .podium-rank-1,
           .podium-grid .podium-rank-2 { order: unset; }
           .hof-grid { flex-direction: column; }
-          .hof-left-panel { width: 90px !important; padding: 0.75rem 0.5rem !important; }
-          .hof-left-panel img { width: 65px !important; }
         }
 
         /* Table */
