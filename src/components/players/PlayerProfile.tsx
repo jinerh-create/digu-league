@@ -469,16 +469,16 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
     const ax=60, ay=72, ar=44;
     ctx.save(); ctx.beginPath(); ctx.arc(ax,ay,ar,0,Math.PI*2); ctx.clip();
     const colors2 = ['#2B4F37','#78270D','#1a3a5c','#4a2060','#2c4a1a'];
-    ctx.fillStyle = colors2[player.name.charCodeAt(0) % colors2.length];
+    ctx.fillStyle = colors2[player!.name.charCodeAt(0) % colors2.length];
     ctx.fillRect(ax-ar,ay-ar,ar*2,ar*2);
-    if (player.avatar_b64) {
+    if (player!.avatar_b64) {
       const img = new Image();
-      img.src = `data:image/jpeg;base64,${player.avatar_b64}`;
+      img.src = `data:image/jpeg;base64,${player!.avatar_b64}`;
       await new Promise(r => { img.onload=r; img.onerror=r; });
       ctx.drawImage(img, ax-ar,ay-ar,ar*2,ar*2);
     } else {
       ctx.fillStyle='#DDD1BF'; ctx.font='bold 26px system-ui'; ctx.textAlign='center';
-      ctx.fillText(player.name.split(' ').map((w:string)=>w[0]).join('').slice(0,2).toUpperCase(), ax, ay+9);
+      ctx.fillText(player!.name.split(' ').map((w:string)=>w[0]).join('').slice(0,2).toUpperCase(), ax, ay+9);
     }
     ctx.restore();
     // Level ring
@@ -488,10 +488,10 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
     // Name + level
     ctx.textAlign='left'; ctx.fillStyle='#fff';
     ctx.font='bold 22px system-ui';
-    ctx.fillText(player.nickname || player.name, 120, 58);
-    if (player.nickname) { ctx.fillStyle='rgba(221,209,191,0.5)'; ctx.font='500 13px system-ui'; ctx.fillText(player.name, 120, 76); }
+    ctx.fillText(player!.nickname || player!.name, 120, 58);
+    if (player!.nickname) { ctx.fillStyle='rgba(221,209,191,0.5)'; ctx.font='500 13px system-ui'; ctx.fillText(player!.name, 120, 76); }
     ctx.fillStyle=level.color; ctx.font='700 12px system-ui';
-    ctx.fillText(`${level.icon} ${level.name}  ·  Since ${formatDate(player.joined_at)}`, 120, 98);
+    ctx.fillText(`${level.icon} ${level.name}  ·  Since ${formatDate(player!.joined_at)}`, 120, 98);
 
     // Divider
     ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=1;
