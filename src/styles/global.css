@@ -44,14 +44,14 @@ html {
   --font-display: 'Cinzel Decorative', 'Cinzel', Georgia, serif;
   --font-heading: 'Cinzel', Georgia, serif;
   --font-name: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
-  --font-body: 'Josefin Sans', 'Quicksand', system-ui, sans-serif;
+  --font-body: 'Quicksand', 'Josefin Sans', system-ui, sans-serif;
   --font-mono: 'Share Tech Mono', monospace;
 }
 
 body {
   background: var(--surface);
   color: var(--text-primary);
-  font-family: var(--font-body);
+  font-family: 'Quicksand', 'Josefin Sans', system-ui, sans-serif;
   line-height: 1.5;
   min-height: 100dvh;
   padding-bottom: 5rem;
