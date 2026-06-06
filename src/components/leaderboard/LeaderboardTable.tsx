@@ -867,34 +867,34 @@ export default function LeaderboardTable() {
         @media (max-width: 768px) {
           .podium-section { margin-bottom: 1rem; }
 
-          /* ── Leaderboard table: fill gold border edge-to-edge ── */
+          /* ── Leaderboard table: fill gold border, bigger content ── */
           .lb-table-wrap { border-radius: 12px; width: 100%; }
-          .lb-table { font-size: 0.625rem; table-layout: fixed; width: 100%; min-width: 0 !important; }
-          .lb-table th { padding: 0.375rem 0.1rem; font-size: 0.5rem; letter-spacing: 0.03em; }
-          .lb-table td { padding: 0.4rem 0.1rem; }
+          .lb-table { font-size: 0.75rem; table-layout: fixed; width: 100%; min-width: 0 !important; }
+          .lb-table th { padding: 0.5rem 0.15rem; font-size: 0.5625rem; letter-spacing: 0.04em; }
+          .lb-table td { padding: 0.5rem 0.15rem; }
 
           /* Rank col */
-          .lb-table th:first-child, .lb-table td:first-child { width: 24px !important; min-width: 0 !important; }
-          /* Player col — override inline minWidth:130 */
-          .lb-table th:nth-child(2), .lb-table td:nth-child(2) { width: 100px !important; min-width: 0 !important; text-align: left; }
-          /* Stat cols: equal split of remaining space */
+          .lb-table th:first-child, .lb-table td:first-child { width: 32px !important; min-width: 0 !important; }
+          /* Player col — full name visible */
+          .lb-table th:nth-child(2), .lb-table td:nth-child(2) { width: 115px !important; min-width: 0 !important; text-align: left; }
+          /* Stat cols: share remaining space */
           .lb-table th:nth-child(n+3), .lb-table td:nth-child(n+3) { width: auto; }
           /* Avatar */
-          .player-cell { gap: 3px !important; align-items: center !important; }
-          .player-cell img, .player-cell > div:first-child { width: 22px !important; height: 22px !important; font-size: 0.4rem !important; flex-shrink: 0; }
+          .player-cell { gap: 5px !important; align-items: center !important; }
+          .player-cell img, .player-cell > div:first-child { width: 28px !important; height: 28px !important; font-size: 0.5rem !important; flex-shrink: 0; }
           /* Player name — full name, allow wrap */
-          .player-name { font-size: 0.5rem !important; white-space: normal; overflow: visible; text-overflow: unset; max-width: 68px; line-height: 1.2; word-break: break-word; }
+          .player-name { font-size: 0.6875rem !important; white-space: normal; overflow: visible; text-overflow: unset; max-width: 78px; line-height: 1.25; word-break: break-word; font-weight: 700; }
           .player-nick { display: none !important; }
           /* Rank badge */
-          .rank-badge, .rank-num { width: 18px !important; height: 18px !important; font-size: 0.5rem !important; }
-          .rank-medal { width: 20px !important; height: 20px !important; font-size: 0.55rem !important; }
+          .rank-num { font-size: 0.6875rem !important; }
+          .rank-medal { width: 24px !important; height: 24px !important; font-size: 0.6875rem !important; }
           /* Stat values */
-          .stat-val { font-size: 0.625rem !important; font-weight: 700; }
+          .stat-val { font-size: 0.8125rem !important; font-weight: 700; }
           /* WinBar: text only */
           .lb-col-winrate { display: table-cell !important; }
           .lb-col-winrate > div > div:last-child { display: none !important; }
           .lb-col-winrate > div { flex-direction: row !important; gap: 0 !important; }
-          .lb-col-winrate span { font-size: 0.5rem !important; }
+          .lb-col-winrate span { font-size: 0.625rem !important; }
         }
         @media (max-width: 480px) {
           .podium-grid { flex-direction: column; }
