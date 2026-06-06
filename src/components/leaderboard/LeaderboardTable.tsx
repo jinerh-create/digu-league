@@ -114,48 +114,101 @@ function HallOfFameCard({ player, title, icon, color, stats }: {
   color: string;
   stats: { label: string; value: string | number; color?: string }[];
 }) {
-  const glow = `${color}28`;
   return (
     <div style={{
-      flex: 1, minWidth: 0,
-      background: 'linear-gradient(160deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)',
-      border: `1.5px solid ${color}55`,
-      borderRadius: 20, padding: '1.5rem 1.25rem',
-      textAlign: 'center', position: 'relative', overflow: 'hidden',
-      boxShadow: `0 8px 32px ${glow}, inset 0 1px 0 rgba(255,255,255,0.06)`,
-      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.625rem',
+      flex: 1, minWidth: 0, position: 'relative',
+      borderRadius: 24, overflow: 'hidden',
+      background: `linear-gradient(160deg, ${color}14 0%, rgba(8,8,16,0.95) 60%)`,
+      border: `1px solid ${color}44`,
+      boxShadow: `0 0 0 1px ${color}18, 0 20px 60px ${color}22, 0 4px 16px rgba(0,0,0,0.6)`,
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      padding: '0 0 1.25rem',
     }}>
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, transparent, ${color}, transparent)` }} />
-      <div style={{ fontSize: '2.75rem', lineHeight: 1, filter: `drop-shadow(0 0 12px ${color}88)`, animation: 'hof-icon-pulse 2.5s ease-in-out infinite' }}>{icon}</div>
+      {/* Animated top bar */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3,
+        background: `linear-gradient(90deg, transparent, ${color}, white, ${color}, transparent)`,
+        backgroundSize: '200% 100%', animation: 'hof-bar-slide 3s linear infinite' }} />
+
+      {/* Background glow blob */}
+      <div style={{ position: 'absolute', top: -30, left: '50%', transform: 'translateX(-50%)',
+        width: 200, height: 200, borderRadius: '50%',
+        background: `radial-gradient(circle, ${color}18 0%, transparent 70%)`,
+        filter: 'blur(20px)', pointerEvents: 'none' }} />
+
+      {/* Crown/Icon area */}
+      <div style={{ position: 'relative', paddingTop: '1.5rem', paddingBottom: '0.5rem', textAlign: 'center', width: '100%' }}>
+        <div style={{ fontSize: '3rem', lineHeight: 1,
+          filter: `drop-shadow(0 0 16px ${color}) drop-shadow(0 0 32px ${color}88)`,
+          animation: 'hof-icon-bounce 3s ease-in-out infinite',
+          display: 'inline-block',
+        }}>{icon}</div>
+      </div>
+
+      {/* Title */}
       <div style={{
-        fontSize: '1rem', fontWeight: 900, letterSpacing: '0.22em', color,
-        textTransform: 'uppercase', fontFamily: "'Cinzel', 'Georgia', serif",
-        textShadow: `0 0 16px ${color}88, 0 0 32px ${color}44`,
-        animation: 'hof-title-glow 2.5s ease-in-out infinite',
+        fontFamily: "'Cinzel', Georgia, serif",
+        fontSize: '0.6875rem', fontWeight: 900,
+        letterSpacing: '0.28em', color,
+        textTransform: 'uppercase',
+        textShadow: `0 0 20px ${color}, 0 0 40px ${color}66`,
+        animation: 'hof-glow-pulse 2.5s ease-in-out infinite',
+        marginBottom: '1.125rem',
       }}>{title}</div>
-      <style>{`
-        @keyframes hof-icon-pulse { 0%,100%{transform:scale(1);filter:drop-shadow(0 0 12px ${color}88)} 50%{transform:scale(1.12);filter:drop-shadow(0 0 24px ${color}cc)} }
-        @keyframes hof-title-glow { 0%,100%{text-shadow:0 0 16px ${color}88,0 0 32px ${color}44} 50%{text-shadow:0 0 24px ${color}cc,0 0 48px ${color}77} }
-      `}</style>
-      <Avatar name={player.name} avatar_b64={player.avatar_b64} size={80} rank={title === 'Champion' ? 1 : undefined} />
-      <div style={{ width: '100%', textAlign: 'center' }}>
-        <div style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '1.25rem', fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>
+
+      {/* Avatar with decorative ring */}
+      <div style={{ position: 'relative', marginBottom: '1rem' }}>
+        {/* Outer rotating ring */}
+        <div style={{
+          position: 'absolute', inset: -8, borderRadius: '50%',
+          background: `conic-gradient(${color} 0%, ${color}44 40%, transparent 60%, ${color}44 80%, ${color} 100%)`,
+          animation: 'hof-ring-spin 4s linear infinite',
+        }} />
+        {/* Inner bg */}
+        <div style={{ position: 'absolute', inset: -4, borderRadius: '50%', background: '#0a0a14' }} />
+        <Avatar name={player.name} avatar_b64={player.avatar_b64} size={90} rank={title === 'Champion' ? 1 : undefined} />
+      </div>
+
+      {/* Name */}
+      <div style={{ textAlign: 'center', marginBottom: '1rem', padding: '0 0.75rem' }}>
+        <div style={{
+          fontFamily: "'Playfair Display', Georgia, serif",
+          fontSize: '1.375rem', fontWeight: 900, color: '#fff', lineHeight: 1.1,
+          textShadow: `0 0 20px ${color}66`,
+        }}>
           {player.nickname || player.name}
         </div>
-        {player.nickname && <div style={{ fontSize: '0.75rem', color: 'rgba(221,209,191,0.6)', marginTop: 2 }}>{player.name}</div>}
+        {player.nickname && (
+          <div style={{ fontSize: '0.75rem', color: 'rgba(221,209,191,0.45)', marginTop: 3, fontStyle: 'italic' }}>
+            {player.name}
+          </div>
+        )}
       </div>
+
+      {/* Stats */}
       <div style={{
         display: 'grid', gridTemplateColumns: `repeat(${stats.length}, 1fr)`,
-        gap: '0.25rem 0.5rem', width: '100%',
-        background: 'rgba(0,0,0,0.2)', borderRadius: 10, padding: '0.5rem 0.375rem',
+        gap: 0, width: 'calc(100% - 2rem)', margin: '0 1rem',
+        background: 'rgba(0,0,0,0.35)', borderRadius: 14,
+        border: `1px solid ${color}22`,
+        overflow: 'hidden',
       }}>
-        {stats.map(stat => (
-          <div key={stat.label}>
-            <div style={{ fontSize: '0.6rem', color: '#888', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{stat.label}</div>
-            <div style={{ fontSize: '1.0625rem', fontWeight: 800, color: stat.color || color }}>{stat.value}</div>
+        {stats.map((stat, i) => (
+          <div key={stat.label} style={{
+            padding: '0.625rem 0.25rem', textAlign: 'center',
+            borderRight: i < stats.length - 1 ? `1px solid ${color}18` : 'none',
+          }}>
+            <div style={{ fontSize: '0.5625rem', color: '#666', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 3 }}>{stat.label}</div>
+            <div style={{ fontSize: '1.125rem', fontWeight: 900, color: stat.color || color, lineHeight: 1 }}>{stat.value}</div>
           </div>
         ))}
       </div>
+
+      <style>{`
+        @keyframes hof-bar-slide { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+        @keyframes hof-icon-bounce { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-6px) scale(1.08)} }
+        @keyframes hof-ring-spin { to{transform:rotate(360deg)} }
+        @keyframes hof-glow-pulse { 0%,100%{opacity:0.85} 50%{opacity:1;text-shadow:0 0 28px ${color}, 0 0 56px ${color}88} }
+      `}</style>
     </div>
   );
 }
@@ -604,12 +657,19 @@ export default function LeaderboardTable() {
               {/* ── Hall of Fame: Champion + Digu King ─────────────── */}
               {hasPlayed.length > 0 && (playerOfMonth || (diguKing && diguKing.gin_count > 0)) && (
                 <div className="podium-section">
-                  <div style={{
-                    fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.2em',
-                    textTransform: 'uppercase', color: '#D4AF3799', textAlign: 'center',
-                    marginBottom: '0.875rem',
-                  }}>
-                    ✦ &nbsp; Hall of Fame &nbsp; ✦
+                  {/* HOF Header */}
+                  <div style={{ textAlign: 'center', marginBottom: '1.25rem', position: 'relative' }}>
+                    <div style={{
+                      fontSize: '1.375rem', fontWeight: 900,
+                      fontFamily: "'Cinzel Decorative', 'Cinzel', Georgia, serif",
+                      color: '#D4AF37',
+                      textShadow: '0 0 20px rgba(212,175,55,0.6), 0 0 40px rgba(212,175,55,0.25)',
+                      letterSpacing: '0.12em',
+                    }}>✦ &nbsp;HALL OF FAME&nbsp; ✦</div>
+                    <div style={{ fontSize: '0.625rem', color: 'rgba(212,175,55,0.45)', letterSpacing: '0.18em', marginTop: 5, fontFamily: "'Cinzel', serif", textTransform: 'uppercase' }}>
+                      One League · One Crown · One Champion
+                    </div>
+                    <div style={{ width: 120, height: 1, background: 'linear-gradient(90deg,transparent,rgba(212,175,55,0.5),transparent)', margin: '8px auto 0' }} />
                   </div>
                   <div className="hof-grid">
                     {playerOfMonth && (
