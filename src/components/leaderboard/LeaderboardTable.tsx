@@ -873,17 +873,20 @@ export default function LeaderboardTable() {
           .lb-table th { padding: 0.5rem 0.15rem; font-size: 0.5625rem; letter-spacing: 0.04em; }
           .lb-table td { padding: 0.5rem 0.15rem; }
 
-          /* Rank col */
-          .lb-table th:first-child, .lb-table td:first-child { width: 32px !important; min-width: 0 !important; }
-          /* Player col — full name visible */
-          .lb-table th:nth-child(2), .lb-table td:nth-child(2) { width: 115px !important; min-width: 0 !important; text-align: left; overflow: hidden; }
-          /* Stat cols: share remaining space */
-          .lb-table th:nth-child(n+3), .lb-table td:nth-child(n+3) { width: auto; }
+          /* Column % widths — must total 100% to fill gold border */
+          .lb-table th:first-child, .lb-table td:first-child { width: 8% !important; }
+          .lb-table th:nth-child(2), .lb-table td:nth-child(2) { width: 28% !important; text-align: left; overflow: hidden; }
+          .lb-table th:nth-child(3), .lb-table td:nth-child(3) { width: 9% !important; }
+          .lb-table th:nth-child(4), .lb-table td:nth-child(4) { width: 9% !important; }
+          .lb-table th:nth-child(5), .lb-table td:nth-child(5) { width: 9% !important; }
+          .lb-table th:nth-child(6), .lb-table td:nth-child(6) { width: 11% !important; }
+          .lb-table th:nth-child(7), .lb-table td:nth-child(7) { width: 11% !important; }
+          .lb-table th:nth-child(8), .lb-table td:nth-child(8) { width: 15% !important; }
           /* Avatar */
           .player-cell { gap: 5px !important; align-items: center !important; overflow: hidden; }
           .player-cell img, .player-cell > div:first-child { width: 28px !important; height: 28px !important; font-size: 0.5rem !important; flex-shrink: 0; }
           /* Player name — wrap to 2 lines, no bleed into adjacent column */
-          .player-name { font-size: 0.6875rem !important; white-space: normal; overflow: hidden; text-overflow: clip; max-width: 78px; line-height: 1.25; word-break: break-word; font-weight: 700; }
+          .player-name { font-size: 0.6875rem !important; white-space: normal; overflow: hidden; text-overflow: clip; max-width: 68px; line-height: 1.25; word-break: break-word; font-weight: 700; }
           .player-nick { display: none !important; }
           /* Rank badge */
           .rank-num { font-size: 0.6875rem !important; }
