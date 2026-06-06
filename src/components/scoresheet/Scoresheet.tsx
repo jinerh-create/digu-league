@@ -504,7 +504,7 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
       <div className="scoresheet" id="printable">
         {/* Title */}
         <div className="ss-title">
-          <img src="/logo.png" alt="Digu League" className="ss-logo" />
+          <img src="/dl-logo-v2.png" alt="Digu League" className="ss-logo" />
           <div>
             <h1 className="ss-heading">Digu League</h1>
             <div className="ss-month">{monthLabel(match.started_at)}</div>

@@ -691,7 +691,7 @@ export default function LeaderboardTable() {
                       }}>
                         {/* New DL Logo — already a shield shape */}
                         <img
-                          src="/logo-clear.png"
+                          src="/dl-logo-v2.png"
                           alt="Digu League"
                           style={{
                             width: 150, height: 'auto',
