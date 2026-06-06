@@ -742,8 +742,8 @@ export default function LeaderboardTable() {
                               <a href={`/players/${s.player_id}`} className="player-cell">
                                 <Avatar name={s.name} avatar_b64={s.avatar_b64} size={34} rank={isTop3 ? i + 1 : undefined} />
                                 <div>
-                                  <div className="player-name">{s.name}</div>
-                                  {s.nickname && <div className="player-nick">{s.nickname}</div>}
+                                  <div className="player-name">{s.nickname || s.name}</div>
+                                  <div className="player-nick">{s.name}</div>
                                 </div>
                               </a>
                             </td>
