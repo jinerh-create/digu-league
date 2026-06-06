@@ -128,9 +128,10 @@ img {
 }
 
 @media (max-width: 768px) {
-  .container { padding: 0 0.875rem; max-width: 100%; }
-  body { overflow-x: hidden; }
+  .container { padding: 0 0.875rem; max-width: 100%; box-sizing: border-box; }
+  body { overflow-x: hidden; max-width: 100vw; }
   html { overflow-x: hidden; }
+  * { box-sizing: border-box; }
 }
 @media (max-width: 480px) {
   .container { padding: 0 0.75rem; }
