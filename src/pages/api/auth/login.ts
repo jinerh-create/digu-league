@@ -18,7 +18,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
   }
 
-  let body: { password?: string };
+  let body: { password?: string; role?: string };
   try {
     body = await request.json();
   } catch {
@@ -26,19 +26,35 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }
 
   const pw = body.password;
+  const requestedRole = body.role; // 'player' or 'admin' sent from frontend
+
   if (!pw) {
     return new Response(JSON.stringify({ error: 'Password required' }), { status: 400 });
   }
 
+  // Strict role enforcement:
+  // If player tab → only player password works
+  // If admin tab → only admin password works
   let role: 'admin' | 'player' | null = null;
-  if (pw === adminPassword) {
-    role = 'admin';
-  } else if (playerPassword && pw === playerPassword) {
-    role = 'player';
+
+  if (requestedRole === 'player') {
+    // Player login: only accept player password
+    if (playerPassword && pw === playerPassword) {
+      role = 'player';
+    }
+  } else if (requestedRole === 'admin') {
+    // Admin login: only accept admin password
+    if (pw === adminPassword) {
+      role = 'admin';
+    }
+  } else {
+    // No role specified: try both (backward compat)
+    if (pw === adminPassword) role = 'admin';
+    else if (playerPassword && pw === playerPassword) role = 'player';
   }
 
   if (!role) {
-    return new Response(JSON.stringify({ error: 'Invalid password' }), {
+    return new Response(JSON.stringify({ error: 'Incorrect password' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
     });

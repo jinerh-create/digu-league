@@ -208,23 +208,15 @@ const next = Astro.url.searchParams.get('next') ?? '/';
     btn.disabled = true;
     var orig = btn.textContent;
     btn.textContent = 'Signing in…';
-    // Determine expected role from which form is being submitted
-    var expectedRole = (pwId === 'player-pw') ? 'player' : 'admin';
     fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: pw })
+      body: JSON.stringify({ password: pw, role: (pwId === 'player-pw') ? 'player' : 'admin' })
     }).then(function(res) {
       return res.json().then(function(d) { return { ok: res.ok, d: d }; });
     }).then(function(r) {
-      if (r.ok && r.d.role === expectedRole) {
+      if (r.ok) {
         window.location.href = nxt || '/';
-      } else if (r.ok && r.d.role !== expectedRole) {
-        // Right password but wrong role — reject
-        errEl.textContent = 'Incorrect password';
-        btn.disabled = false; btn.textContent = orig;
-        // Clear the session cookie that was set
-        document.cookie = 'dl_session=; Max-Age=0; Path=/';
       } else {
         errEl.textContent = r.d.error || 'Incorrect password';
         btn.disabled = false; btn.textContent = orig;
