@@ -698,7 +698,7 @@ export default function LeaderboardTable() {
                               fill="rgba(212,175,55,0.04)" stroke="rgba(212,175,55,0.3)" strokeWidth="0.5"/>
                           </svg>
                           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-                            <img src="/logo.png" style={{ width: 72, height: 72, borderRadius: 14, objectFit: 'cover', filter: 'drop-shadow(0 0 8px rgba(212,175,55,0.5))' }} />
+                            <img src="/logo-clear.png" style={{ width: 80, height: 80, objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(212,175,55,0.6))' }} />
                           </div>
                         </div>
                         <div style={{ textAlign: 'center' }}>
