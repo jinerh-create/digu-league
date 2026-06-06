@@ -145,7 +145,7 @@ export default function MatchList() {
           <div className="label" style={{ marginBottom: '0.5rem' }}>In Progress</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {active.map(m => (
-              <div key={m.id} className="card match-card">
+              <div key={m.id} className="card match-card" style={{ border: '1.5px solid rgba(212,175,55,0.45)', boxShadow: '0 0 14px rgba(212,175,55,0.12), inset 0 1px 0 rgba(212,175,55,0.08)', position: 'relative', overflow: 'hidden' }}>
                 {confirmDeleteId === m.id ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
                     <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
@@ -171,7 +171,8 @@ export default function MatchList() {
                   </div>
                 ) : (
                   <>
-                    <div className="match-row">
+                    <div style={{ position:'absolute', top:0, left:'-100%', width:'60%', height:'2px', background:'linear-gradient(90deg,transparent,rgba(212,175,55,0.9),rgba(255,255,255,0.7),rgba(212,175,55,0.9),transparent)', animation:'goldShimmer 3.5s ease-in-out infinite' }} />
+              <div className="match-row">
                       <a href={`/match/${m.id}`} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1, textDecoration: 'none' }}>
                         <div className="match-vs">
                           <span className="player-name">{side1(m)}</span>
@@ -218,8 +219,9 @@ export default function MatchList() {
               const isDraw = m.completed_at && !m.winner_id;
               const winnerSide = m.winner_id === m.player1_id ? s1 : s2;
               return (
-                <div key={m.id} className="card match-card">
-                  <div className="match-row">
+                <div key={m.id} className="card match-card" style={{ border: '1.5px solid rgba(212,175,55,0.45)', boxShadow: '0 0 14px rgba(212,175,55,0.12), inset 0 1px 0 rgba(212,175,55,0.08)', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ position:'absolute', top:0, left:'-100%', width:'60%', height:'2px', background:'linear-gradient(90deg,transparent,rgba(212,175,55,0.9),rgba(255,255,255,0.7),rgba(212,175,55,0.9),transparent)', animation:'goldShimmer 3.5s ease-in-out infinite' }} />
+              <div className="match-row">
                     <div className="match-vs">
                       <span className={`player-name ${m.winner_id === m.player1_id ? 'winner' : isDraw ? '' : 'loser'}`}>{s1}</span>
                       <span className="vs-text">vs</span>
@@ -280,6 +282,7 @@ export default function MatchList() {
         a.match-card { cursor: pointer; }
         a.match-card:hover { border-color: rgba(212,175,55,0.6) !important; box-shadow: 0 0 16px rgba(212,175,55,0.15) !important; }
   @keyframes match-gold-line { 0%{left:-100%} 50%{left:150%} 100%{left:150%} }
+        @keyframes goldShimmer { 0%{left:-100%} 60%{left:150%} 100%{left:150%} }
         .match-row { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
         .match-vs { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9375rem; flex-wrap: wrap; }
         .player-name { font-weight: 600; }
