@@ -185,50 +185,44 @@ function TrophyCase({ trophiesJson }: { trophiesJson: string | undefined | null 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2.5rem', justifyContent: 'center', alignItems: 'flex-end' }}>
           {trophies.map((t) => (
             <div key={t.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-              {/* Trophy — canvas removes white bg, no animation */}
+              {/* Trophy display — circular for coins, canvas for champion */}
               <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                <div style={{
-                  position: 'absolute', inset: -16, borderRadius: 20,
-                  background: 'radial-gradient(circle, rgba(212,175,55,0.12) 0%, transparent 70%)',
-                  pointerEvents: 'none',
-                }} />
-                {/* Hidden img loads, canvas processes it */}
-                <img
-                  src={t.image}
-                  alt=""
-                  style={{ display: 'none' }}
-                  crossOrigin="anonymous"
-                  onLoad={(e) => {
-                    const img = e.currentTarget;
-                    const canvas = img.nextElementSibling as HTMLCanvasElement;
-                    if (!canvas) return;
-                    const ctx = canvas.getContext('2d');
-                    if (!ctx) return;
-                    canvas.width = img.naturalWidth;
-                    canvas.height = img.naturalHeight;
-                    ctx.drawImage(img, 0, 0);
-                    const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    const d = data.data;
-                    for (let i = 0; i < d.length; i += 4) {
-                      const r = d[i], g = d[i+1], b = d[i+2];
-                      const bright = (r + g + b) / 3;
-                      const sat = Math.max(r,g,b) - Math.min(r,g,b);
-                      if (bright > 205 && sat < 45) {
-                        const alpha = Math.max(0, 255 - (bright - 205) * 10);
-                        d[i+3] = Math.min(d[i+3], alpha);
-                      }
-                    }
-                    ctx.putImageData(data, 0, 0);
-                    canvas.style.display = 'block';
-                  }}
-                />
-                <canvas
-                  style={{
-                    width: 180, height: 'auto', display: 'none',
-                    filter: 'drop-shadow(0 0 16px rgba(212,175,55,0.7)) drop-shadow(0 4px 16px rgba(0,0,0,0.6))',
-                    position: 'relative', zIndex: 1,
-                  }}
-                />
+                {t.image.includes('champion') ? (
+                  /* Champion trophy: canvas removes white bg */
+                  <>
+                    <img src={t.image} alt="" style={{ display: 'none' }} crossOrigin="anonymous"
+                      onLoad={(e) => {
+                        const img = e.currentTarget;
+                        const canvas = img.nextElementSibling as HTMLCanvasElement;
+                        if (!canvas) return;
+                        const ctx = canvas.getContext('2d');
+                        if (!ctx) return;
+                        canvas.width = img.naturalWidth;
+                        canvas.height = img.naturalHeight;
+                        ctx.drawImage(img, 0, 0);
+                        const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const d = data.data;
+                        for (let i = 0; i < d.length; i += 4) {
+                          const bright = (d[i] + d[i+1] + d[i+2]) / 3;
+                          const sat = Math.max(d[i],d[i+1],d[i+2]) - Math.min(d[i],d[i+1],d[i+2]);
+                          if (bright > 205 && sat < 45) d[i+3] = Math.max(0, 255 - (bright - 205) * 10);
+                        }
+                        ctx.putImageData(data, 0, 0);
+                        canvas.style.display = 'block';
+                      }}
+                    />
+                    <canvas style={{ width: 180, height: 'auto', display: 'none', filter: 'drop-shadow(0 0 16px rgba(212,175,55,0.7))', position: 'relative', zIndex: 1 }} />
+                  </>
+                ) : (
+                  /* Coins: circular frame clips square background */
+                  <div style={{
+                    width: 160, height: 160, borderRadius: '50%',
+                    overflow: 'hidden', position: 'relative', flexShrink: 0,
+                    boxShadow: '0 0 0 3px #D4AF37, 0 0 0 6px rgba(212,175,55,0.2), 0 0 40px rgba(212,175,55,0.45), 0 8px 32px rgba(0,0,0,0.6)',
+                  }}>
+                    <img src={t.image} alt={t.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  </div>
+                )}
               </div>
               {/* Labels */}
               <div style={{ textAlign: 'center' }}>
