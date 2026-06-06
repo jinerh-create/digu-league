@@ -671,10 +671,10 @@ export default function LeaderboardTable() {
                 <div className="podium-section">
                   {/* One single HOF box */}
                   <div style={{
-                    border: '1px solid rgba(212,175,55,0.25)',
+                    border: '2px solid rgba(212,175,55,0.55)',
                     borderRadius: 20, overflow: 'hidden',
                     background: 'linear-gradient(160deg, #0D1020 0%, #080C18 100%)',
-                    boxShadow: '0 0 0 1px rgba(212,175,55,0.08), 0 16px 48px rgba(0,0,0,0.6)',
+                    boxShadow: '0 0 0 1px rgba(212,175,55,0.12), 0 0 32px rgba(212,175,55,0.2), 0 16px 48px rgba(0,0,0,0.7)',
                     position: 'relative',
                   }}>
                     {/* Top shimmer bar */}
@@ -749,7 +749,7 @@ export default function LeaderboardTable() {
                               </div>
                               {/* Info bottom */}
                               <div style={{ padding: '0.5rem 0.5rem 0.75rem', textAlign: 'center' }}>
-                                <div style={{ fontFamily: "'Cinzel', serif", fontSize: '0.45rem', fontWeight: 800, color: h.color, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 3, textShadow: `0 0 8px ${h.color}66` }}>{h.title}</div>
+                                <div style={{ fontFamily: "'Cinzel', Georgia, serif", fontSize: '0.75rem', fontWeight: 900, color: '#D4AF37', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 4, textShadow: '0 0 16px rgba(212,175,55,0.8), 0 0 32px rgba(212,175,55,0.4)' }}>{h.title}</div>
                                 <div style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: isFirst ? '1rem' : '0.875rem', fontWeight: 800, color: '#fff', lineHeight: 1.1 }}>
                                   {h.player.nickname || h.player.name.split(' ')[0]}
                                 </div>
