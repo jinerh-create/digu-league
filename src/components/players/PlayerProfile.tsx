@@ -505,19 +505,23 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
         {/* Monthly Stats banner */}
         {(() => {
           const now = new Date();
-          const monthName = now.toLocaleString('en', { month: 'long', year: 'numeric' });
-          const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-
-          const monthMatches = matches.filter(m =>
-            m.completed_at && m.completed_at.startsWith(thisMonth)
-          );
+          const thisMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+          const doneM = matches.filter(m => m.completed_at);
+          let activeMonth = thisMonth;
+          if (doneM.length > 0 && !doneM.some(m => m.completed_at!.startsWith(thisMonth))) {
+            const sorted = doneM.map(m => m.completed_at!.substring(0,7)).sort().reverse();
+            activeMonth = sorted[0];
+          }
+          const activeDate = new Date(activeMonth + '-01');
+          const monthName = activeDate.toLocaleString('en', { month: 'long', year: 'numeric' });
+          const isCurrentMonth = activeMonth === thisMonth;
+          const monthMatches = matches.filter(m => m.completed_at && m.completed_at.startsWith(activeMonth));
           const mWon = monthMatches.filter(m => {
             const onTeam1 = m.player1_id === playerId || m.team1_player2_id === playerId;
             return onTeam1 ? m.winner_id === m.player1_id : m.winner_id === m.player2_id;
           }).length;
-          const mDrawn = monthMatches.filter(m => m.completed_at && !m.winner_id).length;
+          const mDrawn = monthMatches.filter(m => !m.winner_id).length;
           const mLost = monthMatches.length - mWon - mDrawn;
-
           const mWinRate = monthMatches.length > 0 ? Math.round((mWon / monthMatches.length) * 100) : 0;
 
           return (

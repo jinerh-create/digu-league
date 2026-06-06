@@ -194,7 +194,7 @@ export default function PlayerList() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
         {players.map(p => (
-          <div key={p.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', padding: '0.875rem 1rem' }}>
+          <div key={p.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', padding: '0.875rem 1rem', border: '1px solid rgba(212,175,55,0.35)', boxShadow: '0 0 8px rgba(212,175,55,0.08), inset 0 1px 0 rgba(212,175,55,0.06)' }}>
             <button
               type="button"
               onClick={() => handleAvatarClick(p.id)}
