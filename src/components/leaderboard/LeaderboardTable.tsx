@@ -720,69 +720,76 @@ export default function LeaderboardTable() {
                           return (
                             <div key={h.player.player_id} style={{
                               position: 'relative', overflow: 'hidden',
-                              borderLeft: i > 0 ? '1px solid rgba(255,255,255,0.06)' : 'none',
-                              cursor: 'pointer',
-                              background: `linear-gradient(180deg, ${h.color}10 0%, rgba(8,12,24,0.95) 60%)`,
+                              borderLeft: i > 0 ? `1px solid ${h.color}18` : 'none',
+                              background: `linear-gradient(160deg, ${h.color}14 0%, rgba(6,8,16,0.97) 55%)`,
+                              display: 'flex', flexDirection: 'column', alignItems: 'center',
+                              minHeight: isFirst ? 340 : 300,
                             }}>
-                              {/* Avatar in circle */}
-                              <div style={{ padding: '1rem 0.5rem 0.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-                                {/* Icon top */}
-                                <div style={{ fontSize: isFirst ? '1.375rem' : '1.125rem', filter: `drop-shadow(0 0 6px ${h.color})`, marginBottom: 8 }}>{h.icon}</div>
-                                {/* Circular avatar */}
-                                <div style={{
-                                  width: isFirst ? 88 : 76, height: isFirst ? 88 : 76,
-                                  borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
-                                  border: `2.5px solid ${h.color}`,
-                                  boxShadow: `0 0 0 4px ${h.color}22, 0 0 20px ${h.color}44`,
-                                }}>
-                                  {h.player.avatar_b64 ? (
-                                    <img src={`data:image/jpeg;base64,${h.player.avatar_b64}`}
-                                      style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} />
-                                  ) : (
-                                    <div style={{ width: '100%', height: '100%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isFirst ? '2rem' : '1.75rem', fontWeight: 800, color: '#DDD1BF' }}>
-                                      {initials}
-                                    </div>
-                                  )}
-                                </div>
+                              {/* Top accent line */}
+                              <div style={{ position:'absolute', top:0, left:0, right:0, height:2, background:`linear-gradient(90deg,transparent,${h.color},transparent)` }} />
+
+                              {/* Icon */}
+                              <div style={{ marginTop: '1.25rem', marginBottom: '0.75rem', fontSize: isFirst ? '1.75rem' : '1.375rem', filter:`drop-shadow(0 0 8px ${h.color})` }}>{h.icon}</div>
+
+                              {/* Large circular avatar */}
+                              <div style={{
+                                width: isFirst ? 110 : 90, height: isFirst ? 110 : 90,
+                                borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
+                                border: `3px solid ${h.color}`,
+                                boxShadow: `0 0 0 5px ${h.color}18, 0 0 28px ${h.color}55, 0 8px 24px rgba(0,0,0,0.5)`,
+                                marginBottom: '1rem',
+                              }}>
+                                {h.player.avatar_b64 ? (
+                                  <img src={`data:image/jpeg;base64,${h.player.avatar_b64}`}
+                                    style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'top' }} />
+                                ) : (
+                                  <div style={{ width:'100%', height:'100%', background:bg, display:'flex', alignItems:'center', justifyContent:'center', fontSize: isFirst ? '2.5rem' : '2rem', fontWeight:800, color:'#DDD1BF' }}>
+                                    {initials}
+                                  </div>
+                                )}
                               </div>
-                              {/* Info bottom — redesigned */}
-                              <div style={{ padding: '0.625rem 0.5rem 0.875rem', textAlign: 'center', borderTop: `1px solid ${h.color}22`, background: `linear-gradient(180deg, transparent, rgba(0,0,0,0.3))` }}>
-                                {/* Title pill */}
+
+                              {/* Info */}
+                              <div style={{ flex:1, width:'100%', padding:'0 0.75rem 1.25rem', textAlign:'center', display:'flex', flexDirection:'column', alignItems:'center', gap:'0.5rem' }}>
+                                {/* Title */}
                                 <div style={{
-                                  display: 'inline-block',
-                                  background: `linear-gradient(135deg, ${h.color}30, ${h.color}18)`,
-                                  border: `1px solid ${h.color}55`,
-                                  borderRadius: 20, padding: '2px 10px',
-                                  fontFamily: "'Cinzel', Georgia, serif",
-                                  fontSize: '0.5rem', fontWeight: 900,
-                                  color: h.color, letterSpacing: '0.16em',
-                                  textTransform: 'uppercase', marginBottom: 6,
+                                  background:`linear-gradient(135deg,${h.color}35,${h.color}15)`,
+                                  border:`1.5px solid ${h.color}55`,
+                                  borderRadius:20, padding:'3px 12px',
+                                  fontFamily:"'Poppins',sans-serif",
+                                  fontSize:'0.5625rem', fontWeight:800,
+                                  color:h.color, letterSpacing:'0.14em',
+                                  textTransform:'uppercase',
                                 }}>{h.title}</div>
-                                {/* Name */}
+
+                                {/* Nickname */}
                                 <div style={{
-                                  fontFamily: "'Playfair Display', Georgia, serif",
-                                  fontSize: isFirst ? '1.0625rem' : '0.9375rem',
-                                  fontWeight: 900, color: '#fff', lineHeight: 1.15,
-                                  textShadow: `0 0 12px ${h.color}44`,
-                                  marginBottom: 2,
+                                  fontFamily:"'Poppins',sans-serif",
+                                  fontSize: isFirst ? '1.25rem' : '1.0625rem',
+                                  fontWeight:800, color:'#fff', lineHeight:1.1,
+                                  textShadow:`0 0 16px ${h.color}55`,
                                 }}>
                                   {h.player.nickname || h.player.name.split(' ')[0]}
                                 </div>
+
+                                {/* Full name */}
                                 {h.player.nickname && (
-                                  <div style={{ fontSize: '0.5625rem', color: 'rgba(200,180,140,0.45)', marginBottom: 6, fontStyle: 'italic' }}>
+                                  <div style={{ fontSize:'0.6875rem', color:'rgba(200,180,140,0.4)', fontFamily:"'Quicksand',sans-serif", lineHeight:1 }}>
                                     {h.player.name}
                                   </div>
                                 )}
-                                {/* Stat badge */}
+
+                                {/* Stat */}
                                 <div style={{
-                                  display: 'inline-flex', alignItems: 'center', gap: 4,
-                                  background: `linear-gradient(135deg, ${h.color}25, ${h.color}10)`,
-                                  border: `1.5px solid ${h.color}55`,
-                                  borderRadius: 20, padding: '4px 12px',
-                                  fontSize: '0.625rem', fontWeight: 900,
-                                  color: h.color, fontFamily: "'Cinzel', serif",
-                                  letterSpacing: '0.06em',
-                                  boxShadow: `0 0 8px ${h.color}22`,
+                                  background:`linear-gradient(135deg,${h.color}30,${h.color}12)`,
+                                  border:`2px solid ${h.color}60`,
+                                  borderRadius:24, padding:'5px 16px',
+                                  fontSize: isFirst ? '0.75rem' : '0.6875rem',
+                                  fontWeight:900, color:h.color,
+                                  fontFamily:"'Poppins',sans-serif",
+                                  letterSpacing:'0.06em',
+                                  boxShadow:`0 0 12px ${h.color}25`,
+                                  marginTop:'auto',
                                 }}>
                                   {h.stat}
                                 </div>
