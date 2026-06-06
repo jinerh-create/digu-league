@@ -127,7 +127,7 @@ function HallOfFameCard({ player, title, icon, color, stats }: {
       {/* Animated top bar */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3,
         background: `linear-gradient(90deg, transparent, ${color}, white, ${color}, transparent)`,
-        backgroundSize: '200% 100%', animation: 'hof-bar-slide 3s linear infinite' }} />
+        backgroundSize: '200% 100%',  }} />
 
       {/* Background glow blob */}
       <div style={{ position: 'absolute', top: -30, left: '50%', transform: 'translateX(-50%)',
@@ -139,7 +139,7 @@ function HallOfFameCard({ player, title, icon, color, stats }: {
       <div style={{ position: 'relative', paddingTop: '1.5rem', paddingBottom: '0.5rem', textAlign: 'center', width: '100%' }}>
         <div style={{ fontSize: '3rem', lineHeight: 1,
           filter: `drop-shadow(0 0 16px ${color}) drop-shadow(0 0 32px ${color}88)`,
-          animation: 'hof-icon-bounce 3s ease-in-out infinite',
+          ,
           display: 'inline-block',
         }}>{icon}</div>
       </div>
@@ -151,7 +151,7 @@ function HallOfFameCard({ player, title, icon, color, stats }: {
         letterSpacing: '0.28em', color,
         textTransform: 'uppercase',
         textShadow: `0 0 20px ${color}, 0 0 40px ${color}66`,
-        animation: 'hof-glow-pulse 2.5s ease-in-out infinite',
+        ,
         marginBottom: '1.125rem',
       }}>{title}</div>
 
@@ -161,7 +161,7 @@ function HallOfFameCard({ player, title, icon, color, stats }: {
         <div style={{
           position: 'absolute', inset: -8, borderRadius: '50%',
           background: `conic-gradient(${color} 0%, ${color}44 40%, transparent 60%, ${color}44 80%, ${color} 100%)`,
-          animation: 'hof-ring-spin 4s linear infinite',
+          ,
         }} />
         {/* Inner bg */}
         <div style={{ position: 'absolute', inset: -4, borderRadius: '50%', background: '#0a0a14' }} />
@@ -678,7 +678,7 @@ export default function LeaderboardTable() {
                     position: 'relative',
                   }}>
                     {/* Top shimmer bar */}
-                    <div style={{ height: 3, background: 'linear-gradient(90deg,transparent,#D4AF37,#fff,#D4AF37,transparent)', backgroundSize: '200%', animation: 'hof-bar-slide 3s linear infinite' }} />
+                    <div style={{ height: 3, background: 'linear-gradient(90deg,transparent,#D4AF37,#fff,#D4AF37,transparent)', backgroundSize: '200%',  }} />
 
                     <div style={{ display: 'flex', minHeight: 260 }}>
                       {/* LEFT: Shield panel */}
@@ -723,17 +723,17 @@ export default function LeaderboardTable() {
                               borderLeft: i > 0 ? `1px solid ${h.color}18` : 'none',
                               background: `linear-gradient(160deg, ${h.color}14 0%, rgba(6,8,16,0.97) 55%)`,
                               display: 'flex', flexDirection: 'column', alignItems: 'center',
-                              minHeight: (isFirst || i===1) ? 340 : 300,
+                              minHeight: (i<=1) ? 360 : 280,
                             }}>
                               {/* Top accent line */}
                               <div style={{ position:'absolute', top:0, left:0, right:0, height:2, background:`linear-gradient(90deg,transparent,${h.color},transparent)` }} />
 
                               {/* Icon */}
-                              <div style={{ marginTop: '1.25rem', marginBottom: '0.75rem', fontSize: (isFirst || i===1) ? '1.75rem' : '1.375rem', filter:`drop-shadow(0 0 8px ${h.color})` }}>{h.icon}</div>
+                              <div style={{ marginTop: '1.25rem', marginBottom: '0.75rem', fontSize: (i<=1) ? '1.875rem' : '1.125rem', filter:`drop-shadow(0 0 8px ${h.color})` }}>{h.icon}</div>
 
                               {/* Large circular avatar */}
                               <div style={{
-                                width: (isFirst || i===1) ? 110 : 90, height: (isFirst || i===1) ? 110 : 90,
+                                width: (i<=1) ? 120 : 80, height: (i<=1) ? 120 : 80,
                                 borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
                                 border: `3px solid ${h.color}`,
                                 boxShadow: `0 0 0 5px ${h.color}18, 0 0 28px ${h.color}55, 0 8px 24px rgba(0,0,0,0.5)`,
@@ -743,7 +743,7 @@ export default function LeaderboardTable() {
                                   <img src={`data:image/jpeg;base64,${h.player.avatar_b64}`}
                                     style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'top' }} />
                                 ) : (
-                                  <div style={{ width:'100%', height:'100%', background:bg, display:'flex', alignItems:'center', justifyContent:'center', fontSize: (isFirst || i===1) ? '2.5rem' : '2rem', fontWeight:800, color:'#DDD1BF' }}>
+                                  <div style={{ width:'100%', height:'100%', background:bg, display:'flex', alignItems:'center', justifyContent:'center', fontSize: (i<=1) ? '2.5rem' : '1.5rem', fontWeight:800, color:'#DDD1BF' }}>
                                     {initials}
                                   </div>
                                 )}
@@ -765,7 +765,7 @@ export default function LeaderboardTable() {
                                 {/* Nickname */}
                                 <div style={{
                                   fontFamily:"Quicksand,sans-serif",
-                                  fontSize: (isFirst || i===1) ? '1.25rem' : '1.0625rem',
+                                  fontSize: (i<=1) ? '1.375rem' : '0.9375rem',
                                   fontWeight:800, color:'#fff', lineHeight:1.1,
                                   textShadow:`0 0 16px ${h.color}55`,
                                 }}>
@@ -784,7 +784,7 @@ export default function LeaderboardTable() {
                                   background:`linear-gradient(135deg,${h.color}30,${h.color}12)`,
                                   border:`2px solid ${h.color}60`,
                                   borderRadius:24, padding:'5px 16px',
-                                  fontSize: (isFirst || i===1) ? '0.75rem' : '0.6875rem',
+                                  fontSize: (i<=1) ? '0.8125rem' : '0.5625rem',
                                   fontWeight:900, color:h.color,
                                   fontFamily:"Quicksand,sans-serif",
                                   letterSpacing:'0.06em',
