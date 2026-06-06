@@ -264,9 +264,22 @@ export default function MatchList() {
       )}
 
       <style>{`
-        .match-card { padding: 0.875rem 1rem; cursor: default; }
+        .match-card {
+    padding: 0.875rem 1rem; cursor: default;
+    border: 1px solid rgba(212,175,55,0.32) !important;
+    box-shadow: 0 0 10px rgba(212,175,55,0.07), inset 0 1px 0 rgba(212,175,55,0.06) !important;
+    position: relative; overflow: hidden;
+  }
+  .match-card::after {
+    content: '';
+    position: absolute; top: 0; left: -100%; width: 60%; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(212,175,55,0.8), rgba(255,255,255,0.6), rgba(212,175,55,0.8), transparent);
+    animation: match-gold-line 4s ease-in-out infinite;
+    animation-delay: calc(var(--i, 0) * 0.4s);
+  }
         a.match-card { cursor: pointer; }
-        a.match-card:hover { border-color: #444; }
+        a.match-card:hover { border-color: rgba(212,175,55,0.6) !important; box-shadow: 0 0 16px rgba(212,175,55,0.15) !important; }
+  @keyframes match-gold-line { 0%{left:-100%} 50%{left:150%} 100%{left:150%} }
         .match-row { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
         .match-vs { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9375rem; flex-wrap: wrap; }
         .player-name { font-weight: 600; }
