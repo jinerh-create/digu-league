@@ -259,11 +259,10 @@ function side2(m: typeof recentMatches[0]) {
     border-radius: 50%;
     background: var(--heart);
     box-shadow: 0 0 6px var(--heart);
-    animation: pulse 1.5s infinite;
+    
   }
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--heart); }
+  
     50% { opacity: 0.4; box-shadow: none; }
   }
 
@@ -361,9 +360,9 @@ function side2(m: typeof recentMatches[0]) {
     content: '';
     position: absolute; top: 0; left: -100%; width: 60%; height: 2px;
     background: linear-gradient(90deg, transparent, rgba(212,175,55,0.9), rgba(255,255,255,0.6), rgba(212,175,55,0.9), transparent);
-    animation: homeGoldShimmer 3.5s ease-in-out infinite;
+    
   }
-  @keyframes homeGoldShimmer { 0%{left:-100%} 60%{left:150%} 100%{left:150%} }
+   60%{left:150%} 100%{left:150%} }
 
   .match-players {
     display: flex;

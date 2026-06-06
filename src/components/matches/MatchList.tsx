@@ -282,7 +282,7 @@ export default function MatchList() {
         a.match-card { cursor: pointer; }
         a.match-card:hover { border-color: rgba(212,175,55,0.6) !important; box-shadow: 0 0 16px rgba(212,175,55,0.15) !important; }
   @keyframes match-gold-line { 0%{left:-100%} 50%{left:150%} 100%{left:150%} }
-        @keyframes goldShimmer { 0%{left:-100%} 60%{left:150%} 100%{left:150%} }
+         60%{left:150%} 100%{left:150%} }
         .match-row { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
         .match-vs { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9375rem; flex-wrap: wrap; }
         .player-name { font-weight: 600; }
