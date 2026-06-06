@@ -41,10 +41,10 @@ html {
 
 /* ── Font system ── */
 :root {
-  --font-display: 'Cinzel Decorative', 'Cinzel', Georgia, serif;
-  --font-heading: 'Cinzel', Georgia, serif;
-  --font-name: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
-  --font-body: 'Quicksand', 'Josefin Sans', system-ui, sans-serif;
+  --font-display: 'Poppins', system-ui, sans-serif;
+  --font-heading: 'Poppins', system-ui, sans-serif;
+  --font-name: 'Poppins', system-ui, sans-serif;
+  --font-body: 'Quicksand', system-ui, sans-serif;
   --font-mono: 'Share Tech Mono', monospace;
 }
 

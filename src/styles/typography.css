@@ -1,45 +1,43 @@
-/* ── Headings — Cinzel Decorative / Cinzel ── */
+/* ── Headings — Poppins ── */
 h1 {
-  font-family: 'Cinzel Decorative', 'Cinzel', Georgia, serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   font-size: clamp(1.375rem, 4vw, 1.75rem);
   line-height: 1.2;
-  font-weight: 900;
+  font-weight: 800;
   color: var(--text-primary);
-  letter-spacing: 0.06em;
+  letter-spacing: -0.01em;
 }
 
 h2 {
-  font-family: 'Cinzel', Georgia, serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   font-size: clamp(1.0625rem, 3vw, 1.25rem);
   line-height: 1.25;
   font-weight: 700;
   color: var(--text-primary);
-  letter-spacing: 0.08em;
+  letter-spacing: -0.01em;
 }
 
 h3, h4, h5, h6 {
-  font-family: 'Cinzel', Georgia, serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   font-size: 0.9375rem;
   line-height: 1.3;
   font-weight: 600;
   color: var(--text-primary);
-  letter-spacing: 0.06em;
 }
 
 /* ── Body / paragraphs ── */
 p {
-  font-family: 'Josefin Sans', 'Quicksand', system-ui, sans-serif;
+  font-family: 'Quicksand', system-ui, sans-serif;
   color: var(--text-secondary);
   line-height: 1.6;
-  letter-spacing: 0.02em;
 }
 
 /* ── Labels ── */
 .label {
-  font-family: 'Josefin Sans', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -54,21 +52,16 @@ p {
 }
 
 .stat-label {
-  font-family: 'Josefin Sans', system-ui, sans-serif;
+  font-family: 'Poppins', system-ui, sans-serif;
   font-size: 0.6875rem;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
 }
 
-/* ── Player names — Cormorant Garamond ── */
-.player-display-name {
-  font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+/* ── Buttons ── */
+.btn, button {
+  font-family: 'Poppins', system-ui, sans-serif;
   font-weight: 600;
-}
-
-/* ── Quicksand for friendly UI elements ── */
-.btn, button, .badge, .chip {
-  font-family: 'Quicksand', 'Josefin Sans', system-ui, sans-serif;
 }
