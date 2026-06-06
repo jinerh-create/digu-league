@@ -690,15 +690,15 @@ export default function LeaderboardTable() {
                         padding: '1.5rem 1rem', gap: '0.5rem', position: 'relative',
                       }}>
                         {/* Shield shape */}
-                        <div style={{ position: 'relative', width: 90, height: 100 }}>
-                          <svg viewBox="0 0 90 100" style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 0 12px rgba(212,175,55,0.4))' }}>
+                        <div style={{ position: 'relative', width: 130, height: 145 }}>
+                          <svg viewBox="0 0 90 100" style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 0 16px rgba(212,175,55,0.5))' }}>
                             <path d="M45 2 L88 18 L88 52 Q88 80 45 98 Q2 80 2 52 L2 18 Z"
                               fill="rgba(212,175,55,0.08)" stroke="#D4AF37" strokeWidth="1.5" strokeOpacity="0.6"/>
                             <path d="M45 10 L82 24 L82 52 Q82 76 45 92 Q8 76 8 52 L8 24 Z"
                               fill="rgba(212,175,55,0.04)" stroke="rgba(212,175,55,0.3)" strokeWidth="0.5"/>
                           </svg>
                           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-                            <img src="/logo.png" style={{ width: 38, height: 38, borderRadius: 8, objectFit: 'cover' }} />
+                            <img src="/logo.png" style={{ width: 72, height: 72, borderRadius: 14, objectFit: 'cover', filter: 'drop-shadow(0 0 8px rgba(212,175,55,0.5))' }} />
                           </div>
                         </div>
                         <div style={{ textAlign: 'center' }}>
