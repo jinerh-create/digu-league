@@ -114,10 +114,10 @@ function buildBadges(totalScore: number, ginCount: number, maxWinStreak: number,
     {
       id: 'digu_25',
       name: '25 Digu',
-      desc: 'Coming soon',
+      desc: 'Achieve 25 Digu hands',
       image: '/badges/digu-25.png',
-      unlocked: false,
-      blend: 'lighten',
+      unlocked: ginCount >= 25,
+      fullBleed: true,
     },
     {
       id: 'games_50',
@@ -378,6 +378,7 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showAllMatches, setShowAllMatches] = useState(false);
+  const [monthGinCount, setMonthGinCount] = useState<number | null>(null);
 
   useEffect(() => {
     fetch(`/api/players/${playerId}/stats`)
@@ -392,6 +393,21 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
         setPerfectMatches(data.perfectMatches ?? 0);
         setCenturyHands(data.centuryHands ?? 0);
         setLoading(false);
+        // Fetch monthly gin count
+        const now = new Date();
+        const doneM = (data.matches || []).filter((m: Match) => m.completed_at);
+        let activeM = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+        if (doneM.length > 0 && !doneM.some((m: Match) => m.completed_at!.startsWith(activeM))) {
+          const sorted = doneM.map((m: Match) => m.completed_at!.substring(0,7)).sort().reverse();
+          activeM = sorted[0];
+        }
+        fetch(`/api/stats?month=${activeM}`)
+          .then(r => r.json())
+          .then((stats: {player_id:string; gin_count:number}[]) => {
+            const found = stats.find((s: {player_id:string}) => s.player_id === playerId);
+            setMonthGinCount(found?.gin_count ?? 0);
+          })
+          .catch(() => setMonthGinCount(0));
       })
       .catch(() => { setError('Failed to load'); setLoading(false); });
   }, [playerId]);
@@ -541,13 +557,14 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
                 </div>
                 <div style={{ fontSize: '1.5rem', opacity: 0.4 }}>📅</div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: '0.5rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: '0.375rem' }}>
                 {[
                   { label: 'Played', value: monthMatches.length, color: '#8ABFCC' },
                   { label: 'Won', value: mWon, color: 'var(--felt-light)' },
                   { label: 'Lost', value: mLost, color: 'var(--ember)' },
+                  { label: 'Digu', value: monthGinCount !== null ? monthGinCount : '—', color: '#a78bfa' },
                   { label: 'Draw', value: mDrawn, color: 'var(--text-secondary)' },
-                  { label: 'Win %', value: `${mWinRate}%`, color: mWinRate >= 50 ? 'var(--felt-light)' : '#a78bfa' },
+                  { label: 'Win %', value: `${mWinRate}%`, color: mWinRate >= 50 ? 'var(--felt-light)' : '#8ABFCC' },
                 ].map(s => (
                   <div key={s.label} style={{ textAlign: 'center', background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: '0.5rem 0.25rem' }}>
                     <div style={{ fontSize: '1.125rem', fontWeight: 900, color: s.color, lineHeight: 1 }}>{s.value}</div>

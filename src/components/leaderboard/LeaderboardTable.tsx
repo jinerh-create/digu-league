@@ -228,6 +228,133 @@ function PodiumCard({ s, rank }: { s: PlayerStats; rank: number }) {
   );
 }
 
+async function generateHallOfFameImage(
+  champion: PlayerStats | null,
+  diguKing: PlayerStats | null,
+  period: string
+): Promise<Blob> {
+  const W = 680, H = 440;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d')!;
+
+  // Background
+  ctx.fillStyle = '#080C14'; ctx.fillRect(0, 0, W, H);
+  const bg = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W*0.7);
+  bg.addColorStop(0, 'rgba(20,25,45,0.9)'); bg.addColorStop(1, 'rgba(8,12,20,0)');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+  // Top gold bar
+  const topBar = ctx.createLinearGradient(0,0,W,0);
+  topBar.addColorStop(0,'transparent'); topBar.addColorStop(0.25,'#D4AF37');
+  topBar.addColorStop(0.75,'#D4AF37'); topBar.addColorStop(1,'transparent');
+  ctx.fillStyle = topBar; ctx.fillRect(0,0,W,3);
+  ctx.fillStyle = topBar; ctx.fillRect(0,H-3,W,3);
+
+  // Title
+  ctx.textAlign = 'center';
+  ctx.font = 'bold 28px Georgia, serif';
+  ctx.fillStyle = '#D4AF37';
+  ctx.shadowBlur = 20; ctx.shadowColor = '#D4AF37';
+  ctx.fillText('✦  HALL OF FAME  ✦', W/2, 52);
+  ctx.shadowBlur = 0;
+  ctx.font = '600 14px system-ui'; ctx.fillStyle = 'rgba(212,175,55,0.6)';
+  ctx.fillText(period, W/2, 76);
+
+  // Gold divider
+  ctx.strokeStyle = '#D4AF37'; ctx.globalAlpha = 0.25; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(60, 90); ctx.lineTo(W-60, 90); ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  // Draw champion card
+  async function drawCard(player: PlayerStats | null, x: number, y: number, w: number, title: string, icon: string, color: string, statRows: {l:string,v:string|number,c:string}[]) {
+    if (!player) return;
+    // Card bg
+    ctx.fillStyle = color + '18';
+    ctx.strokeStyle = color + '66'; ctx.lineWidth = 1.5;
+    roundRect(ctx, x, y, w, 300, 16);
+    ctx.fill(); ctx.stroke();
+    // Top accent
+    const cg = ctx.createLinearGradient(x,0,x+w,0);
+    cg.addColorStop(0,'transparent'); cg.addColorStop(0.5,color); cg.addColorStop(1,'transparent');
+    ctx.fillStyle = cg; ctx.fillRect(x+16, y, w-32, 2);
+    // Icon
+    ctx.font = '40px serif'; ctx.textAlign = 'center';
+    ctx.shadowBlur = 16; ctx.shadowColor = color;
+    ctx.fillText(icon, x+w/2, y+58);
+    ctx.shadowBlur = 0;
+    // Title
+    ctx.font = 'bold 11px Georgia, serif'; ctx.fillStyle = color;
+    ctx.letterSpacing = '0.2em';
+    ctx.fillText(title.toUpperCase(), x+w/2, y+78);
+    // Avatar circle
+    const ax = x+w/2, ay = y+130, ar = 36;
+    ctx.save(); ctx.beginPath(); ctx.arc(ax, ay, ar, 0, Math.PI*2); ctx.clip();
+    const colors = ['#2B4F37','#78270D','#1a3a5c','#4a2060','#2c4a1a'];
+    ctx.fillStyle = colors[player.name.charCodeAt(0) % colors.length];
+    ctx.fillRect(ax-ar, ay-ar, ar*2, ar*2);
+    // Avatar if base64
+    if (player.avatar_b64) {
+      const img = new Image();
+      img.src = `data:image/jpeg;base64,${player.avatar_b64}`;
+      await new Promise(r => { img.onload = r; img.onerror = r; });
+      ctx.drawImage(img, ax-ar, ay-ar, ar*2, ar*2);
+    } else {
+      ctx.fillStyle = '#DDD1BF'; ctx.font = 'bold 22px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText(player.name.split(' ').map((w:string)=>w[0]).join('').slice(0,2).toUpperCase(), ax, ay+8);
+    }
+    ctx.restore();
+    // Gold ring
+    ctx.beginPath(); ctx.arc(ax, ay, ar+3, 0, Math.PI*2);
+    ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.stroke();
+    // Name
+    ctx.textAlign = 'center'; ctx.font = 'bold 17px Georgia, serif';
+    ctx.fillStyle = '#fff'; ctx.shadowBlur = 8; ctx.shadowColor = color;
+    ctx.fillText(player.nickname || player.name.split(' ')[0], ax, ay+ar+22);
+    ctx.shadowBlur = 0;
+    if (player.nickname) {
+      ctx.font = '500 11px system-ui'; ctx.fillStyle = 'rgba(221,209,191,0.5)';
+      ctx.fillText(player.name, ax, ay+ar+38);
+    }
+    // Stats
+    const sy = ay + ar + 60;
+    statRows.forEach((s, i) => {
+      const sx = x + 20 + i * ((w-40) / statRows.length) + (w-40)/(statRows.length*2);
+      ctx.textAlign = 'center';
+      ctx.font = '700 9px system-ui'; ctx.fillStyle = '#666';
+      ctx.fillText(s.l.toUpperCase(), sx, sy);
+      ctx.font = 'bold 18px system-ui'; ctx.fillStyle = s.c;
+      ctx.fillText(String(s.v), sx, sy+20);
+    });
+  }
+
+  function roundRect(c: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+    c.beginPath(); c.moveTo(x+r,y); c.lineTo(x+w-r,y); c.arcTo(x+w,y,x+w,y+r,r);
+    c.lineTo(x+w,y+h-r); c.arcTo(x+w,y+h,x+w-r,y+h,r);
+    c.lineTo(x+r,y+h); c.arcTo(x,y+h,x,y+h-r,r);
+    c.lineTo(x,y+r); c.arcTo(x,y,x+r,y,r); c.closePath();
+  }
+
+  await drawCard(champion, 30, 100, 290, 'Champion', '🏆', '#D4AF37', [
+    { l:'PTS', v: champion?.league_points??0, c:'#D4AF37' },
+    { l:'WIN%', v:`${champion?.win_rate??0}%`, c:'#638D6F' },
+    { l:'W', v: champion?.matches_won??0, c:'#638D6F' },
+  ]);
+  await drawCard(diguKing, 360, 100, 290, 'Digu King', '👑', '#C8102E', [
+    { l:'DIGU', v: diguKing?.gin_count??0, c:'#D4AF37' },
+    { l:'WIN%', v:`${diguKing?.win_rate??0}%`, c:'#638D6F' },
+    { l:'W', v: diguKing?.matches_won??0, c:'#638D6F' },
+  ]);
+
+  // Footer
+  ctx.textAlign = 'center'; ctx.font = '700 11px Georgia,serif';
+  ctx.fillStyle = 'rgba(212,175,55,0.35)';
+  ctx.fillText('♠  DIGU LEAGUE  ·  Play Smart. Win Big. Reign Supreme.  ♠', W/2, H-16);
+
+  return new Promise(res => canvas.toBlob(b => res(b!), 'image/png'));
+}
+
 async function generateRankingsImage(rows: PlayerStats[], label: string): Promise<Blob> {
   const W = 680;
   const HEADER_H = 108;
