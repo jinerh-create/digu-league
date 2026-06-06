@@ -745,16 +745,45 @@ export default function LeaderboardTable() {
                                   )}
                                 </div>
                               </div>
-                              {/* Info bottom */}
-                              <div style={{ padding: '0.5rem 0.5rem 0.75rem', textAlign: 'center' }}>
-                                <div style={{ fontFamily: "'Cinzel', Georgia, serif", fontSize: '0.75rem', fontWeight: 900, color: '#D4AF37', letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 4, textShadow: '0 0 16px rgba(212,175,55,0.8), 0 0 32px rgba(212,175,55,0.4)' }}>{h.title}</div>
-                                <div style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: isFirst ? '1rem' : '0.875rem', fontWeight: 800, color: '#fff', lineHeight: 1.1 }}>
+                              {/* Info bottom — redesigned */}
+                              <div style={{ padding: '0.625rem 0.5rem 0.875rem', textAlign: 'center', borderTop: `1px solid ${h.color}22`, background: `linear-gradient(180deg, transparent, rgba(0,0,0,0.3))` }}>
+                                {/* Title pill */}
+                                <div style={{
+                                  display: 'inline-block',
+                                  background: `linear-gradient(135deg, ${h.color}30, ${h.color}18)`,
+                                  border: `1px solid ${h.color}55`,
+                                  borderRadius: 20, padding: '2px 10px',
+                                  fontFamily: "'Cinzel', Georgia, serif",
+                                  fontSize: '0.5rem', fontWeight: 900,
+                                  color: h.color, letterSpacing: '0.16em',
+                                  textTransform: 'uppercase', marginBottom: 6,
+                                }}>{h.title}</div>
+                                {/* Name */}
+                                <div style={{
+                                  fontFamily: "'Playfair Display', Georgia, serif",
+                                  fontSize: isFirst ? '1.0625rem' : '0.9375rem',
+                                  fontWeight: 900, color: '#fff', lineHeight: 1.15,
+                                  textShadow: `0 0 12px ${h.color}44`,
+                                  marginBottom: 2,
+                                }}>
                                   {h.player.nickname || h.player.name.split(' ')[0]}
                                 </div>
                                 {h.player.nickname && (
-                                  <div style={{ fontSize: '0.5625rem', color: 'rgba(221,209,191,0.4)', marginTop: 1 }}>{h.player.name}</div>
+                                  <div style={{ fontSize: '0.5625rem', color: 'rgba(200,180,140,0.45)', marginBottom: 6, fontStyle: 'italic' }}>
+                                    {h.player.name}
+                                  </div>
                                 )}
-                                <div style={{ marginTop: 6, display: 'inline-block', background: `${h.color}22`, border: `1px solid ${h.color}44`, borderRadius: 10, padding: '2px 8px', fontSize: '0.5625rem', fontWeight: 800, color: h.color, fontFamily: "'Cinzel', serif" }}>
+                                {/* Stat badge */}
+                                <div style={{
+                                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                                  background: `linear-gradient(135deg, ${h.color}25, ${h.color}10)`,
+                                  border: `1.5px solid ${h.color}55`,
+                                  borderRadius: 20, padding: '4px 12px',
+                                  fontSize: '0.625rem', fontWeight: 900,
+                                  color: h.color, fontFamily: "'Cinzel', serif",
+                                  letterSpacing: '0.06em',
+                                  boxShadow: `0 0 8px ${h.color}22`,
+                                }}>
                                   {h.stat}
                                 </div>
                               </div>
