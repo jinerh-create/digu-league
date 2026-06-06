@@ -350,7 +350,7 @@ async function generateHallOfFameImage(
   // Footer
   ctx.textAlign = 'center'; ctx.font = '700 11px Georgia,serif';
   ctx.fillStyle = 'rgba(212,175,55,0.35)';
-  ctx.fillText('♠  DIGU LEAGUE  ·  Play Smart. Win Big. Reign Supreme.  ♠', W/2, H-16);
+  ctx.fillText('♠  DIGU LEAGUE  ·  One League. One Crown. One Champion.  ♠', W/2, H-16);
 
   return new Promise(res => canvas.toBlob(b => res(b!), 'image/png'));
 }

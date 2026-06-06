@@ -548,7 +548,7 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
 
     // Footer
     ctx.textAlign='center'; ctx.fillStyle='rgba(212,175,55,0.3)'; ctx.font='700 10px Georgia,serif';
-    ctx.fillText('♠  DIGU LEAGUE  ·  Play Smart. Win Big. Reign Supreme.  ♠', W/2, canvas.height-14);
+    ctx.fillText('♠  DIGU LEAGUE  ·  One League. One Crown. One Champion.  ♠', W/2, canvas.height-14);
 
     return new Promise<Blob>(res => canvas.toBlob(b => res(b!), 'image/png'));
   }
