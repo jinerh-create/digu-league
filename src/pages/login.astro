@@ -33,10 +33,17 @@ const next = Astro.url.searchParams.get('next') ?? '/';
 
     <!-- ══ LEFT PANEL ══ -->
     <div class="left-panel">
-      <!-- Blob shapes behind trophy -->
-      <div class="blob blob-1"></div>
-      <div class="blob blob-2"></div>
-      <div class="blob blob-3"></div>
+      <!-- Floating card suits orbiting trophy -->
+      <div class="card-orbit">
+        <span class="co-card co1">♠</span>
+        <span class="co-card co2">♥</span>
+        <span class="co-card co3">♣</span>
+        <span class="co-card co4">♦</span>
+        <span class="co-card co5">A</span>
+        <span class="co-card co6">K</span>
+        <span class="co-card co7">♠</span>
+        <span class="co-card co8">♥</span>
+      </div>
 
       <!-- Logo top left -->
       <div class="lp-logo">
@@ -334,37 +341,38 @@ body {
   min-height:320px;
 }
 
-/* White blob card — like reference design */
-.blob {
-  position:absolute;pointer-events:none;
+/* Floating card suits around trophy */
+.card-orbit {
+  position:absolute;inset:0;pointer-events:none;z-index:0;
 }
-/* Main white organic blob behind trophy */
-.blob-1 {
-  width:85%;height:75%;
-  top:50%;left:50%;transform:translate(-50%,-50%);
-  background:rgba(255,255,255,0.06);
-  border-radius:60% 40% 55% 45% / 50% 55% 45% 50%;
-  animation:blob-morph 8s ease-in-out infinite;
-  border:1px solid rgba(255,255,255,0.08);
+.co-card {
+  position:absolute;
+  font-family:Georgia,serif;font-weight:900;
+  animation:co-float 6s ease-in-out infinite;
+  opacity:0;
+  animation-fill-mode:both;
 }
-.blob-2 {
-  width:60%;height:55%;
-  top:50%;left:50%;transform:translate(-50%,-52%);
-  background:rgba(255,255,255,0.04);
-  border-radius:45% 55% 40% 60% / 55% 45% 60% 40%;
-  animation:blob-morph 10s ease-in-out infinite reverse;
-}
-.blob-3 {
-  width:30%;height:30%;
-  bottom:12%;right:10%;
-  background:rgba(212,175,55,0.06);
-  border-radius:50%;
-  filter:blur(20px);
-}
-@keyframes blob-morph{
-  0%,100%{border-radius:60% 40% 55% 45%/50% 55% 45% 50%;transform:translate(-50%,-50%)}
-  33%{border-radius:50% 50% 40% 60%/60% 40% 55% 45%;transform:translate(-50%,-52%)}
-  66%{border-radius:40% 60% 60% 40%/45% 55% 45% 55%;transform:translate(-50%,-48%)}
+/* Spades/Clubs = gold-tinted */
+.co1,.co3,.co5,.co7{ color:rgba(212,175,55,0.55); }
+/* Hearts/Diamonds = red-tinted */
+.co2,.co4,.co6,.co8{ color:rgba(200,16,46,0.45); }
+
+/* Position each card at a different spot around the trophy */
+.co1{ font-size:2.2rem; top:8%;  left:10%;  animation-delay:0s;   animation-duration:7s; }
+.co2{ font-size:1.6rem; top:5%;  right:12%; animation-delay:0.8s; animation-duration:6s; }
+.co3{ font-size:1.4rem; top:35%; left:5%;   animation-delay:1.6s; animation-duration:8s; }
+.co4{ font-size:1.8rem; top:30%; right:6%;  animation-delay:2.4s; animation-duration:5.5s; }
+.co5{ font-size:2.5rem; bottom:25%;left:8%; animation-delay:3.2s; animation-duration:7.5s; }
+.co6{ font-size:1.5rem; bottom:20%;right:10%;animation-delay:4s; animation-duration:6.5s; }
+.co7{ font-size:1.2rem; bottom:8%; left:22%;animation-delay:1.2s; animation-duration:9s; }
+.co8{ font-size:1.3rem; bottom:10%;right:20%;animation-delay:2s; animation-duration:7s; }
+
+@keyframes co-float {
+  0%   { opacity:0;    transform:translateY(8px)  scale(0.8) rotate(-8deg); }
+  15%  { opacity:1; }
+  50%  { opacity:0.8;  transform:translateY(-10px) scale(1.1) rotate(4deg); }
+  85%  { opacity:1; }
+  100% { opacity:0;    transform:translateY(8px)  scale(0.8) rotate(-8deg); }
 }
 
 /* Logo */
