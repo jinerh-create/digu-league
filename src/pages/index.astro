@@ -117,7 +117,7 @@ function side2(m: typeof recentMatches[0]) {
           {recentMatches.map((m) => (
             <a
               href={m.completed_at ? `/matches` : `/match/${m.id}`}
-              class="match-row card"
+              class="match-row card home-match-card"
             >
               <div class="match-players">
                 <span class={m.winner_id === m.player1_id ? 'winner' : ''}>
@@ -345,6 +345,25 @@ function side2(m: typeof recentMatches[0]) {
     gap: 0.5rem;
     padding: 0.875rem 1rem;
   }
+
+  .home-match-card {
+    border: 1.5px solid rgba(212,175,55,0.45) !important;
+    box-shadow: 0 0 14px rgba(212,175,55,0.1), inset 0 1px 0 rgba(212,175,55,0.08) !important;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .home-match-card:hover {
+    border-color: rgba(212,175,55,0.7) !important;
+    box-shadow: 0 0 24px rgba(212,175,55,0.18) !important;
+  }
+  .home-match-card::after {
+    content: '';
+    position: absolute; top: 0; left: -100%; width: 60%; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(212,175,55,0.9), rgba(255,255,255,0.6), rgba(212,175,55,0.9), transparent);
+    animation: homeGoldShimmer 3.5s ease-in-out infinite;
+  }
+  @keyframes homeGoldShimmer { 0%{left:-100%} 60%{left:150%} 100%{left:150%} }
 
   .match-players {
     display: flex;
