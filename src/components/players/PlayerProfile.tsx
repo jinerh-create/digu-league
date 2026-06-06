@@ -188,53 +188,16 @@ function TrophyCase({ trophiesJson }: { trophiesJson: string | undefined | null 
               {/* Trophy display — circular for coins, canvas for champion */}
               <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 {t.image.includes('champion') ? (
-                  /* Champion trophy: canvas removes background cleanly */
-                  <>
-                    <img src={t.image} alt="" style={{ display: 'none' }} crossOrigin="anonymous"
-                      onLoad={(e) => {
-                        const img = e.currentTarget;
-                        const canvas = img.nextElementSibling as HTMLCanvasElement;
-                        if (!canvas) return;
-                        const ctx = canvas.getContext('2d');
-                        if (!ctx) return;
-                        canvas.width = img.naturalWidth;
-                        canvas.height = img.naturalHeight;
-                        ctx.drawImage(img, 0, 0);
-                        const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                        const d = data.data;
-                        // Detect background color from corner pixel
-                        const bgR = d[0], bgG = d[1], bgB = d[2];
-                        const isWhiteBg = (bgR + bgG + bgB) / 3 > 180;
-                        const isDarkBg  = (bgR + bgG + bgB) / 3 < 80;
-                        for (let i = 0; i < d.length; i += 4) {
-                          const r = d[i], g = d[i+1], b = d[i+2];
-                          const bright = (r + g + b) / 3;
-                          const sat = Math.max(r,g,b) - Math.min(r,g,b);
-                          if (isWhiteBg) {
-                            // Remove white/near-white — smooth edges with 130→220 ramp
-                            if (bright > 130 && sat < 60) {
-                              const alpha = bright > 210 ? 0 : Math.round((210 - bright) / 80 * 255);
-                              d[i+3] = Math.min(d[i+3], alpha);
-                            }
-                          } else if (isDarkBg) {
-                            // Remove dark/navy background pixels
-                            const diffR = Math.abs(r - bgR), diffG = Math.abs(g - bgG), diffB = Math.abs(b - bgB);
-                            const diff = (diffR + diffG + diffB) / 3;
-                            if (diff < 40 && bright < 100) {
-                              d[i+3] = Math.min(d[i+3], Math.round(diff / 40 * 255));
-                            }
-                          }
-                        }
-                        ctx.putImageData(data, 0, 0);
-                        canvas.style.display = 'block';
-                      }}
-                    />
-                    <canvas style={{
-                      width: 200, height: 'auto', display: 'none',
-                      filter: 'drop-shadow(0 0 20px rgba(212,175,55,0.8)) drop-shadow(0 0 40px rgba(212,175,55,0.4)) drop-shadow(0 8px 24px rgba(0,0,0,0.7))',
-                      position: 'relative', zIndex: 1,
-                    }} />
-                  </>
+                  /* Champion trophy: PNG already has transparent background */
+                  <img
+                    src={t.image}
+                    alt={t.name}
+                    style={{
+                      width: 210, height: 'auto',
+                      display: 'block', position: 'relative', zIndex: 1,
+                      filter: 'drop-shadow(0 0 20px rgba(212,175,55,0.75)) drop-shadow(0 0 40px rgba(212,175,55,0.35)) drop-shadow(0 10px 28px rgba(0,0,0,0.7))',
+                    }}
+                  />
                 ) : (
                   /* Coins: circular frame clips square background */
                   <div style={{
