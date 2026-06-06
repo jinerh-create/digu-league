@@ -502,6 +502,59 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
           <div style={{ fontSize: '2.25rem', opacity: 0.5 }}>♦</div>
         </div>
 
+        {/* Monthly Stats banner */}
+        {(() => {
+          const now = new Date();
+          const monthName = now.toLocaleString('en', { month: 'long', year: 'numeric' });
+          const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+          const monthMatches = matches.filter(m =>
+            m.completed_at && m.completed_at.startsWith(thisMonth)
+          );
+          const mWon = monthMatches.filter(m => {
+            const onTeam1 = m.player1_id === playerId || m.team1_player2_id === playerId;
+            return onTeam1 ? m.winner_id === m.player1_id : m.winner_id === m.player2_id;
+          }).length;
+          const mDrawn = monthMatches.filter(m => m.completed_at && !m.winner_id).length;
+          const mLost = monthMatches.length - mWon - mDrawn;
+
+          const mWinRate = monthMatches.length > 0 ? Math.round((mWon / monthMatches.length) * 100) : 0;
+
+          return (
+            <div style={{
+              background: 'linear-gradient(135deg, #001a2a 0%, #002a3d 50%, #001a2a 100%)',
+              border: '1px solid rgba(138,191,204,0.35)',
+              borderRadius: 12, padding: '0.875rem 1rem',
+              marginBottom: '0.625rem',
+              boxShadow: '0 0 12px rgba(138,191,204,0.1)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                <div>
+                  <div style={{ fontSize: '0.5625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(138,191,204,0.6)', marginBottom: '0.2rem' }}>
+                    This Month
+                  </div>
+                  <div style={{ fontSize: '0.9375rem', fontWeight: 800, color: '#8ABFCC', lineHeight: 1 }}>{monthName}</div>
+                </div>
+                <div style={{ fontSize: '1.5rem', opacity: 0.4 }}>📅</div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: '0.5rem' }}>
+                {[
+                  { label: 'Played', value: monthMatches.length, color: '#8ABFCC' },
+                  { label: 'Won', value: mWon, color: 'var(--felt-light)' },
+                  { label: 'Lost', value: mLost, color: 'var(--ember)' },
+                  { label: 'Draw', value: mDrawn, color: 'var(--text-secondary)' },
+                  { label: 'Win %', value: `${mWinRate}%`, color: mWinRate >= 50 ? 'var(--felt-light)' : '#a78bfa' },
+                ].map(s => (
+                  <div key={s.label} style={{ textAlign: 'center', background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: '0.5rem 0.25rem' }}>
+                    <div style={{ fontSize: '1.125rem', fontWeight: 900, color: s.color, lineHeight: 1 }}>{s.value}</div>
+                    <div style={{ fontSize: '0.45rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(138,191,204,0.5)', marginTop: '0.2rem' }}>{s.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Stat grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.625rem', marginBottom: '1rem' }}>
           {[
