@@ -689,18 +689,12 @@ export default function LeaderboardTable() {
                         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                         padding: '1.5rem 1rem', gap: '0.5rem', position: 'relative',
                       }}>
-                        {/* New DL Logo — already a shield shape */}
+                        {/* DL Logo */}
                         <img
                           src="/dl-logo-v2.png"
                           alt="Digu League"
-                          style={{
-                            width: 150, height: 'auto',
-                            objectFit: 'contain',
-                            filter: 'drop-shadow(0 0 16px rgba(212,175,55,0.6)) drop-shadow(0 0 32px rgba(212,175,55,0.25))',
-                            animation: 'hof-logo-float 3s ease-in-out infinite',
-                          }}
+                          style={{ width: 150, height: 'auto', objectFit: 'contain' }}
                         />
-                        <style>{`@keyframes hof-logo-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }`}</style>
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ fontFamily: "'Cinzel', Georgia, serif", fontSize: '0.5rem', fontWeight: 900, letterSpacing: '0.22em', color: 'rgba(212,175,55,0.7)', textTransform: 'uppercase', marginBottom: 2 }}>DIGU LEAGUE</div>
                           <div style={{ fontFamily: "'Cinzel Decorative', Georgia, serif", fontSize: '1.125rem', fontWeight: 900, color: '#D4AF37', lineHeight: 1, textShadow: '0 0 16px rgba(212,175,55,0.6)', letterSpacing: '0.06em' }}>HALL</div>
