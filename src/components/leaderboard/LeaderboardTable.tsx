@@ -723,17 +723,17 @@ export default function LeaderboardTable() {
                               borderLeft: i > 0 ? `1px solid ${h.color}18` : 'none',
                               background: `linear-gradient(160deg, ${h.color}14 0%, rgba(6,8,16,0.97) 55%)`,
                               display: 'flex', flexDirection: 'column', alignItems: 'center',
-                              minHeight: (i<=1) ? 360 : 280,
+                              minHeight: 300,
                             }}>
                               {/* Top accent line */}
                               <div style={{ position:'absolute', top:0, left:0, right:0, height:2, background:`linear-gradient(90deg,transparent,${h.color},transparent)` }} />
 
                               {/* Icon */}
-                              <div style={{ marginTop: '1.25rem', marginBottom: '0.75rem', fontSize: (i<=1) ? '1.875rem' : '1.125rem', filter:`drop-shadow(0 0 8px ${h.color})` }}>{h.icon}</div>
+                              <div style={{ marginTop: '1.25rem', marginBottom: '0.75rem', fontSize: '1.375rem', filter:`drop-shadow(0 0 8px ${h.color})` }}>{h.icon}</div>
 
                               {/* Large circular avatar */}
                               <div style={{
-                                width: (i<=1) ? 120 : 80, height: (i<=1) ? 120 : 80,
+                                width: 90, height: 90,
                                 borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
                                 border: `3px solid ${h.color}`,
                                 boxShadow: `0 0 0 5px ${h.color}18, 0 0 28px ${h.color}55, 0 8px 24px rgba(0,0,0,0.5)`,
@@ -743,7 +743,7 @@ export default function LeaderboardTable() {
                                   <img src={`data:image/jpeg;base64,${h.player.avatar_b64}`}
                                     style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'top' }} />
                                 ) : (
-                                  <div style={{ width:'100%', height:'100%', background:bg, display:'flex', alignItems:'center', justifyContent:'center', fontSize: (i<=1) ? '2.5rem' : '1.5rem', fontWeight:800, color:'#DDD1BF' }}>
+                                  <div style={{ width:'100%', height:'100%', background:bg, display:'flex', alignItems:'center', justifyContent:'center', fontSize: '2rem', fontWeight:800, color:'#DDD1BF' }}>
                                     {initials}
                                   </div>
                                 )}
@@ -765,7 +765,7 @@ export default function LeaderboardTable() {
                                 {/* Nickname */}
                                 <div style={{
                                   fontFamily:"Quicksand,sans-serif",
-                                  fontSize: (i<=1) ? '1.375rem' : '0.9375rem',
+                                  fontSize: '1rem',
                                   fontWeight:800, color:'#fff', lineHeight:1.1,
                                   textShadow:`0 0 16px ${h.color}55`,
                                 }}>
@@ -784,7 +784,7 @@ export default function LeaderboardTable() {
                                   background:`linear-gradient(135deg,${h.color}30,${h.color}12)`,
                                   border:`2px solid ${h.color}60`,
                                   borderRadius:24, padding:'5px 16px',
-                                  fontSize: (i<=1) ? '0.8125rem' : '0.5625rem',
+                                  fontSize: '0.625rem',
                                   fontWeight:900, color:h.color,
                                   fontFamily:"Quicksand,sans-serif",
                                   letterSpacing:'0.06em',
