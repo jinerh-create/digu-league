@@ -704,7 +704,7 @@ export default function LeaderboardTable() {
                       <th style={{ width: 40, textAlign: 'center' }}>#</th>
                       <th style={{ textAlign: 'left', minWidth: 130 }}>Player</th>
                       {PLAYER_COLS.map(c => (
-                        <th key={c.key} className={`sortable ${sortKey === c.key ? 'active-sort' : ''}`}
+                        <th key={c.key} className={`sortable ${sortKey === c.key ? 'active-sort' : ''} ${c.key === 'win_rate' ? 'lb-col-winrate' : ''}`}
                           onClick={() => handleSort(c.key)} title={c.label}>
                           {c.short}
                           {sortKey === c.key && <span style={{ marginLeft: 2, opacity: 0.7 }}>{sortDesc ? '↓' : '↑'}</span>}
@@ -754,7 +754,7 @@ export default function LeaderboardTable() {
                             <td className={sortKey === 'league_points' ? 'active-col' : ''}>
                               <span className="stat-val pts">{s.league_points}</span>
                             </td>
-                            <td className={sortKey === 'win_rate' ? 'active-col' : ''}>
+                            <td className={'lb-col-winrate ' + (sortKey === 'win_rate' ? 'active-col' : '')}>
                               <WinBar rate={s.win_rate} played={s.matches_played} />
                             </td>
                           </tr>
@@ -866,13 +866,11 @@ export default function LeaderboardTable() {
         }
         @media (max-width: 768px) {
           .podium-section { margin-bottom: 1rem; }
-          /* Leaderboard table: reduce font + padding on mobile */
+          /* Leaderboard table mobile */
           .lb-table { font-size: 0.75rem; }
-          .lb-table th, .lb-table td { padding: 0.5rem 0.3rem; }
-          /* Show WIN% but make it compact */
-          .lb-table th:last-child, .lb-table td:last-child { min-width: 44px; }
-          /* Ensure table scrolls if needed */
-          .lb-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+          .lb-table th, .lb-table td { padding: 0.5rem 0.25rem; }
+          /* Hide WIN% column on mobile — add it back on wider screens */
+          .lb-col-winrate { display: none !important; }
         }
         @media (max-width: 480px) {
           .podium-grid { flex-direction: column; }
@@ -885,7 +883,7 @@ export default function LeaderboardTable() {
         }
 
         /* Table */
-        .lb-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 16px; overflow: hidden; border: 1.5px solid rgba(212,175,55,0.4); box-shadow: 0 0 20px rgba(212,175,55,0.1), inset 0 1px 0 rgba(212,175,55,0.06); }
+        .lb-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 16px; border: 1.5px solid rgba(212,175,55,0.4); box-shadow: 0 0 20px rgba(212,175,55,0.1), inset 0 1px 0 rgba(212,175,55,0.06); }
         .lb-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
         .lb-table thead { background: rgba(255,255,255,0.04); }
         .lb-table th {
