@@ -865,16 +865,14 @@ export default function LeaderboardTable() {
           display: flex; gap: 0.75rem; align-items: stretch;
         }
         @media (max-width: 768px) {
-          /* HOF: stack vertically on mobile */
           .podium-section { margin-bottom: 1rem; }
-          /* Hide 2nd and 3rd on mobile */
-          .hof-strip-2nd, .hof-strip-3rd { display: none !important; }
-          /* Hide left panel on mobile — use mobile header instead */
-          .hof-left-panel { display: none !important; }
-          /* Show mobile header */
-          .hof-mobile-header { display: flex !important; }
-          /* Make player strips bigger on mobile since only 2 showing */
-          .hof-right-panel { grid-template-columns: 1fr 1fr !important; }
+          /* Leaderboard table: reduce font + padding on mobile */
+          .lb-table { font-size: 0.75rem; }
+          .lb-table th, .lb-table td { padding: 0.5rem 0.3rem; }
+          /* Show WIN% but make it compact */
+          .lb-table th:last-child, .lb-table td:last-child { min-width: 44px; }
+          /* Ensure table scrolls if needed */
+          .lb-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
         }
         @media (max-width: 480px) {
           .podium-grid { flex-direction: column; }
@@ -882,6 +880,8 @@ export default function LeaderboardTable() {
           .podium-grid .podium-rank-1,
           .podium-grid .podium-rank-2 { order: unset; }
           .hof-grid { flex-direction: column; }
+          .lb-table { font-size: 0.6875rem; }
+          .lb-table th, .lb-table td { padding: 0.4rem 0.2rem; }
         }
 
         /* Table */
