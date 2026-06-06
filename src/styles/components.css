@@ -271,3 +271,47 @@
   color: var(--text-muted); text-transform: uppercase;
   letter-spacing: 0.06em;
 }
+
+/* ─── Mobile global adjustments ─── */
+@media (max-width: 768px) {
+  /* Smaller cards on mobile */
+  .card { padding: 0.75rem; }
+  .card-raised { padding: 0.75rem; }
+
+  /* Smaller buttons */
+  .btn { padding: 0.5625rem 0.875rem; font-size: 0.8125rem; min-height: 40px; }
+  .btn-lg { padding: 0.75rem 1rem; font-size: 0.9375rem; }
+
+  /* Smaller badges */
+  .badge { font-size: 0.5625rem; padding: 0.15rem 0.4rem; }
+
+  /* Smaller section headers */
+  .page-header h1 { font-size: 1.25rem; }
+  .section-header { margin-bottom: 0.75rem; }
+  .section-title { font-size: 0.875rem; }
+
+  /* Smaller form elements */
+  .form-input { padding: 0.5rem 0.625rem; font-size: 0.875rem; min-height: 38px; }
+  .form-label { font-size: 0.5rem; margin-bottom: 0.25rem; }
+
+  /* Stat cards */
+  .stat-card { padding: 0.625rem; }
+  .stat-value { font-size: 1.25rem; }
+  .stat-label { font-size: 0.5rem; }
+
+  /* Avatar smaller */
+  .avatar-sm { width: 28px !important; height: 28px !important; }
+
+  /* Tabs compact */
+  .tab-btn { padding: 0.4rem 0.625rem; font-size: 0.75rem; }
+
+  /* Grid adjustments */
+  .grid-3 { grid-template-columns: 1fr 1fr !important; }
+  .grid-4 { grid-template-columns: 1fr 1fr !important; }
+}
+
+@media (max-width: 480px) {
+  .card { padding: 0.625rem; border-radius: 10px; }
+  .btn { padding: 0.5rem 0.75rem; font-size: 0.75rem; }
+  .grid-2 { grid-template-columns: 1fr !important; }
+}

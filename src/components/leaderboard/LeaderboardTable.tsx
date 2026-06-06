@@ -866,11 +866,18 @@ export default function LeaderboardTable() {
         }
         @media (max-width: 768px) {
           .podium-section { margin-bottom: 1rem; }
-          /* Leaderboard table mobile */
-          .lb-table { font-size: 0.75rem; }
-          .lb-table th, .lb-table td { padding: 0.5rem 0.25rem; }
-          /* Hide WIN% column on mobile — add it back on wider screens */
-          .lb-col-winrate { display: none !important; }
+          /* Compact leaderboard for mobile */
+          .lb-table { font-size: 0.6875rem; table-layout: fixed; width: 100%; }
+          .lb-table th, .lb-table td { padding: 0.4rem 0.2rem; text-align: center; }
+          .lb-table th:nth-child(2), .lb-table td:nth-child(2) { text-align: left; max-width: 110px; overflow: hidden; }
+          .lb-table .player-name-cell { font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px; }
+          .lb-table .player-nick-cell { font-size: 0.5625rem; }
+          /* Avatar smaller on mobile */
+          .lb-table img, .lb-table .avatar-wrap { width: 28px !important; height: 28px !important; font-size: 0.5rem !important; }
+          /* Rank badge smaller */
+          .lb-table .rank-badge { width: 22px !important; height: 22px !important; font-size: 0.625rem !important; }
+          /* Show all columns — just smaller */
+          .lb-col-winrate { display: table-cell !important; }
         }
         @media (max-width: 480px) {
           .podium-grid { flex-direction: column; }
@@ -878,8 +885,8 @@ export default function LeaderboardTable() {
           .podium-grid .podium-rank-1,
           .podium-grid .podium-rank-2 { order: unset; }
           .hof-grid { flex-direction: column; }
-          .lb-table { font-size: 0.6875rem; }
-          .lb-table th, .lb-table td { padding: 0.4rem 0.2rem; }
+          .lb-table { font-size: 0.5625rem; }
+          .lb-table th, .lb-table td { padding: 0.35rem 0.15rem; }
         }
 
         /* Table */
