@@ -689,18 +689,18 @@ export default function LeaderboardTable() {
                         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                         padding: '1.5rem 1rem', gap: '0.5rem', position: 'relative',
                       }}>
-                        {/* Shield shape */}
-                        <div style={{ position: 'relative', width: 130, height: 145 }}>
-                          <svg viewBox="0 0 90 100" style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 0 16px rgba(212,175,55,0.5))' }}>
-                            <path d="M45 2 L88 18 L88 52 Q88 80 45 98 Q2 80 2 52 L2 18 Z"
-                              fill="rgba(212,175,55,0.08)" stroke="#D4AF37" strokeWidth="1.5" strokeOpacity="0.6"/>
-                            <path d="M45 10 L82 24 L82 52 Q82 76 45 92 Q8 76 8 52 L8 24 Z"
-                              fill="rgba(212,175,55,0.04)" stroke="rgba(212,175,55,0.3)" strokeWidth="0.5"/>
-                          </svg>
-                          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-                            <img src="/logo-clear.png" style={{ width: 80, height: 80, objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(212,175,55,0.6))' }} />
-                          </div>
-                        </div>
+                        {/* New DL Logo — already a shield shape */}
+                        <img
+                          src="/logo-clear.png"
+                          alt="Digu League"
+                          style={{
+                            width: 150, height: 'auto',
+                            objectFit: 'contain',
+                            filter: 'drop-shadow(0 0 16px rgba(212,175,55,0.6)) drop-shadow(0 0 32px rgba(212,175,55,0.25))',
+                            animation: 'hof-logo-float 3s ease-in-out infinite',
+                          }}
+                        />
+                        <style>{`@keyframes hof-logo-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }`}</style>
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ fontFamily: "'Cinzel', Georgia, serif", fontSize: '0.5rem', fontWeight: 900, letterSpacing: '0.22em', color: 'rgba(212,175,55,0.7)', textTransform: 'uppercase', marginBottom: 2 }}>DIGU LEAGUE</div>
                           <div style={{ fontFamily: "'Cinzel Decorative', Georgia, serif", fontSize: '1.125rem', fontWeight: 900, color: '#D4AF37', lineHeight: 1, textShadow: '0 0 16px rgba(212,175,55,0.6)', letterSpacing: '0.06em' }}>HALL</div>
