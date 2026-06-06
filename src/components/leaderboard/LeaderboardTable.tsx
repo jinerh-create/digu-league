@@ -654,54 +654,122 @@ export default function LeaderboardTable() {
             </div>
           ) : (
             <>
-              {/* ── Hall of Fame: Champion + Digu King ─────────────── */}
-              {hasPlayed.length > 0 && (playerOfMonth || (diguKing && diguKing.gin_count > 0)) && (
+              {/* ── Hall of Fame ─────────────────────────────────────── */}
+              {hasPlayed.length > 0 && (playerOfMonth || (diguKing && diguKing.gin_count > 0)) && (() => {
+                // Sort by league points to get 2nd and 3rd
+                const byPts = [...hasPlayed].sort((a,b) => b.league_points - a.league_points);
+                const second = byPts[1] ?? null;
+                const third  = byPts[2] ?? null;
+                const hofPlayers = [
+                  playerOfMonth   ? { player: playerOfMonth, title: 'CHAMPION',  icon: '🏆', color: '#D4AF37', stat: `${playerOfMonth.league_points} PTS` } : null,
+                  diguKing && diguKing.gin_count > 0 ? { player: diguKing, title: 'DIGU KING', icon: '👑', color: '#C8102E', stat: `${diguKing.gin_count} DIGU` } : null,
+                  second ? { player: second, title: '2ND PLACE', icon: '🥈', color: '#A8A9AD', stat: `${second.league_points} PTS` } : null,
+                  third  ? { player: third,  title: '3RD PLACE', icon: '🥉', color: '#CD7F32', stat: `${third.league_points} PTS`  } : null,
+                ].filter(Boolean) as { player: PlayerStats; title: string; icon: string; color: string; stat: string }[];
+
+                return (
                 <div className="podium-section">
-                  {/* HOF Header */}
-                  <div style={{ textAlign: 'center', marginBottom: '1.25rem', position: 'relative' }}>
-                    <div style={{
-                      fontSize: '1.375rem', fontWeight: 900,
-                      fontFamily: "'Cinzel Decorative', 'Cinzel', Georgia, serif",
-                      color: '#D4AF37',
-                      textShadow: '0 0 20px rgba(212,175,55,0.6), 0 0 40px rgba(212,175,55,0.25)',
-                      letterSpacing: '0.12em',
-                    }}>✦ &nbsp;HALL OF FAME&nbsp; ✦</div>
-                    <div style={{ fontSize: '0.625rem', color: 'rgba(212,175,55,0.45)', letterSpacing: '0.18em', marginTop: 5, fontFamily: "'Cinzel', serif", textTransform: 'uppercase' }}>
-                      One League · One Crown · One Champion
+                  {/* One single HOF box */}
+                  <div style={{
+                    border: '1px solid rgba(212,175,55,0.25)',
+                    borderRadius: 20, overflow: 'hidden',
+                    background: 'linear-gradient(160deg, #0D1020 0%, #080C18 100%)',
+                    boxShadow: '0 0 0 1px rgba(212,175,55,0.08), 0 16px 48px rgba(0,0,0,0.6)',
+                    position: 'relative',
+                  }}>
+                    {/* Top shimmer bar */}
+                    <div style={{ height: 3, background: 'linear-gradient(90deg,transparent,#D4AF37,#fff,#D4AF37,transparent)', backgroundSize: '200%', animation: 'hof-bar-slide 3s linear infinite' }} />
+
+                    <div style={{ display: 'flex', minHeight: 260 }}>
+                      {/* LEFT: Shield panel */}
+                      <div style={{
+                        width: '34%', flexShrink: 0,
+                        background: 'linear-gradient(160deg, rgba(212,175,55,0.12) 0%, rgba(212,175,55,0.04) 100%)',
+                        borderRight: '1px solid rgba(212,175,55,0.15)',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                        padding: '1.5rem 1rem', gap: '0.5rem', position: 'relative',
+                      }}>
+                        {/* Shield shape */}
+                        <div style={{ position: 'relative', width: 90, height: 100 }}>
+                          <svg viewBox="0 0 90 100" style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 0 12px rgba(212,175,55,0.4))' }}>
+                            <path d="M45 2 L88 18 L88 52 Q88 80 45 98 Q2 80 2 52 L2 18 Z"
+                              fill="rgba(212,175,55,0.08)" stroke="#D4AF37" strokeWidth="1.5" strokeOpacity="0.6"/>
+                            <path d="M45 10 L82 24 L82 52 Q82 76 45 92 Q8 76 8 52 L8 24 Z"
+                              fill="rgba(212,175,55,0.04)" stroke="rgba(212,175,55,0.3)" strokeWidth="0.5"/>
+                          </svg>
+                          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+                            <img src="/logo.png" style={{ width: 38, height: 38, borderRadius: 8, objectFit: 'cover' }} />
+                          </div>
+                        </div>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontFamily: "'Cinzel', Georgia, serif", fontSize: '0.5rem', fontWeight: 900, letterSpacing: '0.22em', color: 'rgba(212,175,55,0.7)', textTransform: 'uppercase', marginBottom: 2 }}>DIGU LEAGUE</div>
+                          <div style={{ fontFamily: "'Cinzel Decorative', Georgia, serif", fontSize: '1.125rem', fontWeight: 900, color: '#D4AF37', lineHeight: 1, textShadow: '0 0 16px rgba(212,175,55,0.6)', letterSpacing: '0.06em' }}>HALL</div>
+                          <div style={{ fontFamily: "'Cinzel Decorative', Georgia, serif", fontSize: '0.75rem', fontWeight: 900, color: 'rgba(212,175,55,0.7)', letterSpacing: '0.1em' }}>of</div>
+                          <div style={{ fontFamily: "'Cinzel Decorative', Georgia, serif", fontSize: '1.125rem', fontWeight: 900, color: '#D4AF37', lineHeight: 1, textShadow: '0 0 16px rgba(212,175,55,0.6)', letterSpacing: '0.06em' }}>FAME</div>
+                        </div>
+                        <div style={{ width: 60, height: 1, background: 'linear-gradient(90deg,transparent,rgba(212,175,55,0.5),transparent)', margin: '2px 0' }} />
+                        <div style={{ fontFamily: "'Cinzel', serif", fontSize: '0.4rem', color: 'rgba(212,175,55,0.35)', letterSpacing: '0.12em', textTransform: 'uppercase', textAlign: 'center', lineHeight: 1.6 }}>
+                          One League<br/>One Crown<br/>One Champion
+                        </div>
+                        <div style={{ marginTop: 4, fontSize: '0.625rem', color: 'rgba(212,175,55,0.35)', fontFamily: "'Cinzel', serif" }}>
+                          {month ? new Date(month+'-01').toLocaleString('en',{month:'long',year:'numeric'}) : new Date().toLocaleString('en',{month:'long',year:'numeric'})}
+                        </div>
+                      </div>
+
+                      {/* RIGHT: Player strips */}
+                      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: `repeat(${hofPlayers.length}, 1fr)`, gap: 0 }}>
+                        {hofPlayers.map((h, i) => {
+                          const isFirst = i === 0;
+                          const initials = h.player.name.split(' ').map((w:string)=>w[0]).join('').slice(0,2).toUpperCase();
+                          const bgColors = ['#2B4F37','#78270D','#1a3a5c','#4a2060','#2c4a1a'];
+                          const bg = bgColors[h.player.name.charCodeAt(0) % bgColors.length];
+                          return (
+                            <div key={h.player.player_id} style={{
+                              position: 'relative', overflow: 'hidden',
+                              borderLeft: i > 0 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                              cursor: 'pointer',
+                              background: `linear-gradient(180deg, ${h.color}10 0%, rgba(8,12,24,0.95) 60%)`,
+                            }}>
+                              {/* Avatar fills top portion */}
+                              <div style={{ height: isFirst ? 160 : 140, position: 'relative', overflow: 'hidden' }}>
+                                {h.player.avatar_b64 ? (
+                                  <img
+                                    src={`data:image/jpeg;base64,${h.player.avatar_b64}`}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', filter: isFirst ? 'none' : 'brightness(0.85)' }}
+                                  />
+                                ) : (
+                                  <div style={{ width: '100%', height: '100%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isFirst ? '2.5rem' : '2rem', fontWeight: 800, color: '#DDD1BF' }}>
+                                    {initials}
+                                  </div>
+                                )}
+                                {/* Color gradient overlay at bottom */}
+                                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '50%', background: `linear-gradient(transparent, rgba(8,12,24,0.95))` }} />
+                                {/* Icon top-right */}
+                                <div style={{ position: 'absolute', top: 6, right: 6, fontSize: isFirst ? '1.25rem' : '1rem', filter: `drop-shadow(0 0 4px ${h.color})` }}>{h.icon}</div>
+                              </div>
+                              {/* Info bottom */}
+                              <div style={{ padding: '0.5rem 0.5rem 0.75rem', textAlign: 'center' }}>
+                                <div style={{ fontFamily: "'Cinzel', serif", fontSize: '0.45rem', fontWeight: 800, color: h.color, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 3, textShadow: `0 0 8px ${h.color}66` }}>{h.title}</div>
+                                <div style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: isFirst ? '1rem' : '0.875rem', fontWeight: 800, color: '#fff', lineHeight: 1.1 }}>
+                                  {h.player.nickname || h.player.name.split(' ')[0]}
+                                </div>
+                                {h.player.nickname && (
+                                  <div style={{ fontSize: '0.5625rem', color: 'rgba(221,209,191,0.4)', marginTop: 1 }}>{h.player.name}</div>
+                                )}
+                                <div style={{ marginTop: 6, display: 'inline-block', background: `${h.color}22`, border: `1px solid ${h.color}44`, borderRadius: 10, padding: '2px 8px', fontSize: '0.5625rem', fontWeight: 800, color: h.color, fontFamily: "'Cinzel', serif" }}>
+                                  {h.stat}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                    <div style={{ width: 120, height: 1, background: 'linear-gradient(90deg,transparent,rgba(212,175,55,0.5),transparent)', margin: '8px auto 0' }} />
-                  </div>
-                  <div className="hof-grid">
-                    {playerOfMonth && (
-                      <HallOfFameCard
-                        player={playerOfMonth}
-                        title="Champion"
-                        icon="🏆"
-                        color="#D4AF37"
-                        stats={[
-                          { label: 'PTS', value: playerOfMonth.league_points, color: '#D4AF37' },
-                          { label: 'WIN%', value: `${playerOfMonth.win_rate}%`, color: playerOfMonth.win_rate >= 50 ? '#638D6F' : '#DDD1BF' },
-                          { label: 'W', value: playerOfMonth.matches_won, color: '#638D6F' },
-                        ]}
-                      />
-                    )}
-                    {diguKing && diguKing.gin_count > 0 && (
-                      <HallOfFameCard
-                        player={diguKing}
-                        title="Digu King"
-                        icon="👑"
-                        color="#C8102E"
-                        stats={[
-                          { label: 'DIGU', value: diguKing.gin_count, color: '#D4AF37' },
-                          { label: 'WIN%', value: `${diguKing.win_rate}%`, color: diguKing.win_rate >= 50 ? '#638D6F' : '#DDD1BF' },
-                          { label: 'W', value: diguKing.matches_won, color: '#638D6F' },
-                        ]}
-                      />
-                    )}
+                    <div style={{ height: 1, background: 'linear-gradient(90deg,transparent,rgba(212,175,55,0.2),transparent)' }} />
                   </div>
 
                   {/* Share Hall of Fame as Image */}
-                  {(playerOfMonth || (diguKing && diguKing.gin_count > 0)) && (
+                  {(playerOfMonth || (diguKing && diguKing.gin_count > 0)) && (() => (
                     <button
                       onClick={async () => {
                         const period = month
@@ -723,9 +791,10 @@ export default function LeaderboardTable() {
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                       Share Hall of Fame
                     </button>
-                  )}
+                  ))()}
                 </div>
-              )}
+                );
+              })()}
 
               {/* ── Full leaderboard table ──────────────────────────── */}
               <div className="lb-table-wrap">
