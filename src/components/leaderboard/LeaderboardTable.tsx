@@ -730,22 +730,26 @@ export default function LeaderboardTable() {
                               cursor: 'pointer',
                               background: `linear-gradient(180deg, ${h.color}10 0%, rgba(8,12,24,0.95) 60%)`,
                             }}>
-                              {/* Avatar fills top portion */}
-                              <div style={{ height: isFirst ? 160 : 140, position: 'relative', overflow: 'hidden' }}>
-                                {h.player.avatar_b64 ? (
-                                  <img
-                                    src={`data:image/jpeg;base64,${h.player.avatar_b64}`}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', filter: isFirst ? 'none' : 'brightness(0.85)' }}
-                                  />
-                                ) : (
-                                  <div style={{ width: '100%', height: '100%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isFirst ? '2.5rem' : '2rem', fontWeight: 800, color: '#DDD1BF' }}>
-                                    {initials}
-                                  </div>
-                                )}
-                                {/* Color gradient overlay at bottom */}
-                                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '50%', background: `linear-gradient(transparent, rgba(8,12,24,0.95))` }} />
-                                {/* Icon top-right */}
-                                <div style={{ position: 'absolute', top: 6, right: 6, fontSize: isFirst ? '1.25rem' : '1rem', filter: `drop-shadow(0 0 4px ${h.color})` }}>{h.icon}</div>
+                              {/* Avatar in circle */}
+                              <div style={{ padding: '1rem 0.5rem 0.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+                                {/* Icon top */}
+                                <div style={{ fontSize: isFirst ? '1.375rem' : '1.125rem', filter: `drop-shadow(0 0 6px ${h.color})`, marginBottom: 8 }}>{h.icon}</div>
+                                {/* Circular avatar */}
+                                <div style={{
+                                  width: isFirst ? 88 : 76, height: isFirst ? 88 : 76,
+                                  borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
+                                  border: `2.5px solid ${h.color}`,
+                                  boxShadow: `0 0 0 4px ${h.color}22, 0 0 20px ${h.color}44`,
+                                }}>
+                                  {h.player.avatar_b64 ? (
+                                    <img src={`data:image/jpeg;base64,${h.player.avatar_b64}`}
+                                      style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }} />
+                                  ) : (
+                                    <div style={{ width: '100%', height: '100%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isFirst ? '2rem' : '1.75rem', fontWeight: 800, color: '#DDD1BF' }}>
+                                      {initials}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                               {/* Info bottom */}
                               <div style={{ padding: '0.5rem 0.5rem 0.75rem', textAlign: 'center' }}>
@@ -973,7 +977,7 @@ export default function LeaderboardTable() {
         }
 
         /* Table */
-        .lb-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.06); }
+        .lb-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 16px; overflow: hidden; border: 1.5px solid rgba(212,175,55,0.4); box-shadow: 0 0 20px rgba(212,175,55,0.1), inset 0 1px 0 rgba(212,175,55,0.06); }
         .lb-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
         .lb-table thead { background: rgba(255,255,255,0.04); }
         .lb-table th {

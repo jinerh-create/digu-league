@@ -301,14 +301,23 @@ function side2(m: typeof recentMatches[0]) {
   .stat-pill {
     flex: 1;
     background: var(--card);
-    border: 1px solid var(--border);
+    border: 1.5px solid rgba(212,175,55,0.45);
     border-radius: var(--radius);
     padding: 0.875rem 0.5rem;
     text-align: center;
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    box-shadow: 0 0 14px rgba(212,175,55,0.1), inset 0 1px 0 rgba(212,175,55,0.08);
+    position: relative; overflow: hidden;
   }
+  .stat-pill::after {
+    content: '';
+    position: absolute; top: 0; left: -100%; width: 60%; height: 2px;
+    background: linear-gradient(90deg,transparent,rgba(212,175,55,0.9),rgba(255,255,255,0.6),rgba(212,175,55,0.9),transparent);
+    animation: goldShimmer 3.5s ease-in-out infinite;
+  }
+  @keyframes goldShimmer { 0%{left:-100%} 60%{left:150%} 100%{left:150%} }
 
   .quick-actions {
     margin-bottom: 1.5rem;
