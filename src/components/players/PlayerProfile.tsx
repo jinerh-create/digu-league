@@ -187,7 +187,7 @@ function TrophyCase({ trophiesJson }: { trophiesJson: string | undefined | null 
             <div key={t.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
               {/* Trophy display — circular for coins, canvas for champion */}
               <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                {(t.image.includes('champion') || t.image.includes('trophy') || t.image.includes('digu-king') || t.image.includes('clear')) ? (
+                {(t.image.includes('champion') || t.image.includes('trophy') || t.image.includes('clear')) ? (
                   /* Champion trophy: PNG already has transparent background */
                   <img
                     src={t.image}
