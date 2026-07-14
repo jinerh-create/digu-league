@@ -2,16 +2,29 @@ import type { Player, Match, Game, PlayerStats, TeamStats, Season, MatchReaction
 
 export async function getPlayers(db: D1Database): Promise<Player[]> {
   const result = await db
-    .prepare('SELECT * FROM players ORDER BY joined_at ASC')
+    .prepare('SELECT * FROM players WHERE is_guest = 0 ORDER BY joined_at ASC')
     .all<Player>();
   return result.results;
 }
 
 export async function getActivePlayers(db: D1Database): Promise<Player[]> {
   const result = await db
-    .prepare('SELECT * FROM players WHERE active = 1 ORDER BY name ASC')
+    .prepare('SELECT * FROM players WHERE active = 1 AND is_guest = 0 ORDER BY name ASC')
     .all<Player>();
   return result.results;
+}
+
+// Guest player created for a one-off classic match (kept out of the league).
+export async function createGuestPlayer(
+  db: D1Database,
+  id: string,
+  name: string,
+  joined_at: string
+): Promise<void> {
+  await db
+    .prepare('INSERT INTO players (id, name, joined_at, active, is_guest) VALUES (?, ?, ?, 0, 1)')
+    .bind(id, name, joined_at)
+    .run();
 }
 
 export async function getPlayer(db: D1Database, id: string): Promise<Player | null> {
@@ -66,12 +79,12 @@ export async function updatePlayerActive(
 }
 
 export async function getTotalMatchCount(db: D1Database): Promise<number> {
-  const r = await db.prepare('SELECT COUNT(*) AS n FROM matches WHERE completed_at IS NOT NULL').first<{ n: number }>();
+  const r = await db.prepare('SELECT COUNT(*) AS n FROM matches WHERE completed_at IS NOT NULL AND is_classic = 0').first<{ n: number }>();
   return r?.n ?? 0;
 }
 
 export async function getTotalGamesCount(db: D1Database): Promise<number> {
-  const r = await db.prepare('SELECT COUNT(*) AS n FROM games').first<{ n: number }>();
+  const r = await db.prepare('SELECT COUNT(*) AS n FROM games g JOIN matches m ON m.id = g.match_id WHERE m.is_classic = 0').first<{ n: number }>();
   return r?.n ?? 0;
 }
 
@@ -90,6 +103,32 @@ export async function getMatches(db: D1Database, limit = 50): Promise<Match[]> {
        LEFT JOIN players pw ON pw.id = m.winner_id
        LEFT JOIN players p3 ON p3.id = m.team1_player2_id
        LEFT JOIN players p4 ON p4.id = m.team2_player2_id
+       WHERE m.is_classic = 0
+       ORDER BY m.started_at DESC
+       LIMIT ?`
+    )
+    .bind(limit)
+    .all<Match>();
+  return result.results;
+}
+
+// Classic (casual) matches only — separate history, never in the league.
+export async function getClassicMatches(db: D1Database, limit = 100): Promise<Match[]> {
+  const result = await db
+    .prepare(
+      `SELECT m.*,
+        p1.name AS player1_name, p1.avatar_b64 AS player1_avatar, p1.nickname AS player1_nickname,
+        p2.name AS player2_name, p2.avatar_b64 AS player2_avatar, p2.nickname AS player2_nickname,
+        pw.name AS winner_name,
+        p3.name AS team1_player2_name, p3.nickname AS team1_player2_nickname,
+        p4.name AS team2_player2_name, p4.nickname AS team2_player2_nickname
+       FROM matches m
+       JOIN players p1 ON p1.id = m.player1_id
+       JOIN players p2 ON p2.id = m.player2_id
+       LEFT JOIN players pw ON pw.id = m.winner_id
+       LEFT JOIN players p3 ON p3.id = m.team1_player2_id
+       LEFT JOIN players p4 ON p4.id = m.team2_player2_id
+       WHERE m.is_classic = 1
        ORDER BY m.started_at DESC
        LIMIT ?`
     )
@@ -132,7 +171,7 @@ export async function getActiveMatch(db: D1Database): Promise<Match | null> {
        JOIN players p2 ON p2.id = m.player2_id
        LEFT JOIN players p3 ON p3.id = m.team1_player2_id
        LEFT JOIN players p4 ON p4.id = m.team2_player2_id
-       WHERE m.completed_at IS NULL
+       WHERE m.completed_at IS NULL AND m.is_classic = 0
        ORDER BY m.started_at DESC
        LIMIT 1`
     )
@@ -150,20 +189,22 @@ export async function createMatch(
   team2_name?: string | null,
   team1_player2_id?: string | null,
   team2_player2_id?: string | null,
-  max_rounds?: number
+  max_rounds?: number,
+  season_id?: string | null,
+  is_classic?: number
 ): Promise<void> {
   await db
     .prepare(
       `INSERT INTO matches
         (id, player1_id, player2_id, target_score, started_at,
-         team1_name, team2_name, team1_player2_id, team2_player2_id, max_rounds)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+         team1_name, team2_name, team1_player2_id, team2_player2_id, max_rounds, season_id, is_classic)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .bind(
       id, player1_id, player2_id, target_score, started_at,
       team1_name ?? null, team2_name ?? null,
       team1_player2_id ?? null, team2_player2_id ?? null,
-      max_rounds ?? 0
+      max_rounds ?? 0, season_id ?? null, is_classic ?? 0
     )
     .run();
 }
@@ -210,7 +251,7 @@ export async function getPlayerMatches(db: D1Database, playerId: string): Promis
      LEFT JOIN players pw ON pw.id = m.winner_id
      LEFT JOIN players p3 ON p3.id = m.team1_player2_id
      LEFT JOIN players p4 ON p4.id = m.team2_player2_id
-     WHERE m.completed_at IS NOT NULL
+     WHERE m.completed_at IS NOT NULL AND m.is_classic = 0
        AND (m.player1_id = ? OR m.player2_id = ? OR m.team1_player2_id = ? OR m.team2_player2_id = ?)
      ORDER BY m.started_at DESC`
   ).bind(playerId, playerId, playerId, playerId).all<Match>();
@@ -280,7 +321,7 @@ export async function computePlayerStats(db: D1Database, month?: string, matchTy
   const players = await getActivePlayers(db);
 
   // Build WHERE clause with parameterized bindings (no string interpolation for user values)
-  const conditions: string[] = ['completed_at IS NOT NULL'];
+  const conditions: string[] = ['completed_at IS NOT NULL', 'is_classic = 0'];
   const bindings: (string | number)[] = [];
   if (matchType === 'single') conditions.push('team1_player2_id IS NULL');
   else if (matchType === 'team') conditions.push('team1_player2_id IS NOT NULL');
@@ -493,7 +534,7 @@ export async function deleteScheduledMatch(db: D1Database, id: string): Promise<
 }
 
 export async function computeTeamStats(db: D1Database, month?: string): Promise<TeamStats[]> {
-  const baseWhere = "completed_at IS NOT NULL AND team1_player2_id IS NOT NULL";
+  const baseWhere = "completed_at IS NOT NULL AND team1_player2_id IS NOT NULL AND is_classic = 0";
   const matchesResult = month
     ? await db.prepare(`SELECT * FROM matches WHERE ${baseWhere} AND strftime('%Y-%m', started_at) = ?`).bind(month).all<Match>()
     : await db.prepare(`SELECT * FROM matches WHERE ${baseWhere}`).all<Match>();
@@ -529,4 +570,75 @@ export async function computeTeamStats(db: D1Database, month?: string): Promise<
   }
 
   return Array.from(teamMap.values()).sort((a, b) => b.league_points - a.league_points);
+}
+
+export const OC_SEASON_ID = 'oc-champions-league';
+
+export interface OCPlayerStanding {
+  player_id: string;
+  name: string;
+  nickname: string | null;
+  avatar_b64: string | null;
+  matches_played: number;
+  matches_won: number;
+  matches_drawn: number;
+  matches_lost: number;
+  champions_points: number; // win +3 / draw +1 / loss −1
+}
+
+export interface OCChampionsResult {
+  month: string;     // 'YYYY-MM' — the ongoing month whose scores are shown
+  qualMonth: string; // 'YYYY-MM' — last month, whose league top-5 qualified
+  qualifiers: { player_id: string; name: string; nickname: string | null; avatar_b64: string | null; league_points: number; rank: number }[];
+  standings: OCPlayerStanding[];
+  started: boolean;
+}
+
+/**
+ * OC Champions League — INDIVIDUAL players, MONTHLY.
+ * Every month is a fresh tournament. The 5 players who finished in the top-5 of
+ * LAST month's current league qualify; their scores in the ONGOING month are then
+ * re-scored with loss = −1 (league is win +3 / draw +1 / loss 0). Same monthly
+ * matches that count in the league — they count here too. Defaults to the ongoing month.
+ */
+export async function computeOCChampions(db: D1Database, month?: string): Promise<OCChampionsResult> {
+  const monthKey = month || new Date().toISOString().slice(0, 7); // ongoing month (scores shown)
+
+  // Qualification = LAST month's league top-5.
+  let [qy, qm] = monthKey.split('-').map(Number);
+  qm -= 1; if (qm === 0) { qm = 12; qy -= 1; }
+  const qualMonth = `${qy}-${String(qm).padStart(2, '0')}`;
+
+  // Top-5 players by league points in LAST month's league standings.
+  const lastMonth = await computePlayerStats(db, qualMonth);
+  const leagueSorted = [...lastMonth].sort((a, b) =>
+    b.league_points - a.league_points ||
+    b.win_rate - a.win_rate ||
+    b.total_points_scored - a.total_points_scored
+  );
+  const top5 = leagueSorted.slice(0, 5);
+  const qualifiers = top5.map((p, i) => ({
+    player_id: p.player_id, name: p.name, nickname: p.nickname, avatar_b64: p.avatar_b64,
+    league_points: p.league_points, rank: i + 1,
+  }));
+
+  // Their standings in the ONGOING month, re-scored with loss −1.
+  const thisMonth = await computePlayerStats(db, monthKey);
+  const byId = new Map(thisMonth.map(p => [p.player_id, p]));
+  const standings: OCPlayerStanding[] = top5.map(q => {
+    const p = byId.get(q.player_id);
+    const won = p?.matches_won ?? 0, drawn = p?.matches_drawn ?? 0, lost = p?.matches_lost ?? 0;
+    return {
+      player_id: q.player_id, name: q.name, nickname: q.nickname, avatar_b64: q.avatar_b64,
+      matches_played: p?.matches_played ?? 0, matches_won: won, matches_drawn: drawn, matches_lost: lost,
+      champions_points: won * 3 + drawn - lost,
+    };
+  }).sort((a, b) =>
+    b.champions_points - a.champions_points ||
+    b.matches_won - a.matches_won ||
+    a.matches_lost - b.matches_lost
+  );
+
+  const started = standings.some(s => s.matches_played > 0);
+  return { month: monthKey, qualMonth, qualifiers, standings, started };
 }

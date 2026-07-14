@@ -13,7 +13,10 @@ export const GET: APIRoute = async ({ locals }) => {
     const db = getDB(locals as Record<string, unknown>);
     const matches = await getMatches(db);
     return new Response(JSON.stringify(matches), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=30, stale-while-revalidate=60',
+      },
     });
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), { status: 500 });
@@ -32,6 +35,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       team1_player2_id?: string;
       team2_player2_id?: string;
       max_rounds?: number;
+      season_id?: string | null;
     };
 
     if (!body.player1_id || !body.player2_id) {
@@ -54,7 +58,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     await createMatch(
       db, id, body.player1_id, body.player2_id, targetScore, started_at,
       body.team1_name, body.team2_name, body.team1_player2_id, body.team2_player2_id,
-      maxRounds
+      maxRounds, body.season_id || null
     );
 
     return new Response(

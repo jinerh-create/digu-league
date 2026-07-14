@@ -37,7 +37,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
         body.winner_id, body.loser_id!,
         body.score_awarded ?? 0,
         body.is_gin ?? 0, body.gin_player_id ?? null,
-        body.t1_p1_cards, body.t1_p2_cards, body.t1_p2_cards, body.t2_p2_cards
+        body.t1_p1_cards, body.t1_p2_cards, body.t2_p1_cards, body.t2_p2_cards
       );
     } else {
       await updateGameGin(db, id, body.is_gin ?? 0, body.gin_player_id ?? null);

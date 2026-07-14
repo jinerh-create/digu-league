@@ -38,7 +38,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
         COUNT(g.id) as rounds
       FROM matches m
       JOIN games g ON g.match_id = m.id
-      WHERE m.completed_at IS NOT NULL
+      WHERE m.completed_at IS NOT NULL AND m.is_classic = 0
         AND (
           -- p1 on team1 (captain or secondary), p2 on team2 (captain or secondary)
           (

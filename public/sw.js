@@ -1,4 +1,4 @@
-const CACHE = 'digu-v1';
+const CACHE = 'digu-v4';
 const SHELL = [
   '/',
   '/leaderboard',
@@ -52,12 +52,18 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Cache-first for static assets
+  // Stale-while-revalidate for static assets (serve cache fast, refresh in background)
+  // so fixed-path assets like /badges/*.png and /logo.png self-update after a deploy.
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {
-      const clone = res.clone();
-      caches.open(CACHE).then(c => c.put(e.request, clone));
-      return res;
-    }))
+    caches.match(e.request).then(cached => {
+      const fetching = fetch(e.request).then(res => {
+        if (res && res.status === 200) {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+        }
+        return res;
+      }).catch(() => cached);
+      return cached || fetching;
+    })
   );
 });

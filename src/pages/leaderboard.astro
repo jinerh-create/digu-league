@@ -9,6 +9,32 @@ import LeaderboardTable from '../components/leaderboard/LeaderboardTable';
     <div class="page-header">
       <h1>&#9733; Rankings</h1>
     </div>
+    <a href="/oc" class="oc-banner">
+      <span class="oc-banner-icon">&#127942;</span>
+      <span class="oc-banner-text">
+        <span class="oc-banner-title">OC Champions League</span>
+        <span class="oc-banner-sub">Top 5 teams · Win +3 · Loss &minus;1</span>
+      </span>
+      <span class="oc-banner-arrow">&rarr;</span>
+    </a>
     <LeaderboardTable client:load />
   </div>
 </BaseLayout>
+
+<style>
+  .oc-banner {
+    display: flex; align-items: center; gap: 0.75rem;
+    margin-bottom: 1rem; padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, rgba(212,175,55,0.12), rgba(212,175,55,0.04));
+    border: 1.5px solid rgba(212,175,55,0.45);
+    border-radius: 14px; text-decoration: none;
+    box-shadow: 0 0 18px rgba(212,175,55,0.08);
+    transition: all 0.15s;
+  }
+  .oc-banner:hover { border-color: var(--gold); background: linear-gradient(135deg, rgba(212,175,55,0.18), rgba(212,175,55,0.06)); }
+  .oc-banner-icon { font-size: 1.5rem; flex-shrink: 0; }
+  .oc-banner-text { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .oc-banner-title { font-weight: 800; font-size: 0.9375rem; color: var(--gold); }
+  .oc-banner-sub { font-size: 0.6875rem; font-weight: 600; color: var(--text-muted); }
+  .oc-banner-arrow { font-size: 1.25rem; color: var(--gold); flex-shrink: 0; }
+</style>

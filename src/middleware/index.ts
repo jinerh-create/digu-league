@@ -110,10 +110,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
     // Player + admin allowed mutations
     const isGameMutation = pathname.startsWith('/api/games') && ['POST','PATCH','DELETE'].includes(method);
     const isCreateMatch = pathname === '/api/matches' && method === 'POST';
+    const isCreateClassic = pathname === '/api/classic' && method === 'POST';
     const isAddGame = /^\/api\/matches\/[^/]+\/games$/.test(pathname) && method === 'POST';
     const isFinishMatch = /^\/api\/matches\/[^/]+\/finish$/.test(pathname) && method === 'POST';
 
-    if (isGameMutation || isCreateMatch || isAddGame || isFinishMatch) return next();
+    if (isGameMutation || isCreateMatch || isCreateClassic || isAddGame || isFinishMatch) return next();
 
     // Everything else: admin only
     if (role !== 'admin') {

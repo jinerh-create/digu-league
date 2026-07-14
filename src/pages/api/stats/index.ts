@@ -21,7 +21,10 @@ export const GET: APIRoute = async ({ locals, url }) => {
       return b.total_points_scored - a.total_points_scored;
     });
     return new Response(JSON.stringify(stats), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=30, stale-while-revalidate=60',
+      },
     });
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), { status: 500 });

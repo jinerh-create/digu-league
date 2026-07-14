@@ -1,6 +1,6 @@
 ---
 interface Props {
-  activeTab: 'home' | 'leaderboard' | 'matches' | 'players';
+  activeTab: 'home' | 'leaderboard' | 'matches' | 'classic' | 'players';
 }
 const { activeTab } = Astro.props;
 ---
@@ -17,6 +17,10 @@ const { activeTab } = Astro.props;
   <a href="/matches" class={`nav-item ${activeTab === 'matches' ? 'active' : ''}`}>
     <span class="nav-icon">&#9654;</span>
     <span class="nav-label">Matches</span>
+  </a>
+  <a href="/classic" class={`nav-item ${activeTab === 'classic' ? 'active' : ''}`}>
+    <span class="nav-icon">&#9827;</span>
+    <span class="nav-label">Classic</span>
   </a>
   <a href="/players" class={`nav-item ${activeTab === 'players' ? 'active' : ''}`}>
     <span class="nav-icon">&#9829;</span>

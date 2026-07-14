@@ -23,17 +23,18 @@ export const GET: APIRoute = async ({ params, locals }) => {
         SELECT COALESCE(SUM(g.score_awarded),0) AS total
         FROM games g
         JOIN matches m ON g.match_id = m.id
-        WHERE m.player1_id = ?
+        WHERE m.is_classic = 0
+          AND (m.player1_id = ?
            OR m.player2_id = ?
            OR m.team1_player2_id = ?
-           OR m.team2_player2_id = ?
+           OR m.team2_player2_id = ?)
       `).bind(id, id, id, id).first<{ total: number }>(),
-      db.prepare('SELECT COUNT(*) AS cnt FROM games WHERE gin_player_id = ?').bind(id).first<{ cnt: number }>(),
+      db.prepare('SELECT COUNT(*) AS cnt FROM games g JOIN matches m ON m.id = g.match_id WHERE g.gin_player_id = ? AND m.is_classic = 0').bind(id).first<{ cnt: number }>(),
       // Hands where player's team scored 100+ in a single round
       db.prepare(`
         SELECT COUNT(*) AS cnt FROM games g
         JOIN matches m ON g.match_id = m.id
-        WHERE g.score_awarded >= 100
+        WHERE m.is_classic = 0 AND g.score_awarded >= 100
           AND (g.winner_id = ?
             OR (m.team1_player2_id = ? AND g.winner_id = m.player1_id)
             OR (m.team2_player2_id = ? AND g.winner_id = m.player2_id))
@@ -42,14 +43,14 @@ export const GET: APIRoute = async ({ params, locals }) => {
       db.prepare(`
         SELECT COUNT(*) AS cnt FROM (
           SELECT m.id FROM matches m
-          WHERE (m.player1_id = ? OR m.team1_player2_id = ?)
+          WHERE m.is_classic = 0 AND (m.player1_id = ? OR m.team1_player2_id = ?)
             AND m.winner_id = m.player1_id
             AND NOT EXISTS (
               SELECT 1 FROM games g WHERE g.match_id = m.id AND g.winner_id = m.player2_id
             )
           UNION ALL
           SELECT m.id FROM matches m
-          WHERE (m.player2_id = ? OR m.team2_player2_id = ?)
+          WHERE m.is_classic = 0 AND (m.player2_id = ? OR m.team2_player2_id = ?)
             AND m.winner_id = m.player2_id
             AND NOT EXISTS (
               SELECT 1 FROM games g WHERE g.match_id = m.id AND g.winner_id = m.player1_id

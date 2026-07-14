@@ -107,67 +107,6 @@ function WinBar({ rate, played }: { rate: number; played: number }) {
   );
 }
 
-function HallOfFameCard({ player, title, icon, color, stats }: {
-  player: PlayerStats;
-  title: string;
-  icon: string;
-  color: string;
-  stats: { label: string; value: string | number; color?: string }[];
-}) {
-  return (
-    <div style={{
-      flex: 1, minWidth: 0, position: 'relative',
-      borderRadius: 24, overflow: 'hidden',
-      background: `linear-gradient(160deg, ${color}14 0%, rgba(8,8,16,0.95) 60%)`,
-      border: `1px solid ${color}44`,
-      boxShadow: `0 0 0 1px ${color}18, 0 20px 60px ${color}22, 0 4px 16px rgba(0,0,0,0.6)`,
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      padding: '0 0 1.25rem',
-    }}>
-      {/* Animated top bar */}
-
-      {/* Rank badge */}
-      <img
-        src={`/badges/medal-${rank + 1}.svg`}
-        alt={MEDAL_LABEL[rank]}
-        style={{ width: isChamp ? 88 : 72, height: isChamp ? 88 : 72, filter: MEDAL_GLOW_FILTER[rank] }}
-      />
-
-      <Avatar name={s.name} avatar_b64={s.avatar_b64} size={isChamp ? 70 : 56} rank={rank + 1} />
-
-      <div>
-        <div style={{
-          fontSize: '0.5rem', fontWeight: 700, letterSpacing: '0.15em',
-          color, textTransform: 'uppercase', marginBottom: 2,
-        }}>{MEDAL_LABEL[rank]}</div>
-        <div style={{
-          fontFamily: "'Playfair Display', Georgia, serif",
-          fontSize: isChamp ? '1.125rem' : '1rem', fontWeight: 800,
-          color: '#fff', lineHeight: 1.2,
-        }}>{s.nickname || s.name}</div>
-        {s.nickname && <div style={{ fontSize: '0.75rem', color: 'rgba(221,209,191,0.6)', marginTop: 2 }}>{s.name}</div>}
-      </div>
-
-      {/* Stats grid */}
-      <div style={{
-        display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
-        gap: '0.25rem 0.5rem', width: '100%',
-        background: 'rgba(0,0,0,0.2)', borderRadius: 10, padding: '0.5rem 0.375rem',
-      }}>
-        {[
-          { label: 'PTS', value: s.league_points, color },
-          { label: 'WIN%', value: `${s.win_rate}%`, color: s.win_rate >= 50 ? '#638D6F' : '#DDD1BF' },
-          { label: 'DIGU', value: s.gin_count, color: '#D4AF37' },
-        ].map(stat => (
-          <div key={stat.label}>
-            <div style={{ fontSize: '0.6rem', color: '#888', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{stat.label}</div>
-            <div style={{ fontSize: isChamp ? '1rem' : '0.875rem', fontWeight: 800, color: stat.color }}>{stat.value}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 async function generateHallOfFameImage(
   champion: PlayerStats | null,
@@ -301,12 +240,15 @@ async function generateRankingsImage(rows: PlayerStats[], label: string): Promis
   const HEADER_H = 108;
   const COL_H = 30;
   const ROW_H = 58;
-  const H = HEADER_H + COL_H + rows.length * ROW_H;
+  const QUAL_DIV_H = 28;
+  const hasQualDivider = rows.length > 5;
+  const H = HEADER_H + COL_H + rows.length * ROW_H + (hasQualDivider ? QUAL_DIV_H : 0);
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d')!;
   const MEDAL_COLORS = ['#D4AF37', '#A8A9AD', '#CD7F32'];
   const MEDAL_BG = ['rgba(212,175,55,0.13)', 'rgba(168,169,173,0.08)', 'rgba(205,127,50,0.09)'];
+  const GOLD = '#D4AF37';
   const COL = { rank: 32, avatar: 64, name: 90, gp: 332, w: 390, l: 446, digu: 504, pts: 562, wr: 638 };
   ctx.fillStyle = '#0e0e12';
   ctx.fillRect(0, 0, W, H);
@@ -331,13 +273,18 @@ async function generateRankingsImage(rows: PlayerStats[], label: string): Promis
     ctx.fillText(l, x, HEADER_H + 20);
   }
   rows.forEach((s, i) => {
-    const y = HEADER_H + COL_H + i * ROW_H;
+    // Rows below the top-5 qualification divider are pushed down by its height
+    const y = HEADER_H + COL_H + i * ROW_H + (hasQualDivider && i >= 5 ? QUAL_DIV_H : 0);
     const cy = y + ROW_H / 2;
     const isTop3 = i < 3;
+    const isQual = i < 5;
+    const isQualNonMedal = isQual && !isTop3;
     const isRel = rows.length >= 3 && i >= rows.length - 2;
     const isRelStart = rows.length >= 3 && i === rows.length - 2;
-    ctx.fillStyle = isTop3 ? MEDAL_BG[i] : isRel ? 'rgba(200,16,46,0.10)' : i % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent';
+    ctx.fillStyle = isTop3 ? MEDAL_BG[i] : isQualNonMedal ? 'rgba(212,175,55,0.09)' : isRel ? 'rgba(200,16,46,0.10)' : i % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent';
     ctx.fillRect(0, y, W, ROW_H);
+    // Gold qualifier accent bar for top-5; top-3 keep their medal-coloured bar
+    if (isQualNonMedal) { ctx.fillStyle = GOLD; ctx.fillRect(0, y, 3, ROW_H); }
     if (isTop3) { ctx.fillStyle = MEDAL_COLORS[i]; ctx.fillRect(0, y, 3, ROW_H); }
     if (isRelStart) {
       ctx.strokeStyle = 'rgba(200,16,46,0.5)'; ctx.setLineDash([4, 3]); ctx.lineWidth = 1;
@@ -383,6 +330,88 @@ async function generateRankingsImage(rows: PlayerStats[], label: string): Promis
     ctx.font = '700 13px system-ui, sans-serif';
     ctx.fillText(s.matches_played > 0 ? `${s.win_rate}%` : '—', COL.wr, cy + 5);
   });
+  // OC Champions League qualification divider — spans the gap after the 5th player row
+  if (hasQualDivider) {
+    const dy = HEADER_H + COL_H + 5 * ROW_H;
+    ctx.fillStyle = 'rgba(212,175,55,0.12)';
+    ctx.fillRect(0, dy, W, QUAL_DIV_H);
+    ctx.strokeStyle = 'rgba(212,175,55,0.7)'; ctx.setLineDash([5, 3]); ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, dy); ctx.lineTo(W, dy); ctx.stroke(); ctx.setLineDash([]);
+    ctx.textAlign = 'center'; ctx.fillStyle = GOLD;
+    ctx.font = '700 11px system-ui, sans-serif';
+    (ctx as unknown as { letterSpacing: string }).letterSpacing = '2px';
+    ctx.fillText('🏆 OC CHAMPIONS LEAGUE QUALIFIERS', W / 2, dy + QUAL_DIV_H / 2 + 4);
+    (ctx as unknown as { letterSpacing: string }).letterSpacing = '0px';
+  }
+  return new Promise(res => canvas.toBlob(b => res(b!), 'image/png'));
+}
+
+async function generateTeamStandingsImage(rows: TeamStats[], label: string): Promise<Blob> {
+  const W = 680;
+  const HEADER_H = 108;
+  const COL_H = 30;
+  const ROW_H = 58;
+  const H = HEADER_H + COL_H + rows.length * ROW_H;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d')!;
+  const MEDAL_COLORS = ['#D4AF37', '#A8A9AD', '#CD7F32'];
+  const MEDAL_BG = ['rgba(212,175,55,0.13)', 'rgba(168,169,173,0.08)', 'rgba(205,127,50,0.09)'];
+  const COL = { rank: 32, name: 72, pts: 380, gp: 448, w: 512, d: 568, l: 632 };
+  ctx.fillStyle = '#0e0e12';
+  ctx.fillRect(0, 0, W, H);
+  const hg = ctx.createLinearGradient(0, 0, W, HEADER_H);
+  hg.addColorStop(0, '#192b1c'); hg.addColorStop(0.5, '#0d1510'); hg.addColorStop(1, '#192b1c');
+  ctx.fillStyle = hg; ctx.fillRect(0, 0, W, HEADER_H);
+  const topBar = ctx.createLinearGradient(0, 0, W, 0);
+  topBar.addColorStop(0, 'transparent'); topBar.addColorStop(0.25, '#D4AF37');
+  topBar.addColorStop(0.75, '#D4AF37'); topBar.addColorStop(1, 'transparent');
+  ctx.fillStyle = topBar; ctx.fillRect(0, 0, W, 3);
+  ctx.textAlign = 'center'; ctx.fillStyle = '#D4AF37';
+  ctx.font = 'bold 28px system-ui, sans-serif'; ctx.fillText('DIGU LEAGUE', W / 2, 44);
+  ctx.fillStyle = '#DDD1BF'; ctx.font = '600 14px system-ui, sans-serif';
+  ctx.fillText(`Team Standings · ${label}`, W / 2, 68);
+  ctx.strokeStyle = '#D4AF37'; ctx.globalAlpha = 0.3; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(60, 84); ctx.lineTo(W - 60, 84); ctx.stroke(); ctx.globalAlpha = 1;
+  ctx.fillStyle = 'rgba(255,255,255,0.04)'; ctx.fillRect(0, HEADER_H, W, COL_H);
+  ctx.fillStyle = '#666'; ctx.font = '700 10px system-ui, sans-serif';
+  ctx.textAlign = 'left'; ctx.fillText('TEAM', COL.name, HEADER_H + 20);
+  ctx.textAlign = 'center';
+  for (const [l, x] of [['PTS', COL.pts], ['GP', COL.gp], ['W', COL.w], ['D', COL.d], ['L', COL.l]] as [string, number][]) {
+    ctx.fillText(l, x, HEADER_H + 20);
+  }
+  rows.forEach((t, i) => {
+    const y = HEADER_H + COL_H + i * ROW_H;
+    const cy = y + ROW_H / 2;
+    const isTop3 = i < 3;
+    ctx.fillStyle = isTop3 ? MEDAL_BG[i] : i % 2 === 0 ? 'rgba(255,255,255,0.015)' : 'transparent';
+    ctx.fillRect(0, y, W, ROW_H);
+    if (isTop3) { ctx.fillStyle = MEDAL_COLORS[i]; ctx.fillRect(0, y, 3, ROW_H); }
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, y + ROW_H - 1); ctx.lineTo(W, y + ROW_H - 1); ctx.stroke();
+    ctx.textAlign = 'center';
+    if (isTop3) {
+      ctx.beginPath(); ctx.arc(COL.rank, cy, 15, 0, Math.PI * 2);
+      ctx.fillStyle = MEDAL_COLORS[i] + '33'; ctx.fill();
+      ctx.strokeStyle = MEDAL_COLORS[i]; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = MEDAL_COLORS[i]; ctx.font = 'bold 14px system-ui, sans-serif';
+      ctx.fillText(String(i + 1), COL.rank, cy + 5);
+    } else {
+      ctx.fillStyle = '#555'; ctx.font = '700 12px system-ui, sans-serif';
+      ctx.fillText(String(i + 1), COL.rank, cy + 4);
+    }
+    ctx.textAlign = 'left'; ctx.fillStyle = isTop3 ? '#ffffff' : '#DDD1BF';
+    ctx.font = isTop3 ? '700 15px system-ui, sans-serif' : '600 14px system-ui, sans-serif';
+    ctx.fillText(t.team_name, COL.name, cy + 5);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#D4AF37'; ctx.font = isTop3 ? 'bold 16px system-ui, sans-serif' : 'bold 14px system-ui, sans-serif';
+    ctx.fillText(String(t.league_points), COL.pts, cy + 5);
+    ctx.fillStyle = '#aaa'; ctx.font = '700 13px system-ui, sans-serif';
+    ctx.fillText(String(t.matches_played), COL.gp, cy + 5);
+    ctx.fillStyle = '#638D6F'; ctx.fillText(String(t.matches_won), COL.w, cy + 5);
+    ctx.fillStyle = '#aaa'; ctx.fillText(String(t.matches_drawn), COL.d, cy + 5);
+    ctx.fillStyle = '#C8102E'; ctx.fillText(String(t.matches_lost), COL.l, cy + 5);
+  });
   return new Promise(res => canvas.toBlob(b => res(b!), 'image/png'));
 }
 
@@ -420,22 +449,21 @@ export default function LeaderboardTable() {
     if (tab === 'players') {
       fetch(buildUrl('/api/stats'))
         .then(r => r.json())
-        .then((data: PlayerStats[]) => { setStats(data); setLoading(false); })
+        .then((data: PlayerStats[]) => { setStats(data); setAwardStats(data); setLoading(false); })
         .catch(() => setLoading(false));
     } else {
-      fetch(buildUrl('/api/stats/teams'))
-        .then(r => r.json())
-        .then((data: TeamStats[]) => { setTeamStats(data); setLoading(false); })
+      Promise.all([
+        fetch(buildUrl('/api/stats/teams')).then(r => r.json()),
+        fetch(buildUrl('/api/stats')).then(r => r.json()),
+      ])
+        .then(([teamData, playerData]: [TeamStats[], PlayerStats[]]) => {
+          setTeamStats(teamData);
+          setAwardStats(playerData);
+          setLoading(false);
+        })
         .catch(() => setLoading(false));
     }
   }, [tab, month, season]);
-
-  useEffect(() => {
-    fetch(buildUrl('/api/stats'))
-      .then(r => r.json())
-      .then((data: PlayerStats[]) => setAwardStats(data))
-      .catch(() => {});
-  }, [month, season]);
 
   async function handleStartSeason() {
     setSavingSeason(true);
@@ -468,6 +496,23 @@ export default function LeaderboardTable() {
     } finally { setSharing(false); }
   }
 
+  async function handleShareTeams() {
+    if (!teamStats.length) return;
+    setSharing(true);
+    try {
+      const label = month ? monthOptions.find(o => o.value === month)?.label ?? 'All Time' : 'All Time';
+      const blob = await generateTeamStandingsImage(teamStats, label);
+      const file = new File([blob], 'digu-league-team-standings.png', { type: 'image/png' });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'Digu League Team Standings' });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'digu-league-team-standings.png'; a.click();
+        URL.revokeObjectURL(url);
+      }
+    } finally { setSharing(false); }
+  }
+
   function handleSort(key: SortKey) {
     if (key === sortKey) setSortDesc(d => !d);
     else { setSortKey(key); setSortDesc(true); }
@@ -489,8 +534,6 @@ export default function LeaderboardTable() {
     ? hasPlayed.reduce((best, s) => s.gin_count > best.gin_count ? s : best, hasPlayed[0])
     : null;
 
-  const top3 = sorted.slice(0, 3);
-
   return (
     <div>
       {/* ── Filter bar ───────────────────────────────────────────── */}
@@ -511,6 +554,11 @@ export default function LeaderboardTable() {
           </button>
           {tab === 'players' && sorted.length > 0 && (
             <button className="pill-btn green-btn" onClick={handleShare} disabled={sharing}>
+              {sharing ? '…' : '📤 Share'}
+            </button>
+          )}
+          {tab === 'teams' && teamStats.length > 0 && (
+            <button className="pill-btn green-btn" onClick={handleShareTeams} disabled={sharing}>
               {sharing ? '…' : '📤 Share'}
             </button>
           )}
@@ -696,6 +744,11 @@ export default function LeaderboardTable() {
                   ))()}
                 </div>
               );})()} 
+              {/* ── CL qualification legend ─────────────────────────── */}
+              <div className="cl-legend">
+                <span className="zk" title="The top 5 qualify for next month's OC Champions League"><i className="zk-dot" style={{ background: 'var(--gold)' }} /> Champions League — top 5</span>
+                <span className="zk" title="Bottom 2 — relegation zone"><i className="zk-dot" style={{ background: '#FF4A6A' }} /> Relegation zone</span>
+              </div>
               {/* ── Full leaderboard table ──────────────────────────── */}
               <div className="lb-table-wrap">
                 <table className="lb-table">
@@ -715,6 +768,8 @@ export default function LeaderboardTable() {
                   <tbody>
                     {sorted.map((s, i) => {
                       const isTop3 = i < 3;
+                      const isCL = i < 5;
+                      const isCLStart = sorted.length > 5 && i === 4;
                       const isRel = sorted.length >= 3 && i >= sorted.length - 2;
                       const isRelStart = sorted.length >= 3 && i === sorted.length - 2;
                       return (
@@ -726,7 +781,7 @@ export default function LeaderboardTable() {
                               </td>
                             </tr>
                           )}
-                          <tr key={s.player_id} className={`lb-row ${isTop3 ? `top-${i+1}` : ''} ${isRel ? 'rel-row' : ''}`}>
+                          <tr key={s.player_id} className={`lb-row ${isTop3 ? `top-${i+1}` : ''} ${isCL ? 'cl-qualify' : ''} ${isRel ? 'rel-row' : ''}`}>
                             <td className="rank-cell">
                               {isTop3 ? (
                                 <div className="rank-medal" style={{ borderColor: MEDAL_COLOR[i], color: MEDAL_COLOR[i], boxShadow: `0 0 10px ${MEDAL_COLOR[i]}44` }}>
@@ -742,7 +797,9 @@ export default function LeaderboardTable() {
                               <a href={`/players/${s.player_id}`} className="player-cell">
                                 <Avatar name={s.name} avatar_b64={s.avatar_b64} size={34} rank={isTop3 ? i + 1 : undefined} />
                                 <div>
-                                  <div className="player-name">{s.nickname || s.name}</div>
+                                  <div className="player-name">
+                                    {s.nickname || s.name}
+                                  </div>
                                   <div className="player-nick">{s.name}</div>
                                 </div>
                               </a>
@@ -758,6 +815,13 @@ export default function LeaderboardTable() {
                               <WinBar rate={s.win_rate} played={s.matches_played} />
                             </td>
                           </tr>
+                          {isCLStart && (
+                            <tr key="cl-div" className="cl-divider-row">
+                              <td colSpan={9}>
+                                <div className="cl-label">▲ OC Champions League Qualifiers</div>
+                              </td>
+                            </tr>
+                          )}
                         </>
                       );
                     })}
@@ -956,6 +1020,36 @@ export default function LeaderboardTable() {
         .stat-val.gold { color: var(--gold); }
         .stat-val.pts { color: var(--gold); font-size: 1rem; }
         .active-col .stat-val { color: var(--cream) !important; }
+
+        /* Champions League qualification (top 5) */
+        .cl-legend {
+          display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+          margin: 0 0 0.625rem;
+          font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.02em;
+          color: var(--text-secondary);
+        }
+        .zk { display: inline-flex; align-items: center; gap: 0.35rem; }
+        .zk-dot { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+        /* Champions League qualifier rows — uniform light gold tint (like relegation rows are tinted red) */
+        .cl-qualify td { background: rgba(212,175,55,0.11); }
+        .cl-qualify:hover td { background: rgba(212,175,55,0.16); }
+        .cl-qualify td:first-child { border-left: 2px solid rgba(212,175,55,0.6); }
+        .cl-badge {
+          display: inline-block; margin-left: 0.375rem; vertical-align: middle;
+          font-size: 0.5625rem; font-weight: 800; letter-spacing: 0.06em;
+          color: var(--gold); background: rgba(212,175,55,0.14);
+          border: 1px solid rgba(212,175,55,0.45); border-radius: 20px;
+          padding: 1px 6px; white-space: nowrap;
+        }
+        .cl-divider-row td { padding: 0 !important; border: none !important; }
+        .cl-label {
+          font-size: 0.625rem; font-weight: 700; letter-spacing: 0.12em;
+          text-transform: uppercase; color: var(--gold);
+          padding: 0.375rem 0.75rem;
+          background: rgba(212,175,55,0.09);
+          border-top: 1px solid rgba(212,175,55,0.4);
+          border-bottom: 1px solid rgba(212,175,55,0.4);
+        }
 
         /* Relegation */
         .rel-divider-row td { padding: 0 !important; border: none !important; }

@@ -37,12 +37,3 @@ export function calculateHand(
   };
 }
 
-export function previewScore(
-  knockerDeadwood: number,
-  defenderDeadwood: number,
-  isGin: boolean,
-  settings: LeagueSettings
-): { score: number; isUndercut: boolean; winner: 'knocker' | 'defender' } {
-  const result = calculateHand(knockerDeadwood, defenderDeadwood, isGin, settings);
-  return result;
-}

@@ -51,7 +51,7 @@ function side2(m: Match) {
 
 type Tab = 'all' | 'single' | 'team';
 
-export default function MatchList() {
+export default function MatchList({ source = '/api/matches', newHref = '/new-match' }: { source?: string; newHref?: string } = {}) {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>('all');
@@ -63,11 +63,11 @@ export default function MatchList() {
   const [commentDraft, setCommentDraft] = useState('');
 
   useEffect(() => {
-    fetch('/api/matches')
+    fetch(source)
       .then(r => r.json())
-      .then((data: Match[]) => { setMatches(data); setLoading(false); })
+      .then((data: Match[]) => { setMatches(Array.isArray(data) ? data : []); setLoading(false); })
       .catch(() => setLoading(false));
-  }, []);
+  }, [source]);
 
   async function handleSaveComment(matchId: string) {
     await fetch(`/api/matches/${matchId}`, {
@@ -136,7 +136,7 @@ export default function MatchList() {
       {filtered.length === 0 && (
         <div className="empty-state">
           <p>No {tab !== 'all' ? tab + ' ' : ''}matches yet.</p>
-          <a href="/new-match" className="btn btn-primary" style={{ marginTop: '1rem', display: 'inline-flex' }}>Start Match</a>
+          <a href={newHref} className="btn btn-primary" style={{ marginTop: '1rem', display: 'inline-flex' }}>Start Match</a>
         </div>
       )}
 

@@ -20,6 +20,7 @@ export const GET: APIRoute = async ({ locals }) => {
         FROM games g
         JOIN matches m ON g.match_id = m.id
         JOIN players p ON p.id = g.winner_id
+        WHERE m.is_classic = 0
         ORDER BY g.score_awarded DESC LIMIT 1
       `).first<any>(),
 
@@ -30,7 +31,7 @@ export const GET: APIRoute = async ({ locals }) => {
         FROM games g
         JOIN matches m ON g.match_id = m.id
         JOIN players p ON p.id = g.gin_player_id
-        WHERE g.gin_player_id IS NOT NULL
+        WHERE g.gin_player_id IS NOT NULL AND m.is_classic = 0
         GROUP BY g.match_id, g.gin_player_id
         ORDER BY cnt DESC LIMIT 1
       `).first<any>(),
@@ -42,6 +43,7 @@ export const GET: APIRoute = async ({ locals }) => {
         FROM games g
         JOIN matches m ON g.match_id = m.id
         JOIN players p ON p.id = g.winner_id
+        WHERE m.is_classic = 0
         GROUP BY g.match_id, g.winner_id
         ORDER BY total DESC LIMIT 1
       `).first<any>(),
@@ -53,7 +55,7 @@ export const GET: APIRoute = async ({ locals }) => {
         FROM players p
         JOIN matches m ON m.player1_id = p.id OR m.player2_id = p.id
           OR m.team1_player2_id = p.id OR m.team2_player2_id = p.id
-        WHERE m.completed_at IS NOT NULL
+        WHERE m.completed_at IS NOT NULL AND m.is_classic = 0
         GROUP BY p.id ORDER BY cnt DESC LIMIT 1
       `).first<any>(),
 
@@ -70,7 +72,7 @@ export const GET: APIRoute = async ({ locals }) => {
         JOIN games g ON g.match_id = m.id
         JOIN players p1 ON p1.id = m.player1_id
         JOIN players p2 ON p2.id = m.player2_id
-        WHERE m.completed_at IS NOT NULL
+        WHERE m.completed_at IS NOT NULL AND m.is_classic = 0
         GROUP BY m.id
         ORDER BY ABS(
           SUM(CASE WHEN g.winner_id = m.player1_id THEN g.score_awarded ELSE 0 END) -
@@ -85,7 +87,12 @@ export const GET: APIRoute = async ({ locals }) => {
       highestMatchScore,
       mostMatches,
       biggestWin,
-    }), { headers: { 'Content-Type': 'application/json' } });
+    }), {
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=30, stale-while-revalidate=60',
+      },
+    });
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), { status: 500 });
   }

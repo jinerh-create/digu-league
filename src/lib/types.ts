@@ -6,6 +6,7 @@ export interface Player {
   joined_at: string;
   active: number;
   trophies_json: string; // JSON array of trophy objects
+  is_guest: number; // 1 = one-off guest for a classic match (excluded from league)
 }
 
 export interface Match {
@@ -24,6 +25,7 @@ export interface Match {
   team1_player2_id: string | null;
   team2_player2_id: string | null;
   max_rounds: number; // 0 = score-based, >0 = rounds-based
+  is_classic: number; // 1 = casual classic match (excluded from all league stats)
   // joined fields
   player1_name?: string;
   player2_name?: string;

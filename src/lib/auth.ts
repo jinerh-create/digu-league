@@ -1,7 +1,7 @@
 export type UserRole = 'admin' | 'player';
 
 const COOKIE_NAME = 'dl_session';
-const COOKIE_MAX_AGE = 60 * 60 * 24; // 24 hours
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 60; // 60 days — stay logged in
 
 async function hmacSign(secret: string, value: string): Promise<string> {
   const enc = new TextEncoder();
@@ -25,7 +25,7 @@ export async function createSessionCookie(secret: string, role: UserRole = 'admi
   const payload = `dl_auth:${role}:${Date.now()}`;
   const sig = await hmacSign(secret, payload);
   const token = `${btoa(payload)}.${sig}`;
-  return `${COOKIE_NAME}=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${COOKIE_MAX_AGE}`;
+  return `${COOKIE_NAME}=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${COOKIE_MAX_AGE}`;
 }
 
 export async function verifySession(
@@ -57,5 +57,5 @@ export async function verifySession(
 }
 
 export function clearSessionCookie(): string {
-  return `${COOKIE_NAME}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0`;
+  return `${COOKIE_NAME}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`;
 }

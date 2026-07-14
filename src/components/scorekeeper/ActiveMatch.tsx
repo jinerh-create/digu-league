@@ -768,7 +768,7 @@ export default function ActiveMatch({ matchId, isAdmin = false, isAuthed = false
                 <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, cursor: 'pointer', paddingBottom: '0.5rem', userSelect: 'none' }}>
                   <span style={{ fontSize: '0.625rem', color: 'var(--text-muted)' }}>DIGU?</span>
                   <input type="checkbox" checked={isGin} onChange={e => setIsGin(e.target.checked)} style={{ width: 20, height: 20 }} />
-                  <span style={{ fontSize: '0.875rem', color: 'var(--gold)' }}>â˜…</span>
+                  <span style={{ fontSize: '0.875rem', color: 'var(--gold)' }}>★</span>
                 </label>
               </div>
             </div>
@@ -778,7 +778,7 @@ export default function ActiveMatch({ matchId, isAdmin = false, isAuthed = false
 
           <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.875rem' }}>
             <button type="submit" className="btn btn-felt btn-block" disabled={submitting} style={{ flex: 2 }}>
-              {submitting ? 'Savingâ€¦' : isRoundsMode
+              {submitting ? 'Saving…' : isRoundsMode
                 ? `+ Add Round ${match.games.length + 1} of ${match.max_rounds}`
                 : `+ Add Round ${match.games.length + 1}`}
             </button>

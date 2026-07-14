@@ -167,6 +167,18 @@ function TrophyCase({ trophiesJson }: { trophiesJson: string | undefined | null 
 
   if (trophies.length === 0) return null;
 
+  // Group by type into columns: Champion (1st), Digu King (2nd), then any others.
+  const isKing = (t: Trophy) => /digu[\s-]*king/i.test(t.id || '') || /digu\s*king/i.test(t.name || '');
+  const isChamp = (t: Trophy) => !isKing(t) && (t.image.includes('champion') || t.image.includes('trophy') || t.image.includes('clear') || /champion/i.test(t.name || ''));
+  const champions = trophies.filter(isChamp);
+  const kings = trophies.filter(isKing);
+  const others = trophies.filter((t) => !isChamp(t) && !isKing(t));
+  const columns = [
+    { key: 'champ', items: champions },
+    { key: 'king', items: kings },
+    { key: 'other', items: others },
+  ].filter((c) => c.items.length > 0);
+
   return (
     <>
       <div style={{
@@ -182,55 +194,52 @@ function TrophyCase({ trophiesJson }: { trophiesJson: string | undefined | null 
         background: 'linear-gradient(135deg, rgba(212,175,55,0.06) 0%, transparent 60%)',
         border: '1px solid rgba(212,175,55,0.2)',
       }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2.5rem', justifyContent: 'center', alignItems: 'flex-end' }}>
-          {trophies.map((t) => (
-            <div key={t.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-              {/* Trophy display — circular for coins, canvas for champion */}
-              <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                {(t.image.includes('champion') || t.image.includes('trophy') || t.image.includes('clear')) ? (
-                  /* Champion trophy: PNG already has transparent background */
-                  <img
-                    src={t.image}
-                    alt={t.name}
-                    style={{
-                      width: 210, height: 'auto',
-                      display: 'block', position: 'relative', zIndex: 1,
-                      filter: 'drop-shadow(0 0 20px rgba(212,175,55,0.75)) drop-shadow(0 0 40px rgba(212,175,55,0.35)) drop-shadow(0 10px 28px rgba(0,0,0,0.7))',
-                    }}
-                  />
-                ) : (
-                  /* Coins: circular frame clips square background */
-                  <div style={{
-                    width: 160, height: 160, borderRadius: '50%',
-                    overflow: 'hidden', position: 'relative', flexShrink: 0,
-                    boxShadow: '0 0 0 3px #D4AF37, 0 0 0 6px rgba(212,175,55,0.2), 0 0 40px rgba(212,175,55,0.45), 0 8px 32px rgba(0,0,0,0.6)',
-                  }}>
-                    <img src={t.image} alt={t.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.6rem' }}>
+          {columns.map((col) => (
+            <div key={col.key} style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', justifyContent: 'center', alignItems: 'flex-start' }}>
+              {col.items.map((t) => (
+                <div key={t.id} title={t.desc || t.name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', width: 132 }}>
+                  {/* Trophy display — circular for coins, transparent PNG for champion */}
+                  <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    {(t.image.includes('champion') || t.image.includes('trophy') || t.image.includes('clear')) ? (
+                      <img
+                        src={t.image}
+                        alt={t.name}
+                        style={{
+                          width: 118, height: 'auto',
+                          display: 'block', position: 'relative', zIndex: 1,
+                          filter: 'drop-shadow(0 0 9px rgba(212,175,55,0.6)) drop-shadow(0 0 18px rgba(212,175,55,0.28)) drop-shadow(0 6px 14px rgba(0,0,0,0.6))',
+                        }}
+                      />
+                    ) : (
+                      <div style={{
+                        width: 100, height: 100, borderRadius: '50%',
+                        overflow: 'hidden', position: 'relative', flexShrink: 0,
+                        boxShadow: '0 0 0 3px #D4AF37, 0 0 0 5px rgba(212,175,55,0.2), 0 0 18px rgba(212,175,55,0.4), 0 6px 18px rgba(0,0,0,0.6)',
+                      }}>
+                        <img src={t.image} alt={t.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              {/* Labels */}
-              <div style={{ textAlign: 'center' }}>
-                <div style={{
-                  fontSize: '1rem', fontWeight: 900, color: '#D4AF37',
-                  marginBottom: '0.375rem', lineHeight: 1.2,
-                  textShadow: '0 0 20px rgba(212,175,55,0.5)',
-                }}>
-                  {t.name}
-                </div>
-                <div style={{
-                  fontSize: '0.6875rem', fontWeight: 700, color: '#D4AF37',
-                  background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.4)',
-                  borderRadius: 20, padding: '4px 14px', display: 'inline-block', marginBottom: '0.375rem',
-                }}>
-                  {t.period}
-                </div>
-                {t.desc && (
-                  <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 600, lineHeight: 1.4 }}>
-                    {t.desc}
+                  {/* Labels */}
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{
+                      fontSize: '0.85rem', fontWeight: 800, color: '#D4AF37',
+                      marginBottom: '0.3rem', lineHeight: 1.2,
+                      textShadow: '0 0 10px rgba(212,175,55,0.5)',
+                    }}>
+                      {t.name}
+                    </div>
+                    <div style={{
+                      fontSize: '0.62rem', fontWeight: 700, color: '#D4AF37',
+                      background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.4)',
+                      borderRadius: 20, padding: '3px 10px', display: 'inline-block',
+                    }}>
+                      {t.period}
+                    </div>
                   </div>
-                )}
-              </div>
+                </div>
+              ))}
             </div>
           ))}
         </div>
@@ -425,6 +434,11 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
   }
 
   const level = getLevel(totalScore);
+  // League championships won → a gold star each (shown by the profile picture)
+  const champCount = (() => {
+    try { return (JSON.parse(player.trophies_json || '[]') || []).filter((t: any) => /champion/i.test(t?.name || '') || /champion/i.test(t?.id || '')).length; }
+    catch { return 0; }
+  })();
   const badges = buildBadges(totalScore, ginCount, maxWinStreak, perfectMatches, centuryHands, matches.length);
   const unlockedCount = badges.filter(b => b.unlocked).length;
   const cardsCollected = Object.values(CARD_THRESHOLDS).filter(t => totalScore >= t).length;
@@ -581,6 +595,18 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
               background: level.color, color: '#000', fontSize: '0.5rem', fontWeight: 900,
               padding: '1px 6px', borderRadius: 10, whiteSpace: 'nowrap', letterSpacing: '0.03em',
             }}>{level.icon} {level.name}</div>
+            {champCount > 0 && (
+              <div title={`${champCount}× League Champion`} style={{
+                position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)', zIndex: 5,
+                display: 'inline-flex', alignItems: 'center', gap: 1,
+                background: 'var(--card)', padding: '1px 6px', borderRadius: 10, boxShadow: '0 2px 7px rgba(0,0,0,0.35)',
+              }}>
+                {Array.from({ length: Math.min(champCount, 5) }).map((_, i) => (
+                  <span key={i} style={{ color: '#D4AF37', fontSize: '0.82rem', lineHeight: 1, filter: 'drop-shadow(0 0 4px rgba(212,175,55,0.85))' }}>★</span>
+                ))}
+                {champCount > 5 && <span style={{ color: '#D4AF37', fontSize: '0.68rem', fontWeight: 900, marginLeft: 1 }}>×{champCount}</span>}
+              </div>
+            )}
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>

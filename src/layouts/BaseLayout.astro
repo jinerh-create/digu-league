@@ -7,7 +7,7 @@ import '../styles/components.css';
 interface Props {
   title: string;
   description?: string;
-  activeTab?: 'home' | 'leaderboard' | 'matches' | 'players';
+  activeTab?: 'home' | 'leaderboard' | 'matches' | 'classic' | 'players';
 }
 
 const { title, description = 'Digu League — Gin Rummy Competition Tracker', activeTab = 'home' } = Astro.props;
