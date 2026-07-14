@@ -18,10 +18,6 @@ const { activeTab } = Astro.props;
     <span class="nav-icon">&#9654;</span>
     <span class="nav-label">Matches</span>
   </a>
-  <a href="/classic" class={`nav-item ${activeTab === 'classic' ? 'active' : ''}`}>
-    <span class="nav-icon">&#9827;</span>
-    <span class="nav-label">Classic</span>
-  </a>
   <a href="/players" class={`nav-item ${activeTab === 'players' ? 'active' : ''}`}>
     <span class="nav-icon">&#9829;</span>
     <span class="nav-label">Players</span>

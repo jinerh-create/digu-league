@@ -101,7 +101,7 @@ export default function ClassicMatchForm() {
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
       <div style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 10, padding: '0.75rem 0.875rem', fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
-        🎴 <strong>Classic match</strong> — a casual game with anyone. Type a new name for a guest, or pick an existing player. Kept in history but <strong>never counts toward any league</strong>.
+        🎴 <strong>Quick match</strong> — a casual game with anyone. Type a new name for a guest, or pick an existing player. Kept in history but <strong>never counts toward any league</strong>.
       </div>
 
       {/* Match type toggle */}
@@ -209,7 +209,7 @@ export default function ClassicMatchForm() {
       {error && <div className="error-message">{error}</div>}
 
       <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={submitting}>
-        {submitting ? 'Starting…' : '▶ Start Classic Match'}
+        {submitting ? 'Starting…' : '▶ Start Quick Match'}
       </button>
     </form>
   );

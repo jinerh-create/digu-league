@@ -49,10 +49,12 @@ function side2(m: Match) {
   return m.team2_player2_name ? `${p1} / ${p2}` : p1;
 }
 
-type Tab = 'all' | 'single' | 'team';
+type Tab = 'all' | 'single' | 'team' | 'classic';
 
-export default function MatchList({ source = '/api/matches', newHref = '/new-match' }: { source?: string; newHref?: string } = {}) {
+export default function MatchList() {
   const [matches, setMatches] = useState<Match[]>([]);
+  const [classicMatches, setClassicMatches] = useState<Match[]>([]);
+  const [canCreate, setCanCreate] = useState(false);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>('all');
   const [editingDate, setEditingDate] = useState<string | null>(null);
@@ -63,11 +65,19 @@ export default function MatchList({ source = '/api/matches', newHref = '/new-mat
   const [commentDraft, setCommentDraft] = useState('');
 
   useEffect(() => {
-    fetch(source)
+    fetch('/api/matches')
       .then(r => r.json())
       .then((data: Match[]) => { setMatches(Array.isArray(data) ? data : []); setLoading(false); })
       .catch(() => setLoading(false));
-  }, [source]);
+    fetch('/api/classic')
+      .then(r => r.json())
+      .then((data: Match[]) => setClassicMatches(Array.isArray(data) ? data : []))
+      .catch(() => {});
+    // reveal "New" buttons only for logged-in users (empty POST → 400 authed, 401 not)
+    fetch('/api/matches', { method: 'POST', body: '{}', headers: { 'Content-Type': 'application/json' } })
+      .then(r => { if (r.status !== 401) setCanCreate(true); })
+      .catch(() => {});
+  }, []);
 
   async function handleSaveComment(matchId: string) {
     await fetch(`/api/matches/${matchId}`, {
@@ -102,7 +112,10 @@ export default function MatchList({ source = '/api/matches', newHref = '/new-mat
 
   if (loading) return <div className="loading">Loading matches…</div>;
 
-  const filtered = matches.filter(m => {
+  const isClassic = tab === 'classic';
+  const newHref = isClassic ? '/new-classic' : '/new-match';
+  const base = isClassic ? classicMatches : matches;
+  const filtered = base.filter(m => {
     if (tab === 'single') return !m.team1_player2_id;
     if (tab === 'team') return !!m.team1_player2_id;
     return true;
@@ -113,30 +126,38 @@ export default function MatchList({ source = '/api/matches', newHref = '/new-mat
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      {canCreate && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <a href={newHref} className="btn btn-primary" style={{ padding: '0.4rem 0.9rem', fontSize: '0.8125rem' }}>
+            + New {isClassic ? 'Quick Match' : 'Match'}
+          </a>
+        </div>
+      )}
+
       {/* Tabs */}
       <div style={{ display: 'flex', gap: '0.375rem', background: 'var(--card)', borderRadius: 8, padding: 4, border: '1px solid var(--border)' }}>
-        {(['all', 'single', 'team'] as Tab[]).map(t => (
+        {(['all', 'single', 'team', 'classic'] as Tab[]).map(t => (
           <button
             key={t}
             type="button"
             onClick={() => setTab(t)}
             style={{
               flex: 1, padding: '0.5rem', borderRadius: 6, border: 'none', cursor: 'pointer',
-              fontWeight: 700, fontSize: '0.8125rem', textTransform: 'capitalize',
-              background: tab === t ? 'var(--felt)' : 'transparent',
+              fontWeight: 700, fontSize: '0.8125rem',
+              background: tab === t ? (t === 'classic' ? '#7a5cff' : 'var(--felt)') : 'transparent',
               color: tab === t ? 'var(--cream)' : 'var(--text-muted)',
               transition: 'all 0.15s',
             }}
           >
-            {t === 'all' ? 'All' : t === 'single' ? 'Single' : 'Team'}
+            {t === 'all' ? 'All' : t === 'single' ? 'Single' : t === 'team' ? 'Team' : 'Quick'}
           </button>
         ))}
       </div>
 
       {filtered.length === 0 && (
         <div className="empty-state">
-          <p>No {tab !== 'all' ? tab + ' ' : ''}matches yet.</p>
-          <a href={newHref} className="btn btn-primary" style={{ marginTop: '1rem', display: 'inline-flex' }}>Start Match</a>
+          <p>No {isClassic ? 'quick ' : tab !== 'all' ? tab + ' ' : ''}matches yet.</p>
+          <a href={newHref} className="btn btn-primary" style={{ marginTop: '1rem', display: 'inline-flex' }}>Start {isClassic ? 'Quick ' : ''}Match</a>
         </div>
       )}
 

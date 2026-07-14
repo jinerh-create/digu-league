@@ -4,11 +4,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import ClassicMatchForm from '../components/matches/ClassicMatchForm';
 ---
 
-<BaseLayout title="New Classic Match" activeTab="classic">
+<BaseLayout title="New Quick Match" activeTab="matches">
   <div class="container">
     <div class="page-header" style="display:flex; align-items:center; gap: 0.75rem;">
-      <a href="/classic" class="back-btn">&larr;</a>
-      <h1>Classic Match</h1>
+      <a href="/matches" class="back-btn">&larr;</a>
+      <h1>Quick Match</h1>
     </div>
     <ClassicMatchForm client:load />
   </div>
