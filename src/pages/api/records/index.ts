@@ -1,5 +1,6 @@
 export const prerender = false;
 import type { APIRoute } from 'astro';
+import { getPlayerForm } from '../../../lib/db';
 
 function getDB(locals: Record<string, unknown>): D1Database {
   const runtime = locals.runtime as { env: { DB: D1Database } } | undefined;
@@ -81,12 +82,32 @@ export const GET: APIRoute = async ({ locals }) => {
       `).first<any>(),
     ]);
 
+    /* Streaks reuse getPlayerForm rather than re-deriving them: it already walks
+       every completed league match oldest→newest with the team-aware win rule
+       (winner_id is a SIDE marker — see db.ts). maxPlayers=0 would truncate, so
+       ask for the whole roster; a draw breaks a streak, matching Streak Emperor. */
+    const { series } = await getPlayerForm(db, 9999);
+    const bestStreak = series.reduce(
+      (a, p) => (p.bestWin > (a?.bestWin ?? 0) ? p : a),
+      null as (typeof series)[0] | null,
+    );
+    const worstStreak = series.reduce(
+      (a, p) => (p.worstLoss > (a?.worstLoss ?? 0) ? p : a),
+      null as (typeof series)[0] | null,
+    );
+
     return new Response(JSON.stringify({
       highestHand,
       mostDigu,
       highestMatchScore,
       mostMatches,
       biggestWin,
+      bestStreak: bestStreak && bestStreak.bestWin > 0
+        ? { name: bestStreak.name, streak: bestStreak.bestWin, played: bestStreak.played }
+        : null,
+      worstStreak: worstStreak && worstStreak.worstLoss > 0
+        ? { name: worstStreak.name, streak: worstStreak.worstLoss, played: worstStreak.played }
+        : null,
     }), {
       headers: {
         'Content-Type': 'application/json',

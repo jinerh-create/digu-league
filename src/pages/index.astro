@@ -1,8 +1,9 @@
 ---
 export const prerender = false;
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { getActiveMatch, getMatches, getActivePlayers, getTotalMatchCount, getTotalGamesCount } from '../lib/db';
+import { getActiveMatch, getMatches, getActivePlayers, getTotalMatchCount, getTotalGamesCount, getPlayerForm } from '../lib/db';
 import ScheduledMatches from '../components/scheduled/ScheduledMatches';
+import FormChart from '../components/home/FormChart.astro';
 import { verifySession } from '../lib/auth';
 
 const runtime = (Astro.locals as Record<string, unknown>).runtime as
@@ -15,6 +16,7 @@ let playerCount = 0;
 let matchCount = 0;
 let roundsCount = 0;
 let isAdmin = false;
+let form: Awaited<ReturnType<typeof getPlayerForm>> = { series: [], matches: 0 };
 
 const sessionSecret = runtime?.env?.SESSION_SECRET as string | undefined;
 if (sessionSecret) {
@@ -23,12 +25,22 @@ if (sessionSecret) {
 
 if (runtime?.env?.DB) {
   try {
-    activeMatch = await getActiveMatch(runtime.env.DB);
-    recentMatches = await getMatches(runtime.env.DB, 5);
-    const players = await getActivePlayers(runtime.env.DB);
+    // These were six serial round-trips; the page waits on the slowest, not the sum.
+    const DB = runtime.env.DB;
+    const [am, rm, players, mc, rc, fc] = await Promise.all([
+      getActiveMatch(DB),
+      getMatches(DB, 5),
+      getActivePlayers(DB),
+      getTotalMatchCount(DB),
+      getTotalGamesCount(DB),
+      getPlayerForm(DB),
+    ]);
+    activeMatch = am;
+    recentMatches = rm;
     playerCount = players.length;
-    matchCount = await getTotalMatchCount(runtime.env.DB);
-    roundsCount = await getTotalGamesCount(runtime.env.DB);
+    matchCount = mc;
+    roundsCount = rc;
+    form = fc;
   } catch {}
 }
 
@@ -93,6 +105,9 @@ function side2(m: typeof recentMatches[0]) {
         <span class="stat-label">Records</span>
       </a>
     </div>
+
+    <!-- Form Chart -->
+    <FormChart series={form.series} matches={form.matches} />
 
     <!-- Quick Actions -->
     {!activeMatch && (

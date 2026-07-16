@@ -642,3 +642,93 @@ export async function computeOCChampions(db: D1Database, month?: string): Promis
   const started = standings.some(s => s.matches_played > 0);
   return { month: monthKey, qualMonth, qualifiers, standings, started };
 }
+
+/* ── Form chart + streaks ──────────────────────────────────────────────────────
+   One cumulative line per player: +1 on a win, -1 on a loss, flat on a draw.
+
+   Two traps worth remembering (both cost real bugs elsewhere in this app):
+   1. `winner_id` is a SIDE marker, not a player. In a 2v2 the winner is always
+      recorded as player1_id or player2_id — never the partner. So a win is
+      `onTeam1 ? winner_id === player1_id : winner_id === player2_id`. Matching
+      `winner_id === playerId` silently undercounts every partner's team wins.
+   2. `is_classic = 1` matches are casual and excluded from every league stat.
+   A completed match with winner_id NULL is a draw. */
+
+export interface FormPoint { i: number; v: number; at: string; r: 'W' | 'L' | 'D'; }
+export interface PlayerForm {
+  id: string; name: string; points: FormPoint[];
+  played: number; won: number; lost: number; drawn: number; final: number;
+  bestWin: number; worstLoss: number; current: number; currentType: 'W' | 'L' | null;
+}
+
+export async function getPlayerForm(db: D1Database, maxPlayers = 8): Promise<{ series: PlayerForm[]; matches: number }> {
+  const res = await db
+    .prepare(
+      `SELECT m.id, m.player1_id, m.player2_id, m.team1_player2_id, m.team2_player2_id,
+              m.winner_id, m.started_at,
+              p1.name AS p1n, p1.nickname AS p1k,
+              p2.name AS p2n, p2.nickname AS p2k,
+              p3.name AS p3n, p3.nickname AS p3k,
+              p4.name AS p4n, p4.nickname AS p4k
+         FROM matches m
+         JOIN players p1 ON p1.id = m.player1_id
+         JOIN players p2 ON p2.id = m.player2_id
+         LEFT JOIN players p3 ON p3.id = m.team1_player2_id
+         LEFT JOIN players p4 ON p4.id = m.team2_player2_id
+        WHERE m.is_classic = 0 AND m.completed_at IS NOT NULL
+        ORDER BY m.started_at ASC`
+    )
+    .all<any>();
+
+  const rows = res.results || [];
+  const nickOf = (n: string | null, k: string | null) => k || (n ?? '').split(' ')[0] || (n ?? '');
+  const acc = new Map<string, PlayerForm>();
+  const touch = (id: string | null, name: string) => {
+    if (!id) return null;
+    let p = acc.get(id);
+    if (!p) {
+      p = { id, name, points: [], played: 0, won: 0, lost: 0, drawn: 0, final: 0,
+            bestWin: 0, worstLoss: 0, current: 0, currentType: null };
+      acc.set(id, p);
+    }
+    return p;
+  };
+
+  rows.forEach((m, idx) => {
+    const t1 = [touch(m.player1_id, nickOf(m.p1n, m.p1k)), touch(m.team1_player2_id, nickOf(m.p3n, m.p3k))];
+    const t2 = [touch(m.player2_id, nickOf(m.p2n, m.p2k)), touch(m.team2_player2_id, nickOf(m.p4n, m.p4k))];
+    const draw = !m.winner_id;
+    const t1Won = !draw && m.winner_id === m.player1_id;
+
+    const apply = (p: PlayerForm | null, won: boolean) => {
+      if (!p) return;
+      const r: FormPoint['r'] = draw ? 'D' : won ? 'W' : 'L';
+      p.played++;
+      if (r === 'W') { p.won++; p.final++; }
+      else if (r === 'L') { p.lost++; p.final--; }
+      else p.drawn++;
+
+      // streaks — a draw breaks both, matching the Streak Emperor badge rule
+      if (r === 'W') {
+        p.current = p.currentType === 'W' ? p.current + 1 : 1;
+        p.currentType = 'W';
+        p.bestWin = Math.max(p.bestWin, p.current);
+      } else if (r === 'L') {
+        p.current = p.currentType === 'L' ? p.current + 1 : 1;
+        p.currentType = 'L';
+        p.worstLoss = Math.max(p.worstLoss, p.current);
+      } else { p.current = 0; p.currentType = null; }
+
+      p.points.push({ i: idx + 1, v: p.final, at: m.started_at, r });
+    };
+    t1.forEach(p => apply(p, t1Won));
+    t2.forEach(p => apply(p, !draw && !t1Won));
+  });
+
+  const series = [...acc.values()]
+    .filter(p => p.played > 0)
+    .sort((a, b) => b.final - a.final || b.played - a.played)
+    .slice(0, maxPlayers);
+
+  return { series, matches: rows.length };
+}

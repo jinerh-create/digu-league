@@ -1,0 +1,148 @@
+---
+/* Form chart — one cumulative line per player. +1 on a win, −1 on a loss, flat on a draw.
+   Inline SVG, no chart library (the app has none, and this doesn't warrant one).
+   Renders server-side from D1; the only client JS is legend toggling + the hover readout. */
+import type { PlayerForm } from '../../lib/db';
+export interface Props { series: PlayerForm[]; matches: number; }
+const { series, matches } = Astro.props;
+
+/* Line-safe palette. Deliberately NOT the avatar palette used elsewhere
+   (PlayerList/ActiveMatch/PlayerProfile): those are dark fills like #2B4F37 that
+   disappear as thin strokes on --surface #0B0F1A, and their `charCodeAt(0) % 5`
+   index collides for any two players sharing a first initial. Assigned by sorted
+   index instead, so colours are stable and always distinct. */
+const COLORS = ['#00D47E', '#4D9FFF', '#FF4A6A', '#FFD700', '#B77BFF', '#FF9F45', '#2EE6D6', '#FF6FD8'];
+
+const W = 640, H = 232;
+const PAD = { t: 14, r: 12, b: 22, l: 30 };
+const iw = W - PAD.l - PAD.r, ih = H - PAD.t - PAD.b;
+
+const has = series.length > 0 && matches > 0;
+const xMax = Math.max(1, matches);
+/* Symmetric domain around 0 so the zero line sits where it means something. */
+const peak = Math.max(2, ...series.flatMap(p => p.points.map(pt => Math.abs(pt.v))));
+const yMin = -peak, yMax = peak;
+
+const X = (i: number) => PAD.l + (xMax === 1 ? iw / 2 : ((i - 1) / (xMax - 1)) * iw);
+const Y = (v: number) => PAD.t + ((yMax - v) / (yMax - yMin || 1)) * ih;
+
+/* A player only has points on matches they played, so lines legitimately have
+   gaps in x — we plot against real match number, which keeps every line on one
+   shared timeline rather than pretending everyone played every match. */
+const lines = series.map((p, k) => {
+  const pts = p.points.map(pt => [X(pt.i), Y(pt.v)] as const);
+  const d = pts.map((q, j) => `${j ? 'L' : 'M'}${q[0].toFixed(1)} ${q[1].toFixed(1)}`).join(' ');
+  return { p, d, color: COLORS[k % COLORS.length], last: pts[pts.length - 1] };
+});
+
+const ticks = [yMax, Math.round(yMax / 2), 0, -Math.round(yMax / 2), yMin]
+  .filter((v, i, a) => a.indexOf(v) === i);
+---
+
+<section class="form-card">
+  <div class="fc-head">
+    <div>
+      <h2>Form</h2>
+      <p class="fc-sub">Every win climbs, every loss drops · {matches} matches</p>
+    </div>
+    {has && <span class="fc-count">{series.length} players</span>}
+  </div>
+
+  {!has ? (
+    <div class="fc-empty">No completed matches yet — play one and the lines start moving.</div>
+  ) : (
+    <>
+      <div class="fc-wrap">
+        <svg viewBox={`0 0 ${W} ${H}`} class="fc-svg" role="img" aria-label="Cumulative win-loss form per player" preserveAspectRatio="none">
+          {ticks.map(v => (
+            <g>
+              <line x1={PAD.l} x2={W - PAD.r} y1={Y(v)} y2={Y(v)}
+                stroke={v === 0 ? 'rgba(212,175,55,.38)' : 'var(--border)'}
+                stroke-width={v === 0 ? 1.2 : 1}
+                stroke-dasharray={v === 0 ? '0' : '2 5'} vector-effect="non-scaling-stroke" />
+              <text x={PAD.l - 6} y={Y(v) + 3} class="fc-tick" text-anchor="end">{v > 0 ? `+${v}` : v}</text>
+            </g>
+          ))}
+          {lines.map(l => (
+            <path d={l.d} fill="none" stroke={l.color} stroke-width="2.25"
+              stroke-linecap="round" stroke-linejoin="round"
+              vector-effect="non-scaling-stroke" data-line={l.p.id} class="fc-line" />
+          ))}
+          {lines.map(l => l.last && (
+            <circle cx={l.last[0]} cy={l.last[1]} r="3.2" fill={l.color}
+              stroke="var(--card)" stroke-width="1.5" data-dot={l.p.id} class="fc-line" />
+          ))}
+        </svg>
+      </div>
+
+      <div class="fc-legend" id="fcLegend">
+        {lines.map(l => (
+          <button class="fc-chip on" data-toggle={l.p.id} type="button"
+            aria-pressed="true" title={`${l.p.name} · ${l.p.won}W ${l.p.lost}L${l.p.drawn ? ` ${l.p.drawn}D` : ''}`}>
+            <i style={`background:${l.color}`}></i>
+            <b>{l.p.name}</b>
+            <u class={l.p.final > 0 ? 'up' : l.p.final < 0 ? 'dn' : ''}>{l.p.final > 0 ? `+${l.p.final}` : l.p.final}</u>
+          </button>
+        ))}
+      </div>
+    </>
+  )}
+</section>
+
+<style>
+  .form-card {
+    background: var(--card);
+    border: 1.5px solid rgba(212,175,55,0.45);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 0 14px rgba(212,175,55,0.1);
+    padding: 0.9rem 0.85rem 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .fc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; margin-bottom: .5rem; }
+  .fc-head h2 { font-family: var(--font-heading); font-size: 1rem; margin: 0; color: var(--text-primary); letter-spacing: .02em; }
+  .fc-sub { font-size: .68rem; color: var(--text-muted); margin: .12rem 0 0; }
+  .fc-count { font-size: .62rem; color: #D4AF37; border: 1px solid rgba(212,175,55,.35); border-radius: 99px; padding: .16rem .45rem; white-space: nowrap; }
+  .fc-empty { text-align: center; color: var(--text-muted); font-size: .78rem; padding: 1.6rem .5rem; }
+
+  .fc-wrap { width: 100%; }
+  .fc-svg { width: 100%; height: 190px; display: block; overflow: visible; }
+  .fc-tick { fill: var(--text-muted); font-size: 9px; font-family: var(--font-mono); }
+  .fc-line { transition: opacity .18s; }
+  .fc-line.off { opacity: .1; }
+
+  .fc-legend { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .55rem; }
+  .fc-chip {
+    display: inline-flex; align-items: center; gap: .3rem;
+    background: var(--card-raised); border: 1px solid var(--border);
+    border-radius: 99px; padding: .22rem .5rem; cursor: pointer;
+    font-family: var(--font-body); transition: opacity .15s, border-color .15s;
+  }
+  .fc-chip i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .fc-chip b { font-size: .68rem; font-weight: 600; color: var(--text-primary); }
+  .fc-chip u { text-decoration: none; font-size: .62rem; font-family: var(--font-mono); color: var(--text-muted); }
+  .fc-chip u.up { color: var(--felt-light); } .fc-chip u.dn { color: var(--ember); }
+  .fc-chip:not(.on) { opacity: .38; }
+  .fc-chip:not(.on) b { color: var(--text-muted); }
+
+  @media (max-width: 480px) {
+    .fc-svg { height: 168px; }
+    .fc-chip b { font-size: .64rem; }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    var L = document.getElementById('fcLegend');
+    if (!L) return;
+    L.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-toggle]');
+      if (!b) return;
+      var id = b.getAttribute('data-toggle');
+      var on = b.classList.toggle('on');
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      document.querySelectorAll('[data-line="' + id + '"],[data-dot="' + id + '"]').forEach(function (el) {
+        el.classList.toggle('off', !on);
+      });
+    });
+  })();
+</script>

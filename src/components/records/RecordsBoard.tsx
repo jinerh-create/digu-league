@@ -18,7 +18,7 @@ export default function RecordsBoard() {
   if (loading) return <div className="loading">Loading records…</div>;
   if (!data) return null;
 
-  const { highestHand, mostDigu, highestMatchScore, mostMatches, biggestWin } = data;
+  const { highestHand, mostDigu, highestMatchScore, mostMatches, biggestWin, bestStreak, worstStreak } = data;
 
   const cards: RecordCard[] = [
     {
@@ -56,6 +56,18 @@ export default function RecordsBoard() {
         ? `${nick(biggestWin.p1_name, biggestWin.p1_nick)} vs ${nick(biggestWin.p2_name, biggestWin.p2_nick)} · ${fmt(biggestWin.started_at)}`
         : '',
       matchId: biggestWin?.match_id,
+    },
+    {
+      icon: '🔥',
+      title: 'Best Winning Streak',
+      value: bestStreak ? `${bestStreak.streak} in a row` : '—',
+      sub: bestStreak ? `${bestStreak.name} · ${bestStreak.played} matches played` : '',
+    },
+    {
+      icon: '🥶',
+      title: 'Worst Losing Streak',
+      value: worstStreak ? `${worstStreak.streak} in a row` : '—',
+      sub: worstStreak ? `${worstStreak.name} · ${worstStreak.played} matches played` : '',
     },
   ];
 
