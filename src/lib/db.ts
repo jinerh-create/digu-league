@@ -661,7 +661,22 @@ export interface PlayerForm {
   bestWin: number; worstLoss: number; current: number; currentType: 'W' | 'L' | null;
 }
 
-export async function getPlayerForm(db: D1Database, maxPlayers = 8): Promise<{ series: PlayerForm[]; matches: number }> {
+export async function getPlayerForm(
+  db: D1Database,
+  maxPlayers = 12,
+  opts: { activeOnly?: boolean; minPlayed?: number } = {},
+): Promise<{ series: PlayerForm[]; matches: number }> {
+  const { activeOnly = true, minPlayed = 1 } = opts;
+  /* Which players may appear as a line. Matches still count in full — an active
+     player's win over a since-retired one is real — we just don't draw a line
+     for inactive players or one-off guests. */
+  const eligible = activeOnly
+    ? new Set(
+        (await db.prepare(`SELECT id FROM players WHERE active = 1 AND COALESCE(is_guest, 0) = 0`).all<{ id: string }>())
+          .results.map(r => r.id),
+      )
+    : null;
+
   const res = await db
     .prepare(
       `SELECT m.id, m.player1_id, m.player2_id, m.team1_player2_id, m.team2_player2_id,
@@ -726,7 +741,7 @@ export async function getPlayerForm(db: D1Database, maxPlayers = 8): Promise<{ s
   });
 
   const series = [...acc.values()]
-    .filter(p => p.played > 0)
+    .filter(p => p.played >= minPlayed && (!eligible || eligible.has(p.id)))
     .sort((a, b) => b.final - a.final || b.played - a.played)
     .slice(0, maxPlayers);
 

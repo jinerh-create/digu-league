@@ -86,7 +86,7 @@ export const GET: APIRoute = async ({ locals }) => {
        every completed league match oldest→newest with the team-aware win rule
        (winner_id is a SIDE marker — see db.ts). maxPlayers=0 would truncate, so
        ask for the whole roster; a draw breaks a streak, matching Streak Emperor. */
-    const { series } = await getPlayerForm(db, 9999);
+    const { series } = await getPlayerForm(db, 9999, { activeOnly: false });
     const bestStreak = series.reduce(
       (a, p) => (p.bestWin > (a?.bestWin ?? 0) ? p : a),
       null as (typeof series)[0] | null,

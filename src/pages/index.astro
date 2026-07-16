@@ -33,7 +33,7 @@ if (runtime?.env?.DB) {
       getActivePlayers(DB),
       getTotalMatchCount(DB),
       getTotalGamesCount(DB),
-      getPlayerForm(DB),
+      getPlayerForm(DB, 12, { activeOnly: true, minPlayed: 2 }),
     ]);
     activeMatch = am;
     recentMatches = rm;
