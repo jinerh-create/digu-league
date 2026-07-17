@@ -1,7 +1,7 @@
 ---
-/* Greatest of All Time — top 3 as FUT-style player cards.
-   Rating = GOAT score; the six stat slots map the league's real metrics.
-   Live composite of league titles, win rate, game % and digus (see lib/goat.ts). */
+/* Greatest of All Time — top 3 as FUT-style player cards on a podium.
+   #1 on top, #2 & #3 below. Light-gold card, full-bleed player photo.
+   Rating = GOAT score; six stat slots map the league's real metrics. */
 import type { GoatRow } from '../../lib/goat';
 export interface Props { board: GoatRow[]; totalTitles: number; }
 const { board, totalTitles } = Astro.props;
@@ -11,7 +11,6 @@ const photo = (r: GoatRow) => r.avatar_b64 ? `data:image/jpeg;base64,${r.avatar_
 const initials = (r: GoatRow) => (r.name || '').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 const posLabel = ['GOAT', 'LGD', 'ELITE'];
 const medal = ['🥇', '🥈', '🥉'];
-/* six stat slots from real DIGU metrics */
 const stats = (r: GoatRow) => [
   ['WIN', `${Math.round(r.winRate)}`], ['GME', `${Math.round(r.gamePct)}`],
   ['TTL', `${r.titles}`], ['DGU', `${r.digus}`],
@@ -31,21 +30,21 @@ const stats = (r: GoatRow) => [
     <div class="goat-empty">No completed matches yet — greatness is still up for grabs.</div>
   ) : (
     <>
-      <div class="fut-row">
-        {top3.map((r, i) => (
-          <a class={`fut fut-${i}`} href={`/players/${r.playerId}`} style={`animation-delay:${i * 0.12}s`}>
+      {(() => {
+        const Card = (r: GoatRow, i: number) => (
+          <a class={`fut${i === 0 ? ' fut-hero' : ''}`} href={`/players/${r.playerId}`} style={`animation-delay:${i * 0.12}s`}>
             <div class="fut-frame">
               <div class="fut-in">
-                <span class="fut-medal">{medal[i]}</span>
-                <div class="fut-hero">
-                  <div class="fut-lhs">
+                <div class="fut-photo">
+                  {photo(r)
+                    ? <img src={photo(r)} alt={nick(r)} />
+                    : <span class="fut-init">{initials(r)}</span>}
+                  <div class="fut-scrim"></div>
+                  <div class="fut-badge">
                     <b class="fut-rating">{Math.round(r.score)}</b>
                     <span class="fut-pos">{posLabel[i] || `#${r.rank}`}</span>
-                    <span class="fut-crest">🃏</span>
                   </div>
-                  <div class="fut-photo">
-                    {photo(r) ? <img src={photo(r)} alt={nick(r)} /> : <span class="fut-init">{initials(r)}</span>}
-                  </div>
+                  <span class="fut-medal">{medal[i]}</span>
                 </div>
                 <div class="fut-name">{nick(r)}</div>
                 <div class="fut-stats">
@@ -56,8 +55,19 @@ const stats = (r: GoatRow) => [
               </div>
             </div>
           </a>
-        ))}
-      </div>
+        );
+        return (
+          <div class="fut-podium">
+            {top3[0] && <div class="fut-top">{Card(top3[0], 0)}</div>}
+            {(top3[1] || top3[2]) && (
+              <div class="fut-bottom">
+                {top3[1] && Card(top3[1], 1)}
+                {top3[2] && Card(top3[2], 2)}
+              </div>
+            )}
+          </div>
+        );
+      })()}
       <div class="goat-foot">{totalTitles} monthly {totalTitles === 1 ? 'title' : 'titles'} awarded · updates every match</div>
     </>
   )}
@@ -65,58 +75,73 @@ const stats = (r: GoatRow) => [
 
 <style>
   .goat-card { background: var(--card); border: 1.5px solid rgba(212,175,55,0.5); border-radius: var(--radius-lg); box-shadow: 0 0 18px rgba(212,175,55,0.12); padding: 0.9rem 0.85rem 0.8rem; margin-bottom: 1rem; }
-  .goat-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; margin-bottom: .8rem; }
+  .goat-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; margin-bottom: .9rem; }
   .goat-head h2 { font-family: var(--font-heading); font-size: 1.05rem; margin: 0; color: var(--text-primary); }
   .goat-sub { font-size: .66rem; color: var(--text-muted); margin: .12rem 0 0; }
   .goat-all { font-size: .72rem; color: #D4AF37; font-weight: 700; white-space: nowrap; }
   .goat-empty { text-align: center; color: var(--text-muted); font-size: .8rem; padding: 1.6rem .5rem; }
 
-  .fut-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; align-items: start; }
+  /* podium: #1 on top, #2 & #3 below */
+  .fut-podium { display: flex; flex-direction: column; align-items: center; gap: .7rem; }
+  .fut-top { width: min(230px, 62%); }
+  .fut-bottom { display: flex; gap: .7rem; width: 100%; justify-content: center; }
+  .fut-bottom .fut { width: min(210px, 47%); }
 
-  .fut { text-decoration: none; display: block; animation: fut-in .5s cubic-bezier(.2,.8,.3,1) both; }
-  @keyframes fut-in { from { opacity: 0; transform: translateY(14px) scale(.96); } }
-  .fut-1 { margin-top: .8rem; } .fut-2 { margin-top: 1.4rem; } /* podium stagger — #1 tallest */
+  .fut { text-decoration: none; display: block; animation: fut-in .55s cubic-bezier(.2,.8,.3,1) both; }
+  @keyframes fut-in { from { opacity: 0; transform: translateY(16px) scale(.95); } }
 
   /* gold shield frame */
   .fut-frame {
-    position: relative; padding: 2.5px;
-    background: linear-gradient(150deg, #f6e27a 0%, #d4af37 30%, #b8860b 55%, #e8cf7a 80%, #b8860b 100%);
-    clip-path: polygon(8% 0, 92% 0, 100% 7%, 100% 84%, 50% 100%, 0 84%, 0 7%);
-    box-shadow: 0 6px 18px rgba(0,0,0,.35);
-    transition: transform .18s;
+    position: relative; padding: 3px;
+    background: linear-gradient(150deg, #fbe6a6 0%, #d9b03e 28%, #a9791f 55%, #f0d477 78%, #b4841c 100%);
+    clip-path: polygon(7% 0, 93% 0, 100% 6%, 100% 85%, 50% 100%, 0 85%, 0 6%);
+    box-shadow: 0 8px 22px rgba(0,0,0,.4), inset 0 0 12px rgba(255,255,255,.25);
+    transition: transform .2s;
   }
-  .fut:hover .fut-frame { transform: translateY(-4px); }
+  .fut:hover .fut-frame { transform: translateY(-5px); }
+  .fut-hero .fut-frame { box-shadow: 0 10px 30px rgba(184,134,11,.35), 0 0 22px rgba(212,175,55,.3), inset 0 0 12px rgba(255,255,255,.3); }
+
   .fut-in {
-    position: relative;
-    background: linear-gradient(155deg, #fbf9f1 0%, #ffffff 42%, #efe9d8 100%);
-    clip-path: polygon(8% 0, 92% 0, 100% 7%, 100% 84%, 50% 100%, 0 84%, 0 7%);
-    padding: .7rem .5rem 1.5rem;
-    color: #4a3d18;
+    position: relative; overflow: hidden;
+    /* light champagne-gold, no white */
+    background: linear-gradient(158deg, #f8edc4 0%, #eeddab 44%, #e2c987 72%, #d8bb74 100%);
+    clip-path: polygon(7% 0, 93% 0, 100% 6%, 100% 85%, 50% 100%, 0 85%, 0 6%);
+    color: #4a3a12;
   }
-  .fut-medal { position: absolute; top: .3rem; right: .45rem; font-size: .95rem; filter: drop-shadow(0 1px 2px rgba(0,0,0,.3)); }
 
-  .fut-hero { display: flex; gap: .2rem; align-items: flex-start; }
-  .fut-lhs { display: flex; flex-direction: column; align-items: center; padding-top: .3rem; width: 34%; }
-  .fut-rating { font-family: var(--font-heading); font-weight: 800; font-size: 1.7rem; line-height: .9; color: #3a2f12; }
-  .fut-pos { font-size: .56rem; font-weight: 800; letter-spacing: .04em; color: #6b5a25; margin-top: .1rem; }
-  .fut-crest { font-size: .85rem; margin-top: .2rem; opacity: .8; }
-  .fut-photo { flex: 1; height: 66px; display: grid; place-items: end center; overflow: hidden; }
-  .fut-photo img { height: 78px; width: auto; max-width: 100%; object-fit: cover; object-position: top center; filter: drop-shadow(0 3px 4px rgba(0,0,0,.2)); margin-bottom: -6px; }
-  .fut-init { font-family: var(--font-heading); font-weight: 800; font-size: 1.7rem; color: #b8860b; align-self: center; }
+  /* full-bleed player photo across the top */
+  .fut-photo { position: relative; width: 100%; height: 150px; overflow: hidden; }
+  .fut-hero .fut-photo { height: 172px; }
+  .fut-photo img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+  .fut-init { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-heading); font-weight: 800; font-size: 2.6rem; color: #8a6410; }
+  .fut-scrim { position: absolute; inset: 0; background: linear-gradient(105deg, rgba(60,45,10,.62) 0%, rgba(60,45,10,.28) 30%, transparent 52%), linear-gradient(0deg, rgba(226,201,135,.9), transparent 22%); }
 
-  .fut-name { text-align: center; font-family: var(--font-heading); font-weight: 800; font-size: .82rem; letter-spacing: .02em; text-transform: uppercase; color: #3a2f12; border-top: 1.5px solid rgba(184,134,11,.4); margin: .25rem .3rem 0; padding-top: .25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .fut-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0 .35rem; padding: .3rem .35rem 0; }
-  .fut-stat { display: flex; align-items: baseline; gap: .22rem; justify-content: center; }
-  .fut-stat b { font-family: var(--font-heading); font-weight: 800; font-size: .82rem; color: #3a2f12; font-variant-numeric: tabular-nums; }
-  .fut-stat small { font-size: .56rem; font-weight: 700; color: #7a6a32; }
+  .fut-badge { position: absolute; top: .5rem; left: .6rem; display: flex; flex-direction: column; align-items: flex-start; z-index: 1; text-shadow: 0 1px 3px rgba(0,0,0,.4); }
+  .fut-rating { font-family: var(--font-heading); font-weight: 800; font-size: 2rem; line-height: .82; color: #fff; }
+  .fut-hero .fut-rating { font-size: 2.5rem; }
+  .fut-pos { font-size: .62rem; font-weight: 800; letter-spacing: .08em; color: #ffe9a8; margin-top: .15rem; }
+  .fut-medal { position: absolute; top: .45rem; right: .5rem; font-size: 1.05rem; z-index: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,.4)); }
 
-  .goat-foot { margin-top: .8rem; padding-top: .55rem; border-top: 1px solid var(--border); font-size: .64rem; color: var(--text-muted); text-align: center; }
+  .fut-name { text-align: center; font-family: var(--font-heading); font-weight: 800; font-size: .9rem; letter-spacing: .03em; text-transform: uppercase; color: #3a2d0c; padding: .35rem .3rem .2rem; margin: 0 .5rem; border-bottom: 1.5px solid rgba(138,100,16,.45); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fut-hero .fut-name { font-size: 1.05rem; }
 
-  @media (max-width: 420px) {
-    .fut-rating { font-size: 1.4rem; }
-    .fut-photo img { height: 66px; }
-    .fut-name { font-size: .72rem; }
-    .fut-stat b { font-size: .74rem; }
+  .fut-stats { display: grid; grid-template-columns: 1fr 1fr; gap: .12rem .5rem; padding: .4rem .7rem 1.4rem; }
+  .fut-hero .fut-stats { padding-bottom: 1.7rem; }
+  .fut-stat { display: flex; align-items: baseline; gap: .28rem; justify-content: flex-start; }
+  .fut-stat b { font-family: var(--font-heading); font-weight: 800; font-size: .92rem; color: #2f2408; font-variant-numeric: tabular-nums; min-width: 1.6ch; text-align: right; }
+  .fut-hero .fut-stat b { font-size: 1rem; }
+  .fut-stat small { font-size: .58rem; font-weight: 800; letter-spacing: .04em; color: #7c6522; }
+
+  .goat-foot { margin-top: .9rem; padding-top: .55rem; border-top: 1px solid var(--border); font-size: .64rem; color: var(--text-muted); text-align: center; }
+
+  @media (max-width: 480px) {
+    .fut-top { width: 72%; }
+    .fut-bottom { gap: .45rem; }
+    .fut-bottom .fut { width: 49%; }
+    .fut-photo { height: 120px; } .fut-hero .fut-photo { height: 150px; }
+    .fut-rating { font-size: 1.6rem; } .fut-hero .fut-rating { font-size: 2rem; }
+    .fut-stat b { font-size: .82rem; } .fut-stat small { font-size: .54rem; }
+    .fut-name { font-size: .8rem; }
   }
   @media (prefers-reduced-motion: reduce) { .fut { animation: none; } }
 </style>
