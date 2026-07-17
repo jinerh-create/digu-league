@@ -37,7 +37,7 @@ if (runtime?.env?.DB) {
       getActivePlayers(DB),
       getTotalMatchCount(DB),
       getTotalGamesCount(DB),
-      getPlayerForm(DB, 12, { activeOnly: true, minPlayed: 2 }),
+      getPlayerForm(DB, 10, { activeOnly: true, minPlayed: 2 }),
       computeGOAT(DB),
     ]);
     goat = gt;
