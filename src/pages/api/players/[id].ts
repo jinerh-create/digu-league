@@ -1,6 +1,6 @@
 export const prerender = false;
 import type { APIRoute } from 'astro';
-import { getPlayer, updatePlayerAvatar, updatePlayerActive, updatePlayerName, updatePlayerNickname } from '../../../lib/db';
+import { getPlayer, updatePlayerAvatar, updatePlayerActive, updatePlayerName, updatePlayerNickname, updatePlayerBirthday } from '../../../lib/db';
 
 function getDB(locals: Record<string, unknown>): D1Database {
   const runtime = locals.runtime as { env: { DB: D1Database } } | undefined;
@@ -24,7 +24,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
 export const PATCH: APIRoute = async ({ params, request, locals }) => {
   try {
     const db = getDB(locals as Record<string, unknown>);
-    const body = await request.json() as { avatar_b64?: string; active?: number; name?: string; nickname?: string | null };
+    const body = await request.json() as { avatar_b64?: string; active?: number; name?: string; nickname?: string | null; birthday?: string | null };
 
     if (body.name !== undefined) {
       const trimmed = body.name.trim();
@@ -42,6 +42,11 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     }
     if (body.active !== undefined) {
       await updatePlayerActive(db, params.id!, body.active);
+    }
+    if (body.birthday !== undefined) {
+      const bd = (body.birthday || '').trim();
+      if (bd && !/^\d{4}-\d{2}-\d{2}$/.test(bd)) return new Response(JSON.stringify({ error: 'Birthday must be YYYY-MM-DD' }), { status: 400 });
+      await updatePlayerBirthday(db, params.id!, bd || null);
     }
 
     const player = await getPlayer(db, params.id!);

@@ -1,13 +1,89 @@
 ---
 export const prerender = false;
 import BaseLayout from '../layouts/BaseLayout.astro';
-import RecordsBoard from '../components/records/RecordsBoard';
+import { computeRecords, type RecordGroup } from '../lib/records';
+
+const runtime = (Astro.locals as Record<string, unknown>).runtime as { env: { DB: D1Database } } | undefined;
+let groups: RecordGroup[] = [];
+let totalTracked = 0;
+if (runtime?.env?.DB) {
+  try { const r = await computeRecords(runtime.env.DB); groups = r.groups; totalTracked = r.totalTracked; } catch (e) { console.error(e); }
+}
+const initials = (name: string) => name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
 ---
 <BaseLayout title="Records" activeTab="home">
   <div class="container">
-    <div class="page-header">
-      <h1>&#127942; All-Time Records</h1>
+    <div class="rec-header">
+      <h1>🏆 DIGU League Records</h1>
+      <p class="sub">{totalRecords} official records · {totalTracked} currently held</p>
     </div>
-    <RecordsBoard client:load />
+
+    <nav class="rec-nav">
+      {groups.map(g => <a href={`#${g.title}`}>{g.emoji} {g.title}</a>)}
+    </nav>
+
+    {groups.map(g => (
+      <section class="rec-group" id={g.title}>
+        <h2 class="rec-group-title">{g.emoji} {g.title}</h2>
+        <div class="rec-grid">
+          {g.records.map(r => (
+            <div class={`rec-card${!r.tracked ? ' untracked' : ''}${r.holderId ? ' held' : ''}`}>
+              <div class="rec-top">
+                <span class="rec-emoji">{r.emoji}</span>
+                <div class="rec-title">
+                  <b>{r.name}</b>
+                  {r.detail && <small>{r.detail}</small>}
+                </div>
+                <span class="rec-value">{r.value}</span>
+              </div>
+              <div class="rec-holder">
+                {r.tracked && r.holderId ? (
+                  <a class="rec-who" href={`/players/${r.holderId}`}>
+                    <span class="rec-face">
+                      {r.photo ? <img src={r.photo} alt={r.holder} /> : <span class="rec-init">{initials(r.holder || '?')}</span>}
+                    </span>
+                    <span class="rec-name">{r.holder}</span>
+                    <span class="rec-tag">HOLDER</span>
+                  </a>
+                ) : (
+                  <div class="rec-none">🔒 {r.note || 'Not yet tracked'}</div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    ))}
   </div>
 </BaseLayout>
+
+<style>
+  .rec-header { margin-bottom: .8rem; }
+  .rec-header h1 { font-size: 1.5rem; }
+  .rec-header .sub { color: var(--text-muted); font-size: .82rem; margin-top: .2rem; }
+  .rec-nav { display: flex; gap: .35rem; overflow-x: auto; padding-bottom: .6rem; margin-bottom: 1rem; scrollbar-width: none; position: sticky; top: 0; background: var(--bg); z-index: 5; padding-top: .4rem; }
+  .rec-nav::-webkit-scrollbar { display: none; }
+  .rec-nav a { flex-shrink: 0; padding: .4rem .75rem; border-radius: 999px; font-size: .78rem; font-weight: 700; color: var(--text-secondary); background: var(--card); border: 1px solid var(--border); white-space: nowrap; text-decoration: none; }
+  .rec-nav a:hover { border-color: rgba(212,175,55,0.5); color: #D4AF37; }
+  .rec-group { margin-bottom: 1.6rem; scroll-margin-top: 3.2rem; }
+  .rec-group-title { font-size: 1.1rem; margin-bottom: .7rem; color: var(--text-primary); }
+  .rec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: .6rem; }
+  .rec-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: .7rem .8rem; }
+  .rec-card.held { border-color: rgba(212,175,55,0.4); background: linear-gradient(160deg, rgba(212,175,55,0.06), var(--card)); }
+  .rec-card.untracked { opacity: .62; }
+  .rec-top { display: flex; align-items: center; gap: .55rem; }
+  .rec-emoji { font-size: 1.3rem; flex-shrink: 0; }
+  .rec-title { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .rec-title b { font-size: .86rem; color: var(--text-primary); font-weight: 700; line-height: 1.2; }
+  .rec-title small { font-size: .64rem; color: var(--text-muted); }
+  .rec-value { font-family: var(--font-heading); font-weight: 800; font-size: .95rem; color: #D4AF37; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+  .rec-holder { margin-top: .55rem; padding-top: .5rem; border-top: 1px solid var(--border); }
+  .rec-who { display: flex; align-items: center; gap: .5rem; text-decoration: none; }
+  .rec-face { width: 30px; height: 30px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: var(--card-raised); display: grid; place-items: center; border: 1.5px solid rgba(212,175,55,0.5); }
+  .rec-face img { width: 100%; height: 100%; object-fit: cover; }
+  .rec-init { font-size: .68rem; font-weight: 800; color: #D4AF37; font-family: var(--font-heading); }
+  .rec-name { flex: 1; font-weight: 700; font-size: .86rem; color: var(--text-primary); }
+  .rec-tag { font-size: .52rem; font-weight: 800; letter-spacing: .08em; color: #D4AF37; background: rgba(212,175,55,0.14); border: 1px solid rgba(212,175,55,0.3); padding: .15rem .4rem; border-radius: 5px; }
+  .rec-none { font-size: .68rem; color: var(--text-muted); font-weight: 600; }
+</style>

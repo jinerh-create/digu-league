@@ -46,6 +46,7 @@ export default function PlayerList() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editNickname, setEditNickname] = useState('');
+  const [editBirthday, setEditBirthday] = useState('');
   const [savingId, setSavingId] = useState<string | null>(null);
   const [nickEditId, setNickEditId] = useState<string | null>(null);
   const [nickDraft, setNickDraft] = useState('');
@@ -102,12 +103,14 @@ export default function PlayerList() {
     setEditingId(p.id);
     setEditName(p.name);
     setEditNickname(p.nickname ?? '');
+    setEditBirthday((p as { birthday?: string | null }).birthday ?? '');
   }
 
   function cancelEdit() {
     setEditingId(null);
     setEditName('');
     setEditNickname('');
+    setEditBirthday('');
   }
 
   async function handleSaveName(id: string) {
@@ -117,7 +120,7 @@ export default function PlayerList() {
       const res = await fetch(`/api/players/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: editName.trim(), nickname: editNickname.trim() || null }),
+        body: JSON.stringify({ name: editName.trim(), nickname: editNickname.trim() || null, birthday: editBirthday || null }),
       });
       const updated = await res.json() as Player;
       setPlayers(prev => prev.map(p => p.id === id ? updated : p));
@@ -239,6 +242,17 @@ export default function PlayerList() {
                     placeholder="Nickname (optional)"
                     style={{ fontSize: '0.875rem', padding: '0.25rem 0.5rem', minHeight: 'auto' }}
                   />
+                  <label style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    🎂 Birthday
+                    <input
+                      className="form-input"
+                      type="date"
+                      value={editBirthday}
+                      onChange={e => setEditBirthday(e.target.value)}
+                      max="2026-12-31"
+                      style={{ fontSize: '0.8rem', padding: '0.25rem 0.5rem', minHeight: 'auto', flex: 1 }}
+                    />
+                  </label>
                   <div style={{ display: 'flex', gap: '0.375rem' }}>
                     <button type="submit" className="btn btn-primary" disabled={savingId === p.id} style={{ fontSize: '0.75rem', padding: '0.25rem 0.625rem', minHeight: 'auto' }}>
                       {savingId === p.id ? '…' : 'Save'}

@@ -764,3 +764,7 @@ export async function getVerificationRequests(db: D1Database) {
   ).all();
   return res.results;
 }
+
+export async function updatePlayerBirthday(db: D1Database, id: string, birthday: string | null): Promise<void> {
+  await db.prepare('UPDATE players SET birthday = ? WHERE id = ?').bind(birthday, id).run();
+}

@@ -9,6 +9,7 @@ export interface Player {
   is_guest: number; // 1 = one-off guest for a classic match (excluded from league)
   verified: number; // 1 = gold verified badge (existing players grandfathered; new players request)
   verify_requested: number; // 1 = player has requested verification, awaiting admin approval
+  birthday: string | null; // YYYY-MM-DD, for age-based records
 }
 
 export interface Match {
