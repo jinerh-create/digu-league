@@ -1,128 +1,122 @@
 ---
-/* Greatest of All Time — home-page showcase with player photos.
-   The crowned GOAT up top, then the chasing pack. Live composite of league
-   titles, win rate, game % and digus (see lib/goat.ts). */
+/* Greatest of All Time — top 3 as FUT-style player cards.
+   Rating = GOAT score; the six stat slots map the league's real metrics.
+   Live composite of league titles, win rate, game % and digus (see lib/goat.ts). */
 import type { GoatRow } from '../../lib/goat';
 export interface Props { board: GoatRow[]; totalTitles: number; }
 const { board, totalTitles } = Astro.props;
-const goat = board[0] || null;
-const chasers = board.slice(1, 3);
+const top3 = board.slice(0, 3);
 const nick = (r: GoatRow) => r.nickname || (r.name || '').split(' ')[0] || r.name;
 const photo = (r: GoatRow) => r.avatar_b64 ? `data:image/jpeg;base64,${r.avatar_b64}` : null;
+const initials = (r: GoatRow) => (r.name || '').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+const posLabel = ['GOAT', 'LGD', 'ELITE'];
 const medal = ['🥇', '🥈', '🥉'];
+/* six stat slots from real DIGU metrics */
+const stats = (r: GoatRow) => [
+  ['WIN', `${Math.round(r.winRate)}`], ['GME', `${Math.round(r.gamePct)}`],
+  ['TTL', `${r.titles}`], ['DGU', `${r.digus}`],
+  ['MCH', `${r.played}`], ['WON', `${r.won}`],
+];
 ---
 <section class="goat-card">
   <div class="goat-head">
     <div>
       <h2>🐐 Greatest of All Time</h2>
-      <p class="goat-sub">Live rank · league titles · win rate · game % · digus</p>
+      <p class="goat-sub">Live rank · titles · win rate · game % · digus</p>
     </div>
     <a href="/goat" class="goat-all">Full ranking →</a>
   </div>
 
-  {!goat ? (
+  {top3.length === 0 ? (
     <div class="goat-empty">No completed matches yet — greatness is still up for grabs.</div>
   ) : (
     <>
-      <a class="goat-hero" href={`/players/${goat.playerId}`}>
-        <div class="goat-glow"></div>
-        <div class="goat-crown">👑</div>
-        <div class="goat-ring">
-          <div class="goat-face">
-            {photo(goat)
-              ? <img src={photo(goat)} alt={nick(goat)} />
-              : <span class="goat-initials">{(goat.name || '').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</span>}
-          </div>
-        </div>
-        <div class="goat-name">{nick(goat)}</div>
-        <div class="goat-score-line"><b>{goat.score}</b><span>GOAT&nbsp;SCORE</span></div>
-        <div class="goat-metrics">
-          <span><b>{goat.titles}</b><small>🏆 {goat.titles === 1 ? 'title' : 'titles'}</small></span>
-          <span><b>{goat.winRate}%</b><small>win rate</small></span>
-          <span><b>{goat.gamePct}%</b><small>game %</small></span>
-          <span><b>{goat.digus}</b><small>digus</small></span>
-        </div>
-      </a>
-
-      {chasers.length > 0 && (
-        <div class="goat-chasers">
-          {chasers.map((r, i) => (
-            <a class="goat-row" href={`/players/${r.playerId}`}>
-              <span class="goat-rank">{medal[i + 1] || `#${r.rank}`}</span>
-              <span class="goat-mini-face">
-                {photo(r)
-                  ? <img src={photo(r)} alt={nick(r)} />
-                  : <span class="goat-initials sm">{(r.name || '').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</span>}
-              </span>
-              <span class="goat-mini-name">{nick(r)}
-                <small>🏆 {r.titles} · {r.winRate}% · {r.gamePct}% · {r.digus} digu</small>
-              </span>
-              <span class="goat-mini-score">{r.score}</span>
-            </a>
-          ))}
-        </div>
-      )}
+      <div class="fut-row">
+        {top3.map((r, i) => (
+          <a class={`fut fut-${i}`} href={`/players/${r.playerId}`} style={`animation-delay:${i * 0.12}s`}>
+            <div class="fut-frame">
+              <div class="fut-in">
+                <span class="fut-medal">{medal[i]}</span>
+                <div class="fut-hero">
+                  <div class="fut-lhs">
+                    <b class="fut-rating">{Math.round(r.score)}</b>
+                    <span class="fut-pos">{posLabel[i] || `#${r.rank}`}</span>
+                    <span class="fut-crest">🃏</span>
+                  </div>
+                  <div class="fut-photo">
+                    {photo(r) ? <img src={photo(r)} alt={nick(r)} /> : <span class="fut-init">{initials(r)}</span>}
+                  </div>
+                </div>
+                <div class="fut-name">{nick(r)}</div>
+                <div class="fut-stats">
+                  {stats(r).map(([k, v]) => (
+                    <span class="fut-stat"><b>{v}</b><small>{k}</small></span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
       <div class="goat-foot">{totalTitles} monthly {totalTitles === 1 ? 'title' : 'titles'} awarded · updates every match</div>
     </>
   )}
 </section>
 
 <style>
-  .goat-card {
-    background: var(--card);
-    border: 1.5px solid rgba(212,175,55,0.5);
-    border-radius: var(--radius-lg);
-    box-shadow: 0 0 18px rgba(212,175,55,0.12);
-    padding: 0.9rem 0.85rem 0.75rem;
-    margin-bottom: 1rem;
-  }
-  .goat-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; margin-bottom: .7rem; }
+  .goat-card { background: var(--card); border: 1.5px solid rgba(212,175,55,0.5); border-radius: var(--radius-lg); box-shadow: 0 0 18px rgba(212,175,55,0.12); padding: 0.9rem 0.85rem 0.8rem; margin-bottom: 1rem; }
+  .goat-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; margin-bottom: .8rem; }
   .goat-head h2 { font-family: var(--font-heading); font-size: 1.05rem; margin: 0; color: var(--text-primary); }
   .goat-sub { font-size: .66rem; color: var(--text-muted); margin: .12rem 0 0; }
   .goat-all { font-size: .72rem; color: #D4AF37; font-weight: 700; white-space: nowrap; }
   .goat-empty { text-align: center; color: var(--text-muted); font-size: .8rem; padding: 1.6rem .5rem; }
 
-  .goat-hero {
-    display: flex; flex-direction: column; align-items: center; text-decoration: none;
-    background: radial-gradient(120% 80% at 50% 0%, rgba(212,175,55,0.15), rgba(212,175,55,0.02) 60%, transparent);
-    border: 1px solid rgba(212,175,55,0.4); border-radius: 16px; padding: 1.1rem 1rem 0.9rem; position: relative; overflow: hidden;
-    animation: goat-in .5s cubic-bezier(.2,.8,.3,1) both;
-  }
-  @keyframes goat-in { from { opacity: 0; transform: translateY(10px); } }
-  .goat-glow { position: absolute; top: -50px; left: 50%; width: 180px; height: 180px; margin-left: -90px; border-radius: 50%; background: radial-gradient(circle, rgba(212,175,55,0.3), transparent 65%); pointer-events: none; animation: goat-pulse 3.5s ease-in-out infinite; }
-  @keyframes goat-pulse { 0%,100% { opacity: .55; transform: scale(1); } 50% { opacity: 1; transform: scale(1.12); } }
-  .goat-crown { position: relative; z-index: 2; font-size: 1.5rem; line-height: 1; margin-bottom: -0.55rem; filter: drop-shadow(0 3px 4px rgba(0,0,0,0.4)); animation: goat-bob 3s ease-in-out infinite; }
-  @keyframes goat-bob { 0%,100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-3px) rotate(5deg); } }
+  .fut-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; align-items: start; }
 
-  /* rotating gold ring around the photo */
-  .goat-ring { position: relative; z-index: 1; width: 100px; height: 100px; border-radius: 50%; display: grid; place-items: center; padding: 3px;
-    background: conic-gradient(from 0deg, #D4AF37, #f6e27a, #b8860b, #f6e27a, #D4AF37); animation: goat-spin 6s linear infinite; box-shadow: 0 0 22px rgba(212,175,55,0.45); }
-  @keyframes goat-spin { to { transform: rotate(360deg); } }
-  .goat-face {
-    width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: var(--card); display: grid; place-items: center;
-    animation: goat-spin 6s linear infinite reverse; /* counter-spin so the photo stays upright */
-  }
-  .goat-face img { width: 100%; height: 100%; object-fit: cover; }
-  .goat-initials { font-family: var(--font-heading); font-weight: 800; font-size: 2rem; color: #D4AF37; }
-  .goat-initials.sm { font-size: .9rem; }
-  .goat-name { position: relative; z-index: 1; font-family: var(--font-heading); font-weight: 800; font-size: 1.35rem; color: var(--text-primary); line-height: 1.1; margin-top: .6rem; text-align: center; }
-  .goat-score-line { position: relative; z-index: 1; display: flex; align-items: baseline; gap: .35rem; margin: .05rem 0 .75rem; }
-  .goat-score-line b { font-family: var(--font-heading); font-size: 1.7rem; color: #D4AF37; font-variant-numeric: tabular-nums; text-shadow: 0 2px 10px rgba(212,175,55,0.35); }
-  .goat-score-line span { font-size: .56rem; color: var(--text-muted); font-weight: 800; letter-spacing: .1em; }
-  .goat-metrics { position: relative; z-index: 1; display: flex; justify-content: center; gap: .4rem; width: 100%; max-width: 340px; }
-  .goat-metrics span { flex: 1; display: flex; flex-direction: column; align-items: center; gap: .05rem; background: rgba(212,175,55,0.08); border: 1px solid rgba(212,175,55,0.2); border-radius: 9px; padding: .38rem .2rem; }
-  .goat-metrics b { font-family: var(--font-heading); font-weight: 800; font-size: .92rem; color: var(--text-primary); font-variant-numeric: tabular-nums; }
-  .goat-metrics small { font-size: .5rem; font-weight: 700; text-transform: uppercase; letter-spacing: .02em; color: var(--text-muted); white-space: nowrap; }
-  @media (prefers-reduced-motion: reduce) { .goat-ring, .goat-face, .goat-glow, .goat-crown, .goat-hero { animation: none; } }
+  .fut { text-decoration: none; display: block; animation: fut-in .5s cubic-bezier(.2,.8,.3,1) both; }
+  @keyframes fut-in { from { opacity: 0; transform: translateY(14px) scale(.96); } }
+  .fut-1 { margin-top: .8rem; } .fut-2 { margin-top: 1.4rem; } /* podium stagger — #1 tallest */
 
-  .goat-chasers { margin-top: .6rem; display: flex; flex-direction: column; gap: .3rem; }
-  .goat-row { display: flex; align-items: center; gap: .6rem; padding: .4rem .3rem; border-radius: 10px; text-decoration: none; }
-  .goat-row:hover { background: var(--card-raised); }
-  .goat-rank { width: 24px; text-align: center; font-size: .95rem; font-weight: 800; color: var(--text-muted); flex-shrink: 0; }
-  .goat-mini-face { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: var(--card-raised); display: grid; place-items: center; border: 1px solid var(--border); }
-  .goat-mini-face img { width: 100%; height: 100%; object-fit: cover; }
-  .goat-mini-name { flex: 1; min-width: 0; font-weight: 700; font-size: .88rem; color: var(--text-primary); display: flex; flex-direction: column; }
-  .goat-mini-name small { font-weight: 600; font-size: .64rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .goat-mini-score { font-family: var(--font-heading); font-weight: 800; font-size: 1.05rem; color: #D4AF37; font-variant-numeric: tabular-nums; flex-shrink: 0; }
-  .goat-foot { margin-top: .6rem; padding-top: .5rem; border-top: 1px solid var(--border); font-size: .64rem; color: var(--text-muted); text-align: center; }
+  /* gold shield frame */
+  .fut-frame {
+    position: relative; padding: 2.5px;
+    background: linear-gradient(150deg, #f6e27a 0%, #d4af37 30%, #b8860b 55%, #e8cf7a 80%, #b8860b 100%);
+    clip-path: polygon(8% 0, 92% 0, 100% 7%, 100% 84%, 50% 100%, 0 84%, 0 7%);
+    box-shadow: 0 6px 18px rgba(0,0,0,.35);
+    transition: transform .18s;
+  }
+  .fut:hover .fut-frame { transform: translateY(-4px); }
+  .fut-in {
+    position: relative;
+    background: linear-gradient(155deg, #fbf9f1 0%, #ffffff 42%, #efe9d8 100%);
+    clip-path: polygon(8% 0, 92% 0, 100% 7%, 100% 84%, 50% 100%, 0 84%, 0 7%);
+    padding: .7rem .5rem 1.5rem;
+    color: #4a3d18;
+  }
+  .fut-medal { position: absolute; top: .3rem; right: .45rem; font-size: .95rem; filter: drop-shadow(0 1px 2px rgba(0,0,0,.3)); }
+
+  .fut-hero { display: flex; gap: .2rem; align-items: flex-start; }
+  .fut-lhs { display: flex; flex-direction: column; align-items: center; padding-top: .3rem; width: 34%; }
+  .fut-rating { font-family: var(--font-heading); font-weight: 800; font-size: 1.7rem; line-height: .9; color: #3a2f12; }
+  .fut-pos { font-size: .56rem; font-weight: 800; letter-spacing: .04em; color: #6b5a25; margin-top: .1rem; }
+  .fut-crest { font-size: .85rem; margin-top: .2rem; opacity: .8; }
+  .fut-photo { flex: 1; height: 66px; display: grid; place-items: end center; overflow: hidden; }
+  .fut-photo img { height: 78px; width: auto; max-width: 100%; object-fit: cover; object-position: top center; filter: drop-shadow(0 3px 4px rgba(0,0,0,.2)); margin-bottom: -6px; }
+  .fut-init { font-family: var(--font-heading); font-weight: 800; font-size: 1.7rem; color: #b8860b; align-self: center; }
+
+  .fut-name { text-align: center; font-family: var(--font-heading); font-weight: 800; font-size: .82rem; letter-spacing: .02em; text-transform: uppercase; color: #3a2f12; border-top: 1.5px solid rgba(184,134,11,.4); margin: .25rem .3rem 0; padding-top: .25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fut-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0 .35rem; padding: .3rem .35rem 0; }
+  .fut-stat { display: flex; align-items: baseline; gap: .22rem; justify-content: center; }
+  .fut-stat b { font-family: var(--font-heading); font-weight: 800; font-size: .82rem; color: #3a2f12; font-variant-numeric: tabular-nums; }
+  .fut-stat small { font-size: .56rem; font-weight: 700; color: #7a6a32; }
+
+  .goat-foot { margin-top: .8rem; padding-top: .55rem; border-top: 1px solid var(--border); font-size: .64rem; color: var(--text-muted); text-align: center; }
+
+  @media (max-width: 420px) {
+    .fut-rating { font-size: 1.4rem; }
+    .fut-photo img { height: 66px; }
+    .fut-name { font-size: .72rem; }
+    .fut-stat b { font-size: .74rem; }
+  }
+  @media (prefers-reduced-motion: reduce) { .fut { animation: none; } }
 </style>
