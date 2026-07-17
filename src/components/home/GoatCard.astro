@@ -46,7 +46,7 @@ const stats = (r: GoatRow) => [
     <>
       {(() => {
         const Card = (r: GoatRow, i: number) => (
-          <a class={`fut${i === 0 ? ' fut-hero' : ''}`} href={`/players/${r.playerId}`} style={`animation-delay:${i * 0.12}s`}>
+          <a class={`fut fut-r${i}${i === 0 ? ' fut-hero' : ''}`} href={`/players/${r.playerId}`} style={`animation-delay:${i * 0.12}s`}>
             <div class="fut-frame">
               <div class="fut-in">
                 <div class="fut-photo">
@@ -108,16 +108,27 @@ const stats = (r: GoatRow) => [
 
   /* gold shield frame */
   .fut-frame {
-    position: relative; padding: 2px;
-    background: linear-gradient(150deg, #fbe6a6 0%, #d9b03e 28%, #a9791f 55%, #f0d477 78%, #b4841c 100%);
+    position: relative; padding: 2.5px;
     /* very shallow bottom notch — sides stay straight until 95% so stat text
        never meets an angled edge */
     clip-path: polygon(4% 0, 96% 0, 100% 4%, 100% 95%, 50% 100%, 0 95%, 0 4%);
     box-shadow: 0 6px 16px rgba(0,0,0,.4), inset 0 0 10px rgba(255,255,255,.25);
     transition: transform .2s;
+    /* metallic band that sweeps for a shimmering border */
+    background-size: 250% 100%;
+    animation: fut-shimmer 3.5s linear infinite;
   }
+  @keyframes fut-shimmer { to { background-position: 250% 0; } }
   .fut:hover .fut-frame { transform: translateY(-4px); }
+
+  /* medal-tier borders */
+  .fut-r0 .fut-frame { background-image: linear-gradient(115deg,#8a5f14 0%,#e9c65a 16%,#fff4c2 28%,#d4af37 44%,#8a5f14 60%,#e9c65a 78%,#fff4c2 90%,#8a5f14 100%); }
+  .fut-r1 .fut-frame { background-image: linear-gradient(115deg,#6b7078 0%,#c9cfd8 16%,#ffffff 28%,#aab0b8 44%,#6b7078 60%,#c9cfd8 78%,#ffffff 90%,#6b7078 100%); animation-delay: .5s; }
+  .fut-r2 .fut-frame { background-image: linear-gradient(115deg,#6e3f16 0%,#c67c3e 16%,#f2c79a 28%,#a9622c 44%,#6e3f16 60%,#c67c3e 78%,#f2c79a 90%,#6e3f16 100%); animation-delay: 1s; }
+
   .fut-hero .fut-frame { box-shadow: 0 8px 24px rgba(184,134,11,.35), 0 0 18px rgba(212,175,55,.3), inset 0 0 10px rgba(255,255,255,.3); }
+  .fut-r1.fut .fut-frame { box-shadow: 0 6px 16px rgba(0,0,0,.4), 0 0 14px rgba(200,207,216,.28), inset 0 0 10px rgba(255,255,255,.3); }
+  .fut-r2.fut .fut-frame { box-shadow: 0 6px 16px rgba(0,0,0,.4), 0 0 14px rgba(198,124,62,.3), inset 0 0 10px rgba(255,255,255,.25); }
 
   .fut-in {
     position: relative; overflow: hidden;
@@ -162,5 +173,5 @@ const stats = (r: GoatRow) => [
     .fut-bottom .fut { width: 42%; }
     .fut-photo { height: 84px; } .fut-hero .fut-photo { height: 96px; }
   }
-  @media (prefers-reduced-motion: reduce) { .fut { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .fut, .fut-frame { animation: none; } }
 </style>
