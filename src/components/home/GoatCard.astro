@@ -1,0 +1,111 @@
+---
+/* Greatest of All Time — home-page showcase with player photos.
+   The crowned GOAT up top, then the chasing pack. Live composite of league
+   titles, win rate, game % and digus (see lib/goat.ts). */
+import type { GoatRow } from '../../lib/goat';
+export interface Props { board: GoatRow[]; totalTitles: number; }
+const { board, totalTitles } = Astro.props;
+const goat = board[0] || null;
+const chasers = board.slice(1, 5);
+const nick = (r: GoatRow) => r.nickname || (r.name || '').split(' ')[0] || r.name;
+const photo = (r: GoatRow) => r.avatar_b64 ? `data:image/jpeg;base64,${r.avatar_b64}` : null;
+const medal = ['🥇', '🥈', '🥉'];
+---
+<section class="goat-card">
+  <div class="goat-head">
+    <div>
+      <h2>🐐 Greatest of All Time</h2>
+      <p class="goat-sub">Live rank · league titles · win rate · game % · digus</p>
+    </div>
+    <a href="/goat" class="goat-all">Full ranking →</a>
+  </div>
+
+  {!goat ? (
+    <div class="goat-empty">No completed matches yet — greatness is still up for grabs.</div>
+  ) : (
+    <>
+      <a class="goat-hero" href={`/players/${goat.playerId}`}>
+        <div class="goat-crown">👑</div>
+        <div class="goat-face">
+          {photo(goat)
+            ? <img src={photo(goat)} alt={nick(goat)} />
+            : <span class="goat-initials">{(goat.name || '').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</span>}
+        </div>
+        <div class="goat-hero-info">
+          <div class="goat-name">{nick(goat)}</div>
+          <div class="goat-score-line"><b>{goat.score}</b><span>GOAT score</span></div>
+          <div class="goat-metrics">
+            <span>🏆 {goat.titles} {goat.titles === 1 ? 'title' : 'titles'}</span>
+            <span>📊 {goat.winRate}% win</span>
+            <span>🎯 {goat.gamePct}% game</span>
+            <span>🃏 {goat.digus} digus</span>
+          </div>
+        </div>
+      </a>
+
+      {chasers.length > 0 && (
+        <div class="goat-chasers">
+          {chasers.map((r, i) => (
+            <a class="goat-row" href={`/players/${r.playerId}`}>
+              <span class="goat-rank">{medal[i + 1] || `#${r.rank}`}</span>
+              <span class="goat-mini-face">
+                {photo(r)
+                  ? <img src={photo(r)} alt={nick(r)} />
+                  : <span class="goat-initials sm">{(r.name || '').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</span>}
+              </span>
+              <span class="goat-mini-name">{nick(r)}
+                <small>🏆 {r.titles} · {r.winRate}% · {r.gamePct}% · {r.digus} digu</small>
+              </span>
+              <span class="goat-mini-score">{r.score}</span>
+            </a>
+          ))}
+        </div>
+      )}
+      <div class="goat-foot">{totalTitles} monthly {totalTitles === 1 ? 'title' : 'titles'} awarded · updates every match</div>
+    </>
+  )}
+</section>
+
+<style>
+  .goat-card {
+    background: var(--card);
+    border: 1.5px solid rgba(212,175,55,0.5);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 0 18px rgba(212,175,55,0.12);
+    padding: 0.9rem 0.85rem 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .goat-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; margin-bottom: .7rem; }
+  .goat-head h2 { font-family: var(--font-heading); font-size: 1.05rem; margin: 0; color: var(--text-primary); }
+  .goat-sub { font-size: .66rem; color: var(--text-muted); margin: .12rem 0 0; }
+  .goat-all { font-size: .72rem; color: #D4AF37; font-weight: 700; white-space: nowrap; }
+  .goat-empty { text-align: center; color: var(--text-muted); font-size: .8rem; padding: 1.6rem .5rem; }
+
+  .goat-hero {
+    display: flex; align-items: center; gap: 1rem; text-decoration: none;
+    background: linear-gradient(135deg, rgba(212,175,55,0.16), rgba(212,175,55,0.04));
+    border: 1px solid rgba(212,175,55,0.4); border-radius: 14px; padding: 0.9rem 1rem; position: relative;
+  }
+  .goat-crown { position: absolute; top: -12px; left: 14px; font-size: 1.5rem; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4)); }
+  .goat-face { width: 76px; height: 76px; border-radius: 50%; flex-shrink: 0; overflow: hidden; border: 2.5px solid #D4AF37; box-shadow: 0 0 14px rgba(212,175,55,0.4); background: var(--card-raised); display: grid; place-items: center; }
+  .goat-face img { width: 100%; height: 100%; object-fit: cover; }
+  .goat-initials { font-family: var(--font-heading); font-weight: 800; font-size: 1.6rem; color: #D4AF37; }
+  .goat-initials.sm { font-size: .9rem; }
+  .goat-hero-info { min-width: 0; flex: 1; }
+  .goat-name { font-family: var(--font-heading); font-weight: 800; font-size: 1.35rem; color: var(--text-primary); line-height: 1.1; }
+  .goat-score-line { display: flex; align-items: baseline; gap: .35rem; margin: .1rem 0 .4rem; }
+  .goat-score-line b { font-family: var(--font-heading); font-size: 1.5rem; color: #D4AF37; font-variant-numeric: tabular-nums; }
+  .goat-score-line span { font-size: .64rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+  .goat-metrics { display: flex; flex-wrap: wrap; gap: .3rem .7rem; font-size: .72rem; color: var(--text-secondary); font-weight: 600; }
+
+  .goat-chasers { margin-top: .6rem; display: flex; flex-direction: column; gap: .3rem; }
+  .goat-row { display: flex; align-items: center; gap: .6rem; padding: .4rem .3rem; border-radius: 10px; text-decoration: none; }
+  .goat-row:hover { background: var(--card-raised); }
+  .goat-rank { width: 24px; text-align: center; font-size: .95rem; font-weight: 800; color: var(--text-muted); flex-shrink: 0; }
+  .goat-mini-face { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: var(--card-raised); display: grid; place-items: center; border: 1px solid var(--border); }
+  .goat-mini-face img { width: 100%; height: 100%; object-fit: cover; }
+  .goat-mini-name { flex: 1; min-width: 0; font-weight: 700; font-size: .88rem; color: var(--text-primary); display: flex; flex-direction: column; }
+  .goat-mini-name small { font-weight: 600; font-size: .64rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .goat-mini-score { font-family: var(--font-heading); font-weight: 800; font-size: 1.05rem; color: #D4AF37; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+  .goat-foot { margin-top: .6rem; padding-top: .5rem; border-top: 1px solid var(--border); font-size: .64rem; color: var(--text-muted); text-align: center; }
+</style>
