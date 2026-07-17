@@ -23,7 +23,8 @@ let goat: Awaited<ReturnType<typeof computeGOAT>> = { goat: null, board: [], tot
 
 const sessionSecret = runtime?.env?.SESSION_SECRET as string | undefined;
 if (sessionSecret) {
-  isAdmin = await verifySession(Astro.request.headers.get('cookie'), sessionSecret);
+  const s = await verifySession(Astro.request.headers.get('cookie'), sessionSecret);
+  isAdmin = s.valid && s.role === 'admin';
 }
 
 if (runtime?.env?.DB) {

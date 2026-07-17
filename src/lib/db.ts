@@ -1,12 +1,5 @@
 import type { Player, Match, Game, PlayerStats, TeamStats, Season, MatchReaction, ScheduledMatch } from './types';
 
-export async function getPlayers(db: D1Database): Promise<Player[]> {
-  const result = await db
-    .prepare('SELECT * FROM players WHERE is_guest = 0 ORDER BY joined_at ASC')
-    .all<Player>();
-  return result.results;
-}
-
 export async function getActivePlayers(db: D1Database): Promise<Player[]> {
   const result = await db
     .prepare('SELECT * FROM players WHERE active = 1 AND is_guest = 0 ORDER BY name ASC')

@@ -70,13 +70,24 @@ const stats = (r: GoatRow) => [
             </div>
           </a>
         );
+        const rest = top3.slice(1);
         return (
-          <div class="fut-podium">
-            {top3[0] && <div class="fut-top">{Card(top3[0], 0)}</div>}
-            {(top3[1] || top3[2]) && (
-              <div class="fut-bottom">
-                {top3[1] && Card(top3[1], 1)}
-                {top3[2] && Card(top3[2], 2)}
+          <div class="goat-body">
+            {top3[0] && <div class="fut-solo">{Card(top3[0], 0)}</div>}
+            {rest.length > 0 && (
+              <div class="goat-chasers">
+                {rest.map((r, idx) => (
+                  <a class="goat-row" href={`/players/${r.playerId}`}>
+                    <span class="goat-rank">{medal[idx + 1]}</span>
+                    <span class="goat-mini-face">
+                      {photo(r) ? <img src={photo(r)} alt={nick(r)} /> : <span class="goat-mini-init">{initials(r)}</span>}
+                    </span>
+                    <span class="goat-mini-name">{nick(r)}
+                      <small>🏆 {r.titles} · {Math.round(r.winRate)}% win · {r.digus} digu</small>
+                    </span>
+                    <span class="goat-mini-score">{r.score}</span>
+                  </a>
+                ))}
               </div>
             )}
           </div>
@@ -88,20 +99,29 @@ const stats = (r: GoatRow) => [
 </section>
 
 <style>
-  .goat-card { position: relative; background: var(--card); border: 1.5px solid rgba(212,175,55,0.5); border-radius: var(--radius-lg); box-shadow: 0 0 18px rgba(212,175,55,0.12); padding: 0.95rem 0.85rem 0.8rem; margin-top: 2.8rem; margin-bottom: 1rem; }
-  /* bull/GOAT crest — floats fully above the card with a gap (clear of the border) */
-  .goat-crest { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 10px; width: 66px; height: 46px; display: grid; place-items: center; background: var(--card); border: 1.5px solid rgba(212,175,55,0.6); border-radius: 14px; color: #D4AF37; box-shadow: 0 4px 14px rgba(0,0,0,.35), 0 0 12px rgba(212,175,55,.25); }
+  .goat-card { position: relative; background: var(--card); border: 1.5px solid rgba(212,175,55,0.5); border-radius: var(--radius-lg); box-shadow: 0 0 18px rgba(212,175,55,0.12); padding: 1.5rem 0.85rem 0.8rem; margin-top: 2.1rem; margin-bottom: 1rem; }
+  /* bull/GOAT crest — seated on top of the box, its base merging with the top edge */
+  .goat-crest { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: -13px; width: 60px; height: 42px; display: grid; place-items: center; background: var(--card); border: 1.5px solid rgba(212,175,55,0.6); border-bottom: none; border-radius: 13px 13px 0 0; color: #D4AF37; box-shadow: 0 -3px 12px rgba(212,175,55,.18); z-index: 1; }
   .goat-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; margin-bottom: .9rem; }
   .goat-head h2 { font-family: var(--font-heading); font-size: 1.05rem; margin: 0; color: var(--text-primary); }
   .goat-sub { font-size: .66rem; color: var(--text-muted); margin: .12rem 0 0; }
   .goat-all { font-size: .72rem; color: #D4AF37; font-weight: 700; white-space: nowrap; }
   .goat-empty { text-align: center; color: var(--text-muted); font-size: .8rem; padding: 1.6rem .5rem; }
 
-  /* podium: #1 on top, #2 & #3 below */
-  .fut-podium { display: flex; flex-direction: column; align-items: center; gap: .5rem; }
-  .fut-top { width: min(128px, 38%); }
-  .fut-bottom { display: flex; gap: 2.4rem; width: 100%; justify-content: center; }
-  .fut-bottom .fut { width: min(122px, 35%); }
+  /* single GOAT card on top, then 2nd & 3rd as name rows */
+  .goat-body { display: flex; flex-direction: column; align-items: center; }
+  .fut-solo { width: min(172px, 50%); }
+
+  .goat-chasers { width: 100%; margin-top: .8rem; display: flex; flex-direction: column; gap: .35rem; }
+  .goat-row { display: flex; align-items: center; gap: .6rem; padding: .45rem .5rem; border-radius: 10px; text-decoration: none; background: var(--card-raised); border: 1px solid var(--border); }
+  .goat-row:hover { border-color: rgba(212,175,55,.4); }
+  .goat-rank { width: 22px; text-align: center; font-size: .95rem; flex-shrink: 0; }
+  .goat-mini-face { width: 34px; height: 34px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: var(--card); display: grid; place-items: center; border: 1px solid var(--border); }
+  .goat-mini-face img { width: 100%; height: 100%; object-fit: cover; }
+  .goat-mini-init { font-family: var(--font-heading); font-weight: 800; font-size: .72rem; color: #D4AF37; }
+  .goat-mini-name { flex: 1; min-width: 0; font-weight: 700; font-size: .86rem; color: var(--text-primary); display: flex; flex-direction: column; }
+  .goat-mini-name small { font-weight: 600; font-size: .64rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .goat-mini-score { font-family: var(--font-heading); font-weight: 800; font-size: 1.02rem; color: #D4AF37; font-variant-numeric: tabular-nums; flex-shrink: 0; }
 
   .fut { text-decoration: none; display: block; animation: fut-in .55s cubic-bezier(.2,.8,.3,1) both; }
   @keyframes fut-in { from { opacity: 0; transform: translateY(16px) scale(.95); } }
@@ -177,10 +197,8 @@ const stats = (r: GoatRow) => [
   .goat-foot { margin-top: .9rem; padding-top: .55rem; border-top: 1px solid var(--border); font-size: .64rem; color: var(--text-muted); text-align: center; }
 
   @media (max-width: 480px) {
-    .fut-top { width: 60%; }
-    .fut-bottom { gap: 1.4rem; }
-    .fut-bottom .fut { width: 42%; }
-    .fut-photo { height: 84px; } .fut-hero .fut-photo { height: 96px; }
+    .fut-solo { width: 56%; }
+    .fut-photo { height: 92px; } .fut-hero .fut-photo { height: 92px; }
   }
   @media (prefers-reduced-motion: reduce) { .fut, .fut-frame, .fut-in::after { animation: none; } .fut-in::after { display: none; } }
 </style>
