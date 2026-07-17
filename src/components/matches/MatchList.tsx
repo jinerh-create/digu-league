@@ -91,8 +91,17 @@ export default function MatchList() {
 
   async function handleDelete(matchId: string) {
     setDeletingId(matchId);
-    await fetch(`/api/matches/${matchId}`, { method: 'DELETE' });
+    const r = await fetch(`/api/matches/${matchId}`, { method: 'DELETE' });
+    if (!r.ok) {
+      setDeletingId(null);
+      setConfirmDeleteId(null);
+      alert(r.status === 403 ? 'Only an admin can delete a match.' : 'Could not delete the match.');
+      return;
+    }
+    // Deleting cascades the match's games server-side, so every derived view —
+    // leaderboard, records, form chart, scoresheet — recomputes on next load.
     setMatches(prev => prev.filter(m => m.id !== matchId));
+    setClassicMatches(prev => prev.filter(m => m.id !== matchId));
     setDeletingId(null);
     setConfirmDeleteId(null);
   }
@@ -278,6 +287,24 @@ export default function MatchList() {
                     >
                       {m.comment ? `"${m.comment}"` : '+ Add note'}
                     </div>
+                  )}
+                  {canCreate && (
+                    confirmDeleteId === m.id ? (
+                      <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--ember)', fontWeight: 700 }}>Delete this match? The scoresheet, records &amp; standings all adjust.</span>
+                        <button onClick={() => handleDelete(m.id)} disabled={deletingId === m.id}
+                          style={{ padding: '0.25rem 0.6rem', borderRadius: 6, background: 'var(--ember)', color: '#fff', fontWeight: 700, fontSize: '0.72rem', border: 'none', cursor: 'pointer' }}>
+                          {deletingId === m.id ? 'Deleting…' : 'Yes, delete'}
+                        </button>
+                        <button onClick={() => setConfirmDeleteId(null)}
+                          style={{ padding: '0.25rem 0.6rem', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-secondary)', fontWeight: 700, fontSize: '0.72rem', cursor: 'pointer' }}>Cancel</button>
+                      </div>
+                    ) : (
+                      <button onClick={() => setConfirmDeleteId(m.id)} title="Delete match (admin)"
+                        style={{ marginTop: '0.4rem', padding: '0.15rem 0.5rem', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '0.68rem', fontWeight: 700, cursor: 'pointer' }}>
+                        🗑 Delete match
+                      </button>
+                    )
                   )}
                 </div>
               );

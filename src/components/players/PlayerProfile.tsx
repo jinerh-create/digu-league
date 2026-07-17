@@ -375,13 +375,18 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
   const [error, setError] = useState('');
   const [showAllMatches, setShowAllMatches] = useState(false);
   const [monthGinCount, setMonthGinCount] = useState<number | null>(null);
+  type BigMatch = { margin: number; myScore: number; oppScore: number; opponent: string; date: string; matchId: string };
+  const [biggestVictory, setBiggestVictory] = useState<BigMatch | null>(null);
+  const [biggestDefeat, setBiggestDefeat] = useState<BigMatch | null>(null);
 
   useEffect(() => {
     fetch(`/api/players/${playerId}/stats`)
       .then(r => r.json())
-      .then((data: { player: Player; matches: Match[]; totalScore: number; ginCount: number; maxWinStreak: number; perfectMatches: number; centuryHands: number; error?: string }) => {
+      .then((data: { player: Player; matches: Match[]; totalScore: number; ginCount: number; maxWinStreak: number; perfectMatches: number; centuryHands: number; biggestVictory?: BigMatch | null; biggestDefeat?: BigMatch | null; error?: string }) => {
         if (data.error) { setError(data.error); setLoading(false); return; }
         setPlayer(data.player);
+        setBiggestVictory(data.biggestVictory ?? null);
+        setBiggestDefeat(data.biggestDefeat ?? null);
         setMatches(data.matches);
         setTotalScore(data.totalScore ?? 0);
         setGinCount(data.ginCount ?? 0);
@@ -740,6 +745,34 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
             </div>
           ))}
         </div>
+
+        {/* Biggest victory / defeat */}
+        {(biggestVictory || biggestDefeat) && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.625rem', marginBottom: '1rem' }}>
+            {[
+              { rec: biggestVictory, label: 'Biggest Victory', icon: '🏆', color: 'var(--felt-light)', border: 'rgba(99,141,111,0.4)', bg: 'rgba(43,79,55,0.15)' },
+              { rec: biggestDefeat, label: 'Biggest Defeat', icon: '💀', color: 'var(--ember)', border: 'rgba(120,39,13,0.4)', bg: 'rgba(120,39,13,0.12)' },
+            ].map(({ rec, label, icon, color, border, bg }) => (
+              <a key={label} href={rec ? `/scoresheet/${rec.matchId}` : undefined}
+                style={{ display: 'block', background: bg, border: `1px solid ${border}`, borderRadius: 10, padding: '0.7rem 0.75rem', textDecoration: 'none', opacity: rec ? 1 : 0.5, pointerEvents: rec ? 'auto' : 'none' }}>
+                <div style={{ fontSize: '0.5625rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>{icon} {label}</div>
+                {rec ? (
+                  <>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 800, color, marginTop: '0.2rem', fontVariantNumeric: 'tabular-nums' }}>
+                      {label === 'Biggest Victory' ? '+' : '−'}{rec.margin}
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                      {rec.myScore}–{rec.oppScore} vs {rec.opponent}
+                    </div>
+                    <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>{formatDate(rec.date)}</div>
+                  </>
+                ) : (
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>—</div>
+                )}
+              </a>
+            ))}
+          </div>
+        )}
 
         {/* W/D/L bar */}
         {matches.length > 0 && (
