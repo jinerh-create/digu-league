@@ -62,14 +62,6 @@ const stats: [string, number][] = [
   .fut-r2 .fut-in { background: linear-gradient(158deg,#f0cda4 0%,#cd8a4f 38%,#9c5a29 66%,#e0a06a 100%); --ink:#3c2410; --ink2:#7a4a24; }
   .fut-r3 .fut-in { background: linear-gradient(158deg,#9aa2ad 0%,#5a616c 40%,#3a3f47 70%,#727a85 100%); --ink:#eef1f5; --ink2:#c0c6cf; }
 
-  .fut-in::after {
-    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 2;
-    background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,.6) 50%, transparent 60%);
-    background-size: 300% 100%; animation: fut-sheen 3.8s linear infinite;
-  }
-  @keyframes fut-sheen { to { background-position: -300% 0; } }
-  .fut-r1 .fut-in::after { animation-delay: .5s; } .fut-r2 .fut-in::after { animation-delay: 1s; } .fut-r3 .fut-in::after { animation-delay: 1.4s; }
-
   .fut-photo { position: relative; width: 100%; height: 130px; overflow: hidden; }
   .fut-hero .fut-photo { height: 185px; }
   .fut-photo img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
@@ -91,5 +83,5 @@ const stats: [string, number][] = [
   .fut-hero .fut-stat b { font-size: .74rem; }
   .fut-stat small { font-size: .46rem; font-weight: 800; letter-spacing: .02em; color: var(--ink2); }
 
-  @media (prefers-reduced-motion: reduce) { .fut, .fut-frame, .fut-in::after { animation: none; } .fut-in::after { display: none; } }
+  @media (prefers-reduced-motion: reduce) { .fut, .fut-frame { animation: none; } }
 </style>
