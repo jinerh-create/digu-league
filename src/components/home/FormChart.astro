@@ -79,18 +79,18 @@ if (overflow > 0) for (const l of labels) l.y -= overflow; // push the stack bac
           ))}
           {lines.map(l => (
             <path d={l.d} fill="none" stroke={l.color} stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round"
-              vector-effect="non-scaling-stroke" data-line={l.p.id} class="fc-line" />
+              stroke-linecap="round" stroke-linejoin="round" pathLength="1"
+              vector-effect="non-scaling-stroke" data-line={l.p.id} class="fc-line fc-draw" />
           ))}
           {lines.map(l => l.last && (
             <circle cx={l.last[0]} cy={l.last[1]} r="3" fill={l.color}
-              stroke="var(--card)" stroke-width="1.5" data-dot={l.p.id} class="fc-line" />
+              stroke="var(--card)" stroke-width="1.5" data-dot={l.p.id} class="fc-line fc-fadein" />
           ))}
         </svg>
         {/* HTML labels, not SVG <text>: the svg stretches with preserveAspectRatio="none",
             which would distort glyphs. Percent-positioned spans keep true proportions. */}
         {labels.map(l => (
-          <span class="fc-name fc-line" data-dot={l.id}
+          <span class="fc-name fc-line fc-fadein" data-dot={l.id}
             style={`left:${((l.x / W) * 100).toFixed(2)}%;top:${((l.y / H) * 100).toFixed(2)}%;color:${l.color}`}>{l.name}</span>
         ))}
       </div>
@@ -131,6 +131,19 @@ if (overflow > 0) for (const l of labels) l.y -= overflow; // push the stack bac
   .fc-name { position: absolute; transform: translateY(-58%); font-size: .62rem; font-weight: 700; font-family: var(--font-body); white-space: nowrap; pointer-events: none; text-shadow: 0 1px 3px var(--card); }
   .fc-line { transition: opacity .18s; }
   .fc-line.off { opacity: .1; }
+
+  /* entrance: each line traces itself, then dots + names fade in.
+     pathLength="1" normalises the draw regardless of the stretched viewBox.
+     Lines animate stroke-dash (not opacity) so the legend toggle still works;
+     dots/names use a backwards-filled fade so they can't override .off. */
+  .fc-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: fc-trace 1.4s cubic-bezier(.4,.05,.2,1) forwards; }
+  @keyframes fc-trace { to { stroke-dashoffset: 0; } }
+  .fc-fadein { animation: fc-appear .5s ease 1.25s backwards; }
+  @keyframes fc-appear { from { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .fc-draw { stroke-dasharray: none; stroke-dashoffset: 0; animation: none; }
+    .fc-fadein { animation: none; }
+  }
 
   .fc-legend { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .55rem; }
   .fc-chip {
