@@ -11,6 +11,40 @@
    derived from the same numbers the leaderboard uses — nothing is stored, so it
    updates the moment a match is recorded. */
 import { computePlayerStats } from './db';
+import type { PlayerStats } from './types';
+
+/** Lightweight match row — just what monthly-title ranking needs. */
+export interface TitleMatch { winner_id: string | null; player1_id: string; player2_id: string; team1_player2_id: string | null; team2_player2_id: string | null; started_at: string; }
+
+/** Monthly champions computed IN MEMORY from matches (no per-month DB round-trips).
+ *  Ranks each month by wins → win rate, matching the leaderboard. Returns titles
+ *  per player + the champion of each month. This replaces N× computePlayerStats. */
+export function monthlyTitles(matches: TitleMatch[]): { titles: Record<string, number>; champByMonth: Record<string, string>; months: string[] } {
+  const byMonth = new Map<string, Map<string, { won: number; played: number }>>();
+  for (const m of matches) {
+    const ym = (m.started_at || '').slice(0, 7);
+    if (!ym) continue;
+    const t1Won = m.winner_id ? m.winner_id === m.player1_id : null;
+    const tab = byMonth.get(ym) || byMonth.set(ym, new Map()).get(ym)!;
+    const ids: [string | null, boolean][] = [[m.player1_id, true], [m.player2_id, false], [m.team1_player2_id, true], [m.team2_player2_id, false]];
+    for (const [pid, on1] of ids) {
+      if (!pid) continue;
+      const e = tab.get(pid) || tab.set(pid, { won: 0, played: 0 }).get(pid)!;
+      e.played++;
+      if (t1Won !== null && on1 === t1Won) e.won++;
+    }
+  }
+  const months = [...byMonth.keys()].sort();
+  const titles: Record<string, number> = {}; const champByMonth: Record<string, string> = {};
+  for (const ym of months) {
+    const ranked = [...byMonth.get(ym)!.entries()]
+      .map(([id, s]) => ({ id, won: s.won, rate: s.played ? s.won / s.played : 0 }))
+      .sort((a, b) => b.won - a.won || b.rate - a.rate);
+    const champ = ranked[0];
+    if (champ && champ.won > 0) { titles[champ.id] = (titles[champ.id] || 0) + 1; champByMonth[ym] = champ.id; }
+  }
+  return { titles, champByMonth, months };
+}
 
 export interface GoatRow {
   playerId: string; name: string; nickname: string | null; avatar_b64: string | null;
@@ -21,30 +55,22 @@ export interface GoatRow {
 const WEIGHTS = { titles: 0.35, winRate: 0.30, gamePct: 0.20, digus: 0.15 };
 const MIN_MATCHES = 8; // below this, a player is ranked but can't realistically top
 
-export async function computeGOAT(db: D1Database): Promise<{ goat: GoatRow | null; board: GoatRow[]; totalTitles: number }> {
-  // All-time stats (no month filter).
-  const all = await computePlayerStats(db);
+export async function computeGOAT(
+  db: D1Database,
+  shared?: { allStats?: PlayerStats[]; titles?: Record<string, number> },
+): Promise<{ goat: GoatRow | null; board: GoatRow[]; totalTitles: number }> {
+  // All-time stats — reuse the caller's if provided (records page shares one).
+  const all = shared?.allStats ?? await computePlayerStats(db);
 
-  // League titles: the #1 player of each completed month, using the SAME ranking
-  // the leaderboard applies (wins → win rate → points).
-  const monthsRes = await db.prepare(
-    `SELECT DISTINCT strftime('%Y-%m', started_at) AS ym
-       FROM matches WHERE completed_at IS NOT NULL AND is_classic = 0 AND started_at IS NOT NULL
-      ORDER BY ym`,
-  ).all<{ ym: string }>();
-  const months = (monthsRes.results || []).map(r => r.ym).filter(Boolean);
-
-  const titles: Record<string, number> = {};
-  for (const ym of months) {
-    const monthStats = await computePlayerStats(db, ym);
-    const ranked = monthStats
-      .filter(s => s.matches_played > 0)
-      .sort((a, b) =>
-        b.matches_won - a.matches_won ||
-        b.win_rate - a.win_rate ||
-        b.total_points_scored - a.total_points_scored);
-    const champ = ranked[0];
-    if (champ && champ.matches_won > 0) titles[champ.player_id] = (titles[champ.player_id] || 0) + 1;
+  // League titles — reuse the caller's, or compute in ONE lightweight matches
+  // fetch (was N× computePlayerStats, one per month).
+  let titles = shared?.titles;
+  if (!titles) {
+    const mres = await db.prepare(
+      `SELECT winner_id, player1_id, player2_id, team1_player2_id, team2_player2_id, started_at
+         FROM matches WHERE is_classic = 0 AND completed_at IS NOT NULL AND started_at IS NOT NULL`,
+    ).all<TitleMatch>();
+    titles = monthlyTitles(mres.results || []).titles;
   }
   const totalTitles = Object.values(titles).reduce((a, b) => a + b, 0);
 

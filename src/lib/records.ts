@@ -55,24 +55,43 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
     return a;
   };
 
-  // monthly champions (same ranking as the leaderboard)
-  const months = [...new Set(matches.map((m: any) => (m.started_at || '').slice(0, 7)).filter(Boolean))].sort();
-  const titles = new Map<string, number>();       // championships
+  // monthly stats — computed IN MEMORY from the matches+games already fetched
+  // (was a per-month computePlayerStats DB call each; now zero extra queries).
+  type MStat = { won: number; played: number; points: number; gins: number };
+  const monthly = new Map<string, Map<string, MStat>>();
+  const mstat = (ym: string, pid: string): MStat => {
+    const mm = monthly.get(ym) || monthly.set(ym, new Map()).get(ym)!;
+    return mm.get(pid) || mm.set(pid, { won: 0, played: 0, points: 0, gins: 0 }).get(pid)!;
+  };
+  for (const m of matches) {
+    const ym = (m.started_at || '').slice(0, 7); if (!ym) continue;
+    const t1Won = m.winner_id ? m.winner_id === m.player1_id : null;
+    for (const [pid, on1] of [[m.player1_id, true], [m.player2_id, false], [m.team1_player2_id, true], [m.team2_player2_id, false]] as [string | null, boolean][]) {
+      if (!pid) continue; const e = mstat(ym, pid); e.played++; if (t1Won !== null && on1 === t1Won) e.won++;
+    }
+    for (const g of (gamesByMatch.get(m.id) || [])) {
+      const w1 = g.winner_id === m.player1_id || g.winner_id === m.team1_player2_id;
+      for (const pid of (w1 ? [m.player1_id, m.team1_player2_id] : [m.player2_id, m.team2_player2_id])) if (pid) mstat(ym, pid).points += g.score_awarded;
+      if (g.is_gin === 1) mstat(ym, g.gin_player_id ?? g.winner_id).gins++;
+    }
+  }
+  const months = [...monthly.keys()].sort();
+  const titles = new Map<string, number>();
   const runnerUp = new Map<string, number>();
   const third = new Map<string, number>();
   const champByMonth: Record<string, string> = {};
   let bestSeasonWins = { id: '', v: 0, ym: '' }, bestSeasonPts = { id: '', v: 0, ym: '' }, bestSeasonGin = { id: '', v: 0, ym: '' }, bestSeasonRate = { id: '', v: 0, ym: '', played: 0 };
   for (const ym of months) {
-    const ms = (await computePlayerStats(db, ym)).filter(s => s.matches_played > 0)
-      .sort((a, b) => b.matches_won - a.matches_won || b.win_rate - a.win_rate || b.total_points_scored - a.total_points_scored);
-    if (ms[0]?.matches_won > 0) { titles.set(ms[0].player_id, (titles.get(ms[0].player_id) || 0) + 1); champByMonth[ym] = ms[0].player_id; }
-    if (ms[1]) runnerUp.set(ms[1].player_id, (runnerUp.get(ms[1].player_id) || 0) + 1);
-    if (ms[2]) third.set(ms[2].player_id, (third.get(ms[2].player_id) || 0) + 1);
-    for (const s of ms) {
-      if (s.matches_won > bestSeasonWins.v) bestSeasonWins = { id: s.player_id, v: s.matches_won, ym };
-      if (s.total_points_scored > bestSeasonPts.v) bestSeasonPts = { id: s.player_id, v: s.total_points_scored, ym };
-      if (s.gin_count > bestSeasonGin.v) bestSeasonGin = { id: s.player_id, v: s.gin_count, ym };
-      if (s.matches_played >= 5 && s.win_rate > bestSeasonRate.v) bestSeasonRate = { id: s.player_id, v: s.win_rate, ym, played: s.matches_played };
+    const ranked = [...monthly.get(ym)!.entries()].map(([id, s]) => ({ id, ...s, rate: s.played ? Math.round((s.won / s.played) * 1000) / 10 : 0 }))
+      .sort((a, b) => b.won - a.won || b.rate - a.rate || b.points - a.points);
+    if (ranked[0]?.won > 0) { titles.set(ranked[0].id, (titles.get(ranked[0].id) || 0) + 1); champByMonth[ym] = ranked[0].id; }
+    if (ranked[1]) runnerUp.set(ranked[1].id, (runnerUp.get(ranked[1].id) || 0) + 1);
+    if (ranked[2]) third.set(ranked[2].id, (third.get(ranked[2].id) || 0) + 1);
+    for (const s of ranked) {
+      if (s.won > bestSeasonWins.v) bestSeasonWins = { id: s.id, v: s.won, ym };
+      if (s.points > bestSeasonPts.v) bestSeasonPts = { id: s.id, v: s.points, ym };
+      if (s.gins > bestSeasonGin.v) bestSeasonGin = { id: s.id, v: s.gins, ym };
+      if (s.played >= 5 && s.rate > bestSeasonRate.v) bestSeasonRate = { id: s.id, v: s.rate, ym, played: s.played };
     }
   }
   const champs = new Set(Object.values(champByMonth));
@@ -179,8 +198,8 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
 
   // ── all-time stats + GOAT + awards ──────────────────────────────────────────
   const allStats = await computePlayerStats(db);
-  const statById = new Map(allStats.map(s => [s.player_id, s]));
-  const goat = await computeGOAT(db);
+  const titlesObj = Object.fromEntries(titles);
+  const goat = await computeGOAT(db, { allStats, titles: titlesObj }); // share — no refetch
   const awardCount = new Map<string, Map<string, number>>(); // playerId -> key -> n
   for (const a of awards) { const m = awardCount.get(a.player_id) || awardCount.set(a.player_id, new Map()).get(a.player_id)!; m.set(a.award_key, (m.get(a.award_key) || 0) + 1); }
   const awardHolder = (key: string) => { let best: { id: string; n: number } | null = null; for (const [pid, m] of awardCount) { const n = m.get(key) || 0; if (n > 0 && (!best || n > best.n)) best = { id: pid, n }; } return best; };
