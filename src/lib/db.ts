@@ -747,3 +747,20 @@ export async function getPlayerForm(
 
   return { series, matches: rows.length };
 }
+
+/* ── Verification ─────────────────────────────────────────────────────────────
+   Existing players are grandfathered verified (migration 0013). New players
+   start unverified and request verification; an admin approves. */
+export async function requestVerification(db: D1Database, playerId: string): Promise<void> {
+  await db.prepare('UPDATE players SET verify_requested = 1 WHERE id = ? AND verified = 0').bind(playerId).run();
+}
+export async function setVerified(db: D1Database, playerId: string, verified: boolean): Promise<void> {
+  await db.prepare('UPDATE players SET verified = ?, verify_requested = 0 WHERE id = ?')
+    .bind(verified ? 1 : 0, playerId).run();
+}
+export async function getVerificationRequests(db: D1Database) {
+  const res = await db.prepare(
+    'SELECT id, name, nickname, joined_at FROM players WHERE verify_requested = 1 AND verified = 0 ORDER BY joined_at ASC',
+  ).all();
+  return res.results;
+}

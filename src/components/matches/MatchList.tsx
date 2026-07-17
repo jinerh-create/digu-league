@@ -242,18 +242,18 @@ export default function MatchList() {
               return (
                 <div key={m.id} className="card match-card" style={{ border: '1.5px solid rgba(212,175,55,0.45)', boxShadow: '0 0 14px rgba(212,175,55,0.12), inset 0 1px 0 rgba(212,175,55,0.08)', position: 'relative', overflow: 'hidden' }}>
                   
-              <div className="match-row">
-                    <div className="match-vs">
+              <div className="match-row" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <div className="match-vs" style={{ flex: 1, minWidth: 0 }}>
                       <span className={`player-name ${m.winner_id === m.player1_id ? 'winner' : isDraw ? '' : 'loser'}`}>{s1}</span>
                       <span className="vs-text">vs</span>
                       <span className={`player-name ${m.winner_id === m.player2_id ? 'winner' : isDraw ? '' : 'loser'}`}>{s2}</span>
                     </div>
+                    {isDraw
+                      ? <span style={{ flexShrink: 0, padding: '0.2rem 0.6rem', background: 'rgba(100,100,100,0.28)', color: '#aaa', borderRadius: 999, fontSize: '0.72rem', fontWeight: 700 }}>Draw</span>
+                      : <span style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.22rem 0.65rem', background: 'linear-gradient(135deg, #b8922a 0%, #d4af37 50%, #e8c84a 100%)', color: '#1a1000', borderRadius: 999, fontWeight: 800, fontSize: '0.72rem', boxShadow: '0 1px 5px rgba(212,175,55,0.35)' }}>🏆 {winnerSide}</span>
+                    }
                   </div>
-                  {isDraw
-                    ? <div style={{ display: 'block', width: '100%', textAlign: 'center', padding: '0.375rem 0.75rem', marginTop: '0.5rem', background: 'rgba(100,100,100,0.3)', color: '#aaa', borderRadius: 20, fontSize: '0.8125rem', fontWeight: 700, boxSizing: 'border-box' }}>Draw</div>
-                    : <div style={{ display: 'block', width: '100%', textAlign: 'center', padding: '0.4rem 0.75rem', marginTop: '0.5rem', background: 'linear-gradient(135deg, #b8922a 0%, #d4af37 50%, #e8c84a 100%)', color: '#1a1000', border: '1px solid #d4af37', borderRadius: 20, fontWeight: 800, letterSpacing: '0.05em', boxShadow: '0 2px 8px rgba(212,175,55,0.4)', textTransform: 'uppercase', fontSize: '0.8125rem', boxSizing: 'border-box' }}>🏆 {winnerSide}</div>
-                  }
-                  <div className="match-sub" style={{ marginTop: '0.5rem' }}>
+                  <div className="match-sub" style={{ marginTop: '0.4rem' }}>
                     <span>{m.team1_player2_id ? '2v2' : '1v1'} · <DateEditor matchId={m.id} started_at={m.started_at} editing={editingDate === m.id} saving={savingDate}
                       onEdit={() => setEditingDate(m.id)} onSave={handleDateChange} onCancel={() => setEditingDate(null)} /></span>
                     <a href={`/scoresheet/${m.id}`} style={{ color: 'var(--felt-light)', fontWeight: 600 }}>Scoresheet →</a>
@@ -288,7 +288,7 @@ export default function MatchList() {
 
       <style>{`
         .match-card {
-    padding: 0.875rem 1rem; cursor: default;
+    padding: 0.6rem 0.8rem; cursor: default;
     border: 1px solid rgba(212,175,55,0.32) !important;
     box-shadow: 0 0 10px rgba(212,175,55,0.07), inset 0 1px 0 rgba(212,175,55,0.06) !important;
     position: relative; overflow: hidden;

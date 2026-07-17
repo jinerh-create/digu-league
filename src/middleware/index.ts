@@ -113,8 +113,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const isCreateClassic = pathname === '/api/classic' && method === 'POST';
     const isAddGame = /^\/api\/matches\/[^/]+\/games$/.test(pathname) && method === 'POST';
     const isFinishMatch = /^\/api\/matches\/[^/]+\/finish$/.test(pathname) && method === 'POST';
+    // /api/verify is whitelisted so a non-admin player can request verification;
+    // the endpoint itself enforces admin for the approve/reject decisions.
+    const isVerify = pathname === '/api/verify' && method === 'POST';
 
-    if (isGameMutation || isCreateMatch || isCreateClassic || isAddGame || isFinishMatch) return next();
+    if (isGameMutation || isCreateMatch || isCreateClassic || isAddGame || isFinishMatch || isVerify) return next();
 
     // Everything else: admin only
     if (role !== 'admin') {

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import type { Player } from '../../lib/types';
+import VerifiedBadge from '../common/VerifiedBadge';
 
 function Avatar({ name, avatar_b64, size = 40 }: { name: string; avatar_b64: string | null; size?: number }) {
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
@@ -87,6 +88,14 @@ export default function PlayerList() {
       body: JSON.stringify({ active: 0 }),
     });
     setPlayers(prev => prev.filter(p => p.id !== id));
+  }
+
+  async function handleVerify(id: string) {
+    const r = await fetch('/api/verify', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ playerId: id, action: 'approve' }),
+    });
+    if (r.ok) setPlayers(prev => prev.map(p => p.id === id ? ({ ...p, verified: 1, verify_requested: 0 }) : p));
   }
 
   function startEdit(p: Player) {
@@ -241,7 +250,10 @@ export default function PlayerList() {
                 </form>
               ) : (
                 <>
-                  <div style={{ fontWeight: 700, fontSize: '0.9375rem' }}>{p.name}</div>
+                  <div style={{ fontWeight: 700, fontSize: '0.9375rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                    {p.name}
+                    {(p as { verified?: number }).verified ? <VerifiedBadge /> : null}
+                  </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginTop: '0.15rem', flexWrap: 'wrap' }}>
                     {nickEditId === p.id ? (
                       <form onSubmit={e => { e.preventDefault(); handleSaveNickname(p.id); }} style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
@@ -277,7 +289,13 @@ export default function PlayerList() {
             </div>
 
             {editingId !== p.id && (
-              <div style={{ display: 'flex', gap: '0.375rem', flexShrink: 0 }}>
+              <div style={{ display: 'flex', gap: '0.375rem', flexShrink: 0, alignItems: 'center' }}>
+                {!(p as { verified?: number }).verified && (p as { verify_requested?: number }).verify_requested ? (
+                  <button type="button" onClick={() => handleVerify(p.id)}
+                    style={{ fontSize: '0.72rem', padding: '0.375rem 0.7rem', minHeight: 'auto', borderRadius: 6, border: '1px solid #D4AF37', background: 'rgba(212,175,55,0.14)', color: '#D4AF37', fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                    ✦ Verify
+                  </button>
+                ) : null}
                 <a
                   href={`/players/${p.id}`}
                   className="btn btn-ghost"

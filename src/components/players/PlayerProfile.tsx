@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { Player, Match } from '../../lib/types';
+import VerifiedBadge from '../common/VerifiedBadge';
+import VerifyControl from '../common/VerifyControl';
 
 function Avatar({ name, b64, size = 64 }: { name: string; b64?: string | null; size?: number }) {
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
@@ -610,8 +612,9 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <div style={{ fontSize: '1.375rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+              <div style={{ fontSize: '1.375rem', fontWeight: 800, color: 'var(--text-primary)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
                 {player.nickname || player.name}
+                {(player as { verified?: number }).verified ? <VerifiedBadge size={19} /> : null}
               </div>
               <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
@@ -627,6 +630,9 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
               Since {formatDate(player.joined_at)}
             </div>
+            {!(player as { verified?: number }).verified && (
+              <VerifyControl playerId={player.id} requested={!!(player as { verify_requested?: number }).verify_requested} />
+            )}
             {level.next > 0 && (
               <div style={{ marginTop: '0.5rem' }}>
                 <div style={{ height: 4, background: 'var(--card-raised)', borderRadius: 2, overflow: 'hidden', width: 160 }}>

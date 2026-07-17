@@ -7,6 +7,8 @@ export interface Player {
   active: number;
   trophies_json: string; // JSON array of trophy objects
   is_guest: number; // 1 = one-off guest for a classic match (excluded from league)
+  verified: number; // 1 = gold verified badge (existing players grandfathered; new players request)
+  verify_requested: number; // 1 = player has requested verification, awaiting admin approval
 }
 
 export interface Match {
