@@ -338,7 +338,7 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
       entry('season-legend', 'Season Legend', '🏛️', bestSeasonPts.id, `${bestSeasonPts.v} pts`),
     ]},
     { title: 'Legendary', emoji: '🌟', records: [
-      entry('digu-king', 'DIGU King', '👑', bestSeasonPts.id, `${bestSeasonPts.v} pts`, 'Most points in a month'),
+      entry('digu-king', 'DIGU King', '👑', mostGin?.id, `${mostGin?.v ?? 0} digus`, 'Most digus of all time'),
       entry('digu-emperor', 'DIGU Emperor', '🏰', mostTitles?.id, `${mostTitles?.v ?? 0} titles`),
       entry('goat', 'GOAT', '🐐', goatTop?.playerId, goatTop ? `${goatTop.score}` : '—', 'Highest career rating'),
       entry('iron', 'Iron Player', '🦾', mostPlayed?.id, mostPlayed ? `${mostPlayed.v} matches` : '—'),
@@ -350,11 +350,10 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
       entry('ultimate', 'Ultimate Record Holder', '💎', ultimate?.id, ultimate ? `${ultimate.v} records` : '—'),
     ]},
     { title: 'Premium Signature', emoji: '💎', records: [
-      entry('p-king', 'DIGU King', '👑', bestSeasonPts.id, `${bestSeasonPts.v} pts`, 'Most monthly points'),
+      entry('p-king', 'DIGU King', '👑', mostGin?.id, `${mostGin?.v ?? 0} digus`, 'Most digus'),
       entry('p-goat', 'GOAT', '🐐', goatTop?.playerId, goatTop ? `${goatTop.score}` : '—', 'Highest career rating'),
       entry('p-streak', 'The Streak', '🔥', longestStreak?.id, `${longestStreak?.v ?? 0} wins`, 'Longest winning streak'),
       entry('p-lightning', 'Lightning Hand', '⚡', fastWin.v < Infinity ? fastWin.id : null, fastWin.v < Infinity ? fmtMins(fastWin.v) : '—', 'Fastest recorded win'),
-      entry('p-gin-machine', 'Gin Machine', '🃏', mostGin?.id, `${mostGin?.v ?? 0} gins`, 'Most Gin finishes'),
       untracked('p-deadwood', 'Deadwood Master', '🍃', 'Deadwood amounts are not recorded yet'),
       untracked('p-undercut', 'Undercut Assassin', '🛡️', 'Undercuts are not recorded yet'),
       (mostWins && mostWins.v >= 100) ? entry('p-century', 'Century Club', '💯', mostWins.id, `${mostWins.v} wins`) : untracked('p-century', 'Century Club', '💯', 'First to 100 wins — not reached yet'),
