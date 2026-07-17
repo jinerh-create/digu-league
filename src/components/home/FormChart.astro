@@ -14,7 +14,7 @@ const { series, matches } = Astro.props;
 const COLORS = ['#00D47E', '#4D9FFF', '#FF4A6A', '#FFD700', '#B77BFF', '#FF9F45', '#2EE6D6', '#FF6FD8'];
 
 const W = 640, H = 232;
-const PAD = { t: 14, r: 12, b: 22, l: 30 };
+const PAD = { t: 14, r: 64, b: 22, l: 30 }; // right pad holds the end-of-line name labels
 const iw = W - PAD.l - PAD.r, ih = H - PAD.t - PAD.b;
 
 const has = series.length > 0 && matches > 0;
@@ -37,6 +37,20 @@ const lines = series.map((p, k) => {
 
 const ticks = [yMax, Math.round(yMax / 2), 0, -Math.round(yMax / 2), yMin]
   .filter((v, i, a) => a.indexOf(v) === i);
+
+/* End-of-line name labels with collision avoidance: half the roster finishes
+   within a few points of each other, so naive labels stack. Sort by y, then
+   sweep down enforcing a minimum gap, clamped to the plot area. */
+const LABEL_GAP = 11;
+const labels = lines
+  .filter(l => l.last)
+  .map(l => ({ id: l.p.id, name: l.p.name, color: l.color, x: l.last![0] + 7, y: l.last![1] + 3 }))
+  .sort((a, b) => a.y - b.y);
+for (let i = 1; i < labels.length; i++) {
+  if (labels[i].y - labels[i - 1].y < LABEL_GAP) labels[i].y = labels[i - 1].y + LABEL_GAP;
+}
+const overflow = labels.length ? labels[labels.length - 1].y - (H - 4) : 0;
+if (overflow > 0) for (const l of labels) l.y -= overflow; // push the stack back up if it ran off the bottom
 ---
 
 <section class="form-card">
@@ -73,6 +87,12 @@ const ticks = [yMax, Math.round(yMax / 2), 0, -Math.round(yMax / 2), yMin]
               stroke="var(--card)" stroke-width="1.5" data-dot={l.p.id} class="fc-line" />
           ))}
         </svg>
+        {/* HTML labels, not SVG <text>: the svg stretches with preserveAspectRatio="none",
+            which would distort glyphs. Percent-positioned spans keep true proportions. */}
+        {labels.map(l => (
+          <span class="fc-name fc-line" data-dot={l.id}
+            style={`left:${((l.x / W) * 100).toFixed(2)}%;top:${((l.y / H) * 100).toFixed(2)}%;color:${l.color}`}>{l.name}</span>
+        ))}
       </div>
 
       <div class="fc-legend" id="fcLegend">
@@ -107,6 +127,8 @@ const ticks = [yMax, Math.round(yMax / 2), 0, -Math.round(yMax / 2), yMin]
   .fc-wrap { width: 100%; }
   .fc-svg { width: 100%; height: 190px; display: block; overflow: visible; }
   .fc-tick { fill: var(--text-muted); font-size: 9px; font-family: var(--font-mono); }
+  .fc-wrap { position: relative; }
+  .fc-name { position: absolute; transform: translateY(-58%); font-size: .62rem; font-weight: 700; font-family: var(--font-body); white-space: nowrap; pointer-events: none; text-shadow: 0 1px 3px var(--card); }
   .fc-line { transition: opacity .18s; }
   .fc-line.off { opacity: .1; }
 
