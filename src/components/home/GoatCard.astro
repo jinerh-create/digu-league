@@ -82,24 +82,25 @@ const stats = (r: GoatRow) => [
   .goat-empty { text-align: center; color: var(--text-muted); font-size: .8rem; padding: 1.6rem .5rem; }
 
   /* podium: #1 on top, #2 & #3 below */
-  .fut-podium { display: flex; flex-direction: column; align-items: center; gap: .7rem; }
-  .fut-top { width: min(230px, 62%); }
-  .fut-bottom { display: flex; gap: .7rem; width: 100%; justify-content: center; }
-  .fut-bottom .fut { width: min(210px, 47%); }
+  .fut-podium { display: flex; flex-direction: column; align-items: center; gap: .6rem; }
+  .fut-top { width: min(178px, 52%); }
+  .fut-bottom { display: flex; gap: .6rem; width: 100%; justify-content: center; }
+  .fut-bottom .fut { width: min(166px, 44%); }
 
   .fut { text-decoration: none; display: block; animation: fut-in .55s cubic-bezier(.2,.8,.3,1) both; }
   @keyframes fut-in { from { opacity: 0; transform: translateY(16px) scale(.95); } }
 
   /* gold shield frame */
   .fut-frame {
-    position: relative; padding: 3px;
+    position: relative; padding: 2px;
     background: linear-gradient(150deg, #fbe6a6 0%, #d9b03e 28%, #a9791f 55%, #f0d477 78%, #b4841c 100%);
-    clip-path: polygon(7% 0, 93% 0, 100% 6%, 100% 85%, 50% 100%, 0 85%, 0 6%);
-    box-shadow: 0 8px 22px rgba(0,0,0,.4), inset 0 0 12px rgba(255,255,255,.25);
+    /* shallower bottom taper so the last stats row is never clipped */
+    clip-path: polygon(6% 0, 94% 0, 100% 5%, 100% 90%, 50% 100%, 0 90%, 0 5%);
+    box-shadow: 0 6px 16px rgba(0,0,0,.4), inset 0 0 10px rgba(255,255,255,.25);
     transition: transform .2s;
   }
-  .fut:hover .fut-frame { transform: translateY(-5px); }
-  .fut-hero .fut-frame { box-shadow: 0 10px 30px rgba(184,134,11,.35), 0 0 22px rgba(212,175,55,.3), inset 0 0 12px rgba(255,255,255,.3); }
+  .fut:hover .fut-frame { transform: translateY(-4px); }
+  .fut-hero .fut-frame { box-shadow: 0 8px 24px rgba(184,134,11,.35), 0 0 18px rgba(212,175,55,.3), inset 0 0 10px rgba(255,255,255,.3); }
 
   .fut-in {
     position: relative; overflow: hidden;
@@ -107,46 +108,41 @@ const stats = (r: GoatRow) => [
     background:
       linear-gradient(158deg, rgba(212,175,55,.14), transparent 42%),
       linear-gradient(158deg, var(--card-raised) 0%, var(--card) 55%, var(--surface) 100%);
-    clip-path: polygon(7% 0, 93% 0, 100% 6%, 100% 85%, 50% 100%, 0 85%, 0 6%);
+    clip-path: polygon(6% 0, 94% 0, 100% 5%, 100% 90%, 50% 100%, 0 90%, 0 5%);
     color: var(--text-primary);
   }
 
-  /* full-bleed player photo across the top */
-  .fut-photo { position: relative; width: 100%; height: 150px; overflow: hidden; }
-  .fut-hero .fut-photo { height: 172px; }
+  /* full-bleed player photo across the top — compact */
+  .fut-photo { position: relative; width: 100%; height: 92px; overflow: hidden; }
+  .fut-hero .fut-photo { height: 108px; }
   .fut-photo img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
-  .fut-init { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-heading); font-weight: 800; font-size: 2.6rem; color: var(--gold); }
-  /* scrim: darken top-left for the rating, and fade the photo's base into the card */
+  .fut-init { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-heading); font-weight: 800; font-size: 2rem; color: var(--gold); }
   .fut-scrim { position: absolute; inset: 0; background:
     linear-gradient(105deg, rgba(11,15,26,.72) 0%, rgba(11,15,26,.3) 32%, transparent 55%),
-    linear-gradient(0deg, var(--card-raised), transparent 26%); }
+    linear-gradient(0deg, var(--card-raised), transparent 30%); }
 
-  .fut-badge { position: absolute; top: .5rem; left: .6rem; display: flex; flex-direction: column; align-items: flex-start; z-index: 1; text-shadow: 0 1px 4px rgba(0,0,0,.7); }
-  .fut-rating { font-family: var(--font-heading); font-weight: 800; font-size: 2rem; line-height: .82; color: var(--gold); }
-  .fut-hero .fut-rating { font-size: 2.5rem; }
-  .fut-pos { font-size: .62rem; font-weight: 800; letter-spacing: .08em; color: #ffe9a8; margin-top: .15rem; }
-  .fut-medal { position: absolute; top: .45rem; right: .5rem; font-size: 1.05rem; z-index: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,.5)); }
+  .fut-badge { position: absolute; top: .35rem; left: .45rem; display: flex; flex-direction: column; align-items: flex-start; z-index: 1; text-shadow: 0 1px 4px rgba(0,0,0,.7); }
+  .fut-rating { font-family: var(--font-heading); font-weight: 800; font-size: 1.5rem; line-height: .82; color: var(--gold); }
+  .fut-hero .fut-rating { font-size: 1.8rem; }
+  .fut-pos { font-size: .54rem; font-weight: 800; letter-spacing: .07em; color: #ffe9a8; margin-top: .1rem; }
+  .fut-medal { position: absolute; top: .3rem; right: .35rem; font-size: .9rem; z-index: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,.5)); }
 
-  .fut-name { text-align: center; font-family: var(--font-heading); font-weight: 800; font-size: .9rem; letter-spacing: .03em; text-transform: uppercase; color: var(--gold); padding: .35rem .3rem .2rem; margin: 0 .5rem; border-bottom: 1px solid rgba(212,175,55,.3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .fut-hero .fut-name { font-size: 1.05rem; }
+  .fut-name { text-align: center; font-family: var(--font-heading); font-weight: 800; font-size: .8rem; letter-spacing: .02em; text-transform: uppercase; color: var(--gold); padding: .28rem .3rem .18rem; margin: 0 .45rem; border-bottom: 1px solid rgba(212,175,55,.3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fut-hero .fut-name { font-size: .92rem; }
 
-  .fut-stats { display: grid; grid-template-columns: 1fr 1fr; gap: .12rem .5rem; padding: .4rem .7rem 1.4rem; }
-  .fut-hero .fut-stats { padding-bottom: 1.7rem; }
-  .fut-stat { display: flex; align-items: baseline; gap: .28rem; justify-content: flex-start; }
-  .fut-stat b { font-family: var(--font-heading); font-weight: 800; font-size: .92rem; color: var(--text-primary); font-variant-numeric: tabular-nums; min-width: 1.6ch; text-align: right; }
-  .fut-hero .fut-stat b { font-size: 1rem; }
-  .fut-stat small { font-size: .58rem; font-weight: 800; letter-spacing: .04em; color: var(--text-muted); }
+  .fut-stats { display: grid; grid-template-columns: 1fr 1fr; gap: .06rem .45rem; padding: .35rem .55rem .9rem; }
+  .fut-stat { display: flex; align-items: baseline; gap: .25rem; justify-content: flex-start; }
+  .fut-stat b { font-family: var(--font-heading); font-weight: 800; font-size: .82rem; color: var(--text-primary); font-variant-numeric: tabular-nums; min-width: 1.5ch; text-align: right; }
+  .fut-hero .fut-stat b { font-size: .9rem; }
+  .fut-stat small { font-size: .54rem; font-weight: 800; letter-spacing: .03em; color: var(--text-muted); }
 
   .goat-foot { margin-top: .9rem; padding-top: .55rem; border-top: 1px solid var(--border); font-size: .64rem; color: var(--text-muted); text-align: center; }
 
   @media (max-width: 480px) {
-    .fut-top { width: 72%; }
-    .fut-bottom { gap: .45rem; }
-    .fut-bottom .fut { width: 49%; }
-    .fut-photo { height: 120px; } .fut-hero .fut-photo { height: 150px; }
-    .fut-rating { font-size: 1.6rem; } .fut-hero .fut-rating { font-size: 2rem; }
-    .fut-stat b { font-size: .82rem; } .fut-stat small { font-size: .54rem; }
-    .fut-name { font-size: .8rem; }
+    .fut-top { width: 60%; }
+    .fut-bottom { gap: .4rem; }
+    .fut-bottom .fut { width: 48%; }
+    .fut-photo { height: 84px; } .fut-hero .fut-photo { height: 96px; }
   }
   @media (prefers-reduced-motion: reduce) { .fut { animation: none; } }
 </style>
