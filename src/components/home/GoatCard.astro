@@ -9,15 +9,17 @@ const goat = board[0] || null;
 ---
 <section class="goat-card">
   <span class="goat-crest" aria-hidden="true">
-    <svg viewBox="0 0 120 78" width="52" height="34">
-      <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M60 42 C 45 31 31 31 25 8" stroke-width="9" />
-        <path d="M60 42 C 75 31 89 31 95 8" stroke-width="9" />
-        <path d="M34 47 C 42 40 52 43 60 55" stroke-width="8" />
-        <path d="M86 47 C 78 40 68 43 60 55" stroke-width="8" />
-        <path d="M52 56 C 53 73 67 73 68 56" stroke-width="10" />
-      </g>
-    </svg>
+    <span class="goat-crest-in">
+      <svg viewBox="0 0 120 78" width="52" height="34">
+        <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M60 42 C 45 31 31 31 25 8" stroke-width="9" />
+          <path d="M60 42 C 75 31 89 31 95 8" stroke-width="9" />
+          <path d="M34 47 C 42 40 52 43 60 55" stroke-width="8" />
+          <path d="M86 47 C 78 40 68 43 60 55" stroke-width="8" />
+          <path d="M52 56 C 53 73 67 73 68 56" stroke-width="10" />
+        </g>
+      </svg>
+    </span>
   </span>
   <div class="goat-head">
     <div>
@@ -38,8 +40,15 @@ const goat = board[0] || null;
 </section>
 
 <style>
-  .goat-card { position: relative; background: var(--card); border: 1.5px solid rgba(212,175,55,0.5); border-radius: var(--radius-lg); box-shadow: 0 0 18px rgba(212,175,55,0.12); padding: 1.5rem 0.85rem 0.8rem; margin-top: 2.1rem; margin-bottom: 1rem; }
-  .goat-crest { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: -13px; width: 60px; height: 42px; display: grid; place-items: center; background: var(--card); border: 1.5px solid rgba(212,175,55,0.6); border-bottom: none; border-radius: 13px 13px 0 0; color: #D4AF37; box-shadow: 0 -3px 12px rgba(212,175,55,.18); z-index: 1; }
+  .goat-card { position: relative; background: var(--card); border: 1.5px solid rgba(212,175,55,0.5); border-radius: var(--radius-lg); box-shadow: 0 0 18px rgba(212,175,55,0.12); padding: 1.4rem 0.85rem 0.8rem; margin-top: 3.2rem; margin-bottom: 1rem; }
+  /* crest floats above the box with a complete, animated gold shimmer border */
+  .goat-crest { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 9px; padding: 2px; border-radius: 14px; z-index: 2;
+    background: linear-gradient(115deg,#8a5f14 0%,#e9c65a 16%,#fff4c2 28%,#d4af37 44%,#8a5f14 60%,#e9c65a 78%,#fff4c2 90%,#8a5f14 100%);
+    background-size: 250% 100%; animation: crest-shimmer 3s linear infinite;
+    box-shadow: 0 4px 14px rgba(0,0,0,.4), 0 0 14px rgba(212,175,55,.35); }
+  @keyframes crest-shimmer { to { background-position: 250% 0; } }
+  .goat-crest-in { display: grid; place-items: center; width: 56px; height: 40px; border-radius: 12px; background: var(--card); color: #D4AF37; }
+  @media (prefers-reduced-motion: reduce) { .goat-crest { animation: none; } }
   .goat-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; margin-bottom: .8rem; }
   .goat-head h2 { font-family: var(--font-heading); font-size: 1.05rem; margin: 0; color: var(--text-primary); }
   .goat-sub { font-size: .66rem; color: var(--text-muted); margin: .12rem 0 0; }

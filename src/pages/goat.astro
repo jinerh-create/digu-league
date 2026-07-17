@@ -32,7 +32,8 @@ if (runtime?.env?.DB) {
 <style>
   .page-header .sub { color: var(--text-muted); font-size: .82rem; margin-top: .25rem; line-height: 1.5; }
   .page-header .sub b { color: var(--text-secondary); }
-  .goat-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .8rem; align-items: start; }
+  /* every card the same size as the home GOAT card (~190px), centered */
+  .goat-cards { display: grid; grid-template-columns: repeat(auto-fill, 190px); justify-content: center; gap: 1rem; align-items: start; }
   .goat-note { margin-top: 1.2rem; font-size: .72rem; color: var(--text-muted); text-align: center; }
-  @media (max-width: 400px) { .goat-cards { grid-template-columns: repeat(2, 1fr); gap: .5rem; } }
+  @media (max-width: 440px) { .goat-cards { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .6rem; } }
 </style>
