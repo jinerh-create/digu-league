@@ -1,0 +1,95 @@
+---
+/* Reusable FUT-style player card. Tier by rank: 1 gold, 2 silver, 3 bronze,
+   4+ gunmetal. Rating = GOAT score; six stat slots = real DIGU metrics. */
+import type { GoatRow } from '../../lib/goat';
+export interface Props { r: GoatRow; rank: number; big?: boolean; }
+const { r, rank, big = false } = Astro.props;
+const nick = r.nickname || (r.name || '').split(' ')[0] || r.name;
+const photo = r.avatar_b64 ? `data:image/jpeg;base64,${r.avatar_b64}` : null;
+const initials = (r.name || '').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+const tier = Math.min(rank - 1, 3); // 0 gold · 1 silver · 2 bronze · 3 metal
+const posLabel = ['GOAT', 'LGD', 'ELITE'][tier] ?? 'PRO';
+const medal = ['🥇', '🥈', '🥉'][rank - 1] ?? `#${rank}`;
+const stats: [string, number][] = [
+  ['WIN', Math.round(r.winRate)], ['GME', Math.round(r.gamePct)],
+  ['TTL', r.titles], ['DGU', r.digus],
+  ['MCH', r.played], ['WON', r.won],
+];
+---
+<a class={`fut fut-r${tier}${big ? ' fut-hero' : ''}`} href={`/players/${r.playerId}`}>
+  <div class="fut-frame"><div class="fut-in">
+    <div class="fut-photo">
+      {photo ? <img src={photo} alt={nick} /> : <span class="fut-init">{initials}</span>}
+      <div class="fut-scrim"></div>
+      <div class="fut-badge"><b class="fut-rating">{Math.round(r.score)}</b><span class="fut-pos">{posLabel}</span></div>
+      <span class="fut-medal">{medal}</span>
+    </div>
+    <div class="fut-name">{nick}</div>
+    <div class="fut-stats">
+      {stats.map(([k, v]) => <span class="fut-stat"><b>{v}</b><small>{k}</small></span>)}
+    </div>
+  </div></div>
+</a>
+
+<style>
+  .fut { text-decoration: none; display: block; animation: fut-in .5s cubic-bezier(.2,.8,.3,1) both; }
+  @keyframes fut-in { from { opacity: 0; transform: translateY(14px) scale(.95); } }
+
+  .fut-frame {
+    position: relative; padding: 2.5px;
+    clip-path: polygon(4% 0, 96% 0, 100% 4%, 100% 95%, 50% 100%, 0 95%, 0 4%);
+    box-shadow: 0 6px 16px rgba(0,0,0,.4), inset 0 0 10px rgba(255,255,255,.25);
+    transition: transform .2s;
+    background-size: 250% 100%; animation: fut-shimmer 3.5s linear infinite;
+  }
+  @keyframes fut-shimmer { to { background-position: 250% 0; } }
+  .fut:hover .fut-frame { transform: translateY(-4px); }
+
+  .fut-r0 .fut-frame { background-image: linear-gradient(115deg,#8a5f14 0%,#e9c65a 16%,#fff4c2 28%,#d4af37 44%,#8a5f14 60%,#e9c65a 78%,#fff4c2 90%,#8a5f14 100%); }
+  .fut-r1 .fut-frame { background-image: linear-gradient(115deg,#6b7078 0%,#c9cfd8 16%,#ffffff 28%,#aab0b8 44%,#6b7078 60%,#c9cfd8 78%,#ffffff 90%,#6b7078 100%); animation-delay: .5s; }
+  .fut-r2 .fut-frame { background-image: linear-gradient(115deg,#6e3f16 0%,#c67c3e 16%,#f2c79a 28%,#a9622c 44%,#6e3f16 60%,#c67c3e 78%,#f2c79a 90%,#6e3f16 100%); animation-delay: 1s; }
+  .fut-r3 .fut-frame { background-image: linear-gradient(115deg,#3a3f47 0%,#8b929c 16%,#d3d8df 28%,#6b7280 44%,#3a3f47 60%,#8b929c 78%,#d3d8df 90%,#3a3f47 100%); animation-delay: 1.4s; }
+
+  .fut-hero .fut-frame { box-shadow: 0 8px 24px rgba(184,134,11,.35), 0 0 18px rgba(212,175,55,.3), inset 0 0 10px rgba(255,255,255,.3); }
+
+  .fut-in {
+    position: relative; overflow: hidden;
+    clip-path: polygon(4% 0, 96% 0, 100% 4%, 100% 95%, 50% 100%, 0 95%, 0 4%);
+    color: var(--ink);
+  }
+  .fut-r0 .fut-in { background: linear-gradient(158deg,#fbeeb8 0%,#e6c65e 38%,#c9992b 66%,#f3dd8c 100%); --ink:#3a2c08; --ink2:#7c6019; }
+  .fut-r1 .fut-in { background: linear-gradient(158deg,#f4f6f9 0%,#ccd2da 38%,#a2a9b3 66%,#e2e6ec 100%); --ink:#23272e; --ink2:#5a616b; }
+  .fut-r2 .fut-in { background: linear-gradient(158deg,#f0cda4 0%,#cd8a4f 38%,#9c5a29 66%,#e0a06a 100%); --ink:#3c2410; --ink2:#7a4a24; }
+  .fut-r3 .fut-in { background: linear-gradient(158deg,#9aa2ad 0%,#5a616c 40%,#3a3f47 70%,#727a85 100%); --ink:#eef1f5; --ink2:#c0c6cf; }
+
+  .fut-in::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 2;
+    background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,.6) 50%, transparent 60%);
+    background-size: 300% 100%; animation: fut-sheen 3.8s linear infinite;
+  }
+  @keyframes fut-sheen { to { background-position: -300% 0; } }
+  .fut-r1 .fut-in::after { animation-delay: .5s; } .fut-r2 .fut-in::after { animation-delay: 1s; } .fut-r3 .fut-in::after { animation-delay: 1.4s; }
+
+  .fut-photo { position: relative; width: 100%; height: 82px; overflow: hidden; }
+  .fut-hero .fut-photo { height: 98px; }
+  .fut-photo img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+  .fut-init { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-heading); font-weight: 800; font-size: 1.6rem; color: var(--ink); }
+  .fut-scrim { position: absolute; inset: 0; z-index: 1; background: linear-gradient(115deg, rgba(20,15,4,.7) 0%, rgba(20,15,4,.28) 30%, transparent 52%); }
+
+  .fut-badge { position: absolute; top: .28rem; left: .38rem; display: flex; flex-direction: column; align-items: flex-start; z-index: 2; text-shadow: 0 1px 4px rgba(0,0,0,.8); }
+  .fut-rating { font-family: var(--font-heading); font-weight: 800; font-size: 1.25rem; line-height: .82; color: #fff; }
+  .fut-hero .fut-rating { font-size: 1.5rem; }
+  .fut-pos { font-size: .48rem; font-weight: 800; letter-spacing: .06em; color: #ffe9b8; margin-top: .08rem; }
+  .fut-medal { position: absolute; top: .24rem; right: .3rem; font-size: .78rem; z-index: 2; filter: drop-shadow(0 1px 2px rgba(0,0,0,.5)); }
+
+  .fut-name { position: relative; z-index: 3; text-align: center; font-family: var(--font-heading); font-weight: 800; font-size: .68rem; letter-spacing: .02em; text-transform: uppercase; color: var(--ink); padding: .22rem .3rem .14rem; margin: 0 .45rem; border-bottom: 1px solid color-mix(in srgb, var(--ink) 30%, transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fut-hero .fut-name { font-size: .76rem; }
+
+  .fut-stats { position: relative; z-index: 3; display: grid; grid-template-columns: 1fr 1fr; gap: .04rem .3rem; padding: .26rem .55rem .8rem; }
+  .fut-stat { display: flex; align-items: baseline; gap: .18rem; justify-content: flex-start; }
+  .fut-stat b { font-family: var(--font-heading); font-weight: 800; font-size: .68rem; color: var(--ink); font-variant-numeric: tabular-nums; min-width: 1.3ch; text-align: right; }
+  .fut-hero .fut-stat b { font-size: .74rem; }
+  .fut-stat small { font-size: .46rem; font-weight: 800; letter-spacing: .02em; color: var(--ink2); }
+
+  @media (prefers-reduced-motion: reduce) { .fut, .fut-frame, .fut-in::after { animation: none; } .fut-in::after { display: none; } }
+</style>

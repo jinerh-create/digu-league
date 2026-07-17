@@ -1,6 +1,7 @@
 ---
 export const prerender = false;
 import BaseLayout from '../layouts/BaseLayout.astro';
+import FutCard from '../components/home/FutCard.astro';
 import { computeGOAT, type GoatRow } from '../lib/goat';
 
 const runtime = (Astro.locals as Record<string, unknown>).runtime as { env: { DB: D1Database } } | undefined;
@@ -9,71 +10,31 @@ let totalTitles = 0;
 if (runtime?.env?.DB) {
   try { const g = await computeGOAT(runtime.env.DB); board = g.board; totalTitles = g.totalTitles; } catch {}
 }
-const nick = (r: GoatRow) => r.nickname || (r.name || '').split(' ')[0] || r.name;
-const photo = (r: GoatRow) => r.avatar_b64 ? `data:image/jpeg;base64,${r.avatar_b64}` : null;
-const initials = (r: GoatRow) => (r.name || '').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-const medal = (n: number) => n === 1 ? '🥇' : n === 2 ? '🥈' : n === 3 ? '🥉' : `#${n}`;
 ---
 <BaseLayout title="Greatest of All Time" activeTab="home">
   <div class="container">
     <div class="page-header">
       <h1>🐐 Greatest of All Time</h1>
-      <p class="sub">A live composite — <b>league titles</b> (35%), <b>win rate</b> (30%), <b>game %</b> (20%) and <b>digus</b> (15%). Changes every match.</p>
+      <p class="sub">Every player, ranked. Gold · silver · bronze for the podium, then the field. A live composite of <b>league titles</b>, <b>win rate</b>, <b>game %</b> and <b>digus</b>.</p>
     </div>
 
     {board.length === 0 ? (
       <div class="empty-state"><p>No completed matches yet.</p></div>
     ) : (
-      <div class="goat-table">
-        <div class="gt-head">
-          <span>#</span><span>Player</span><span class="num">Titles</span><span class="num">Win%</span><span class="num">Game%</span><span class="num">Digus</span><span class="num">GOAT</span>
-        </div>
-        {board.map(r => (
-          <a class={`gt-row${r.rank === 1 ? ' goatpick' : ''}`} href={`/players/${r.playerId}`}>
-            <span class="gt-rank">{medal(r.rank)}</span>
-            <span class="gt-player">
-              <span class="gt-face">
-                {photo(r) ? <img src={photo(r)} alt={nick(r)} /> : <span class="gt-init">{initials(r)}</span>}
-              </span>
-              <span class="gt-name">{nick(r)}<small>{r.won}W · {r.played} played</small></span>
-            </span>
-            <span class="num gt-cell">{r.titles}</span>
-            <span class="num gt-cell">{r.winRate}%</span>
-            <span class="num gt-cell">{r.gamePct}%</span>
-            <span class="num gt-cell">{r.digus}</span>
-            <span class="num gt-score">{r.score}</span>
-          </a>
-        ))}
+      <div class="goat-cards">
+        {board.map(r => <FutCard r={r} rank={r.rank} big={r.rank === 1} />)}
       </div>
     )}
-    <p class="goat-note">{totalTitles} monthly {totalTitles === 1 ? 'title' : 'titles'} awarded so far · a player needs 8+ matches to realistically top the list.</p>
+    <p class="goat-note">{totalTitles} monthly {totalTitles === 1 ? 'title' : 'titles'} awarded · 8+ matches to realistically top the list · updates every match.</p>
   </div>
 </BaseLayout>
 
 <style>
   .page-header .sub { color: var(--text-muted); font-size: .82rem; margin-top: .25rem; line-height: 1.5; }
   .page-header .sub b { color: var(--text-secondary); }
-  .goat-table { display: flex; flex-direction: column; gap: .3rem; }
-  .gt-head, .gt-row { display: grid; grid-template-columns: 42px 1fr 54px 54px 56px 56px 58px; align-items: center; gap: .3rem; }
-  .gt-head { font-size: .6rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); padding: 0 .6rem .3rem; }
-  .gt-head .num, .gt-cell, .gt-score { text-align: right; }
-  .gt-row { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: .5rem .6rem; text-decoration: none; }
-  .gt-row:hover { border-color: rgba(212,175,55,0.4); }
-  .gt-row.goatpick { border-color: rgba(212,175,55,0.6); background: linear-gradient(135deg, rgba(212,175,55,0.12), var(--card)); box-shadow: 0 0 14px rgba(212,175,55,0.1); }
-  .gt-rank { font-size: 1rem; font-weight: 800; color: var(--text-muted); text-align: center; }
-  .gt-player { display: flex; align-items: center; gap: .55rem; min-width: 0; }
-  .gt-face { width: 38px; height: 38px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: var(--card-raised); display: grid; place-items: center; border: 1px solid var(--border); }
-  .gt-face img { width: 100%; height: 100%; object-fit: cover; }
-  .gt-init { font-family: var(--font-heading); font-weight: 800; font-size: .85rem; color: #D4AF37; }
-  .gt-name { display: flex; flex-direction: column; min-width: 0; font-weight: 700; font-size: .9rem; color: var(--text-primary); }
-  .gt-name small { font-weight: 600; font-size: .62rem; color: var(--text-muted); }
-  .gt-cell { font-size: .82rem; color: var(--text-secondary); font-weight: 600; font-variant-numeric: tabular-nums; }
-  .gt-score { font-family: var(--font-heading); font-weight: 800; font-size: 1rem; color: #D4AF37; font-variant-numeric: tabular-nums; }
-  .goat-note { margin-top: 1rem; font-size: .72rem; color: var(--text-muted); text-align: center; }
-  @media (max-width: 560px) {
-    /* drop Titles (3rd) and Digus (6th); keep rank, player, win%, game%, GOAT */
-    .gt-head, .gt-row { grid-template-columns: 30px 1fr 48px 50px 52px; }
-    .gt-head > *:nth-child(3), .gt-head > *:nth-child(6),
-    .gt-row > *:nth-child(3), .gt-row > *:nth-child(6) { display: none; }
-  }
+  .goat-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: .7rem; align-items: start; }
+  /* the #1 hero card spans a touch wider on roomy screens */
+  .goat-cards :global(.fut-hero) { }
+  .goat-note { margin-top: 1.2rem; font-size: .72rem; color: var(--text-muted); text-align: center; }
+  @media (max-width: 400px) { .goat-cards { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: .5rem; } }
 </style>
