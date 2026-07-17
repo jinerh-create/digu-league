@@ -1,4 +1,4 @@
-const CACHE = 'digu-v23';
+const CACHE = 'digu-v24';
 const SHELL = [
   '/',
   '/leaderboard',
