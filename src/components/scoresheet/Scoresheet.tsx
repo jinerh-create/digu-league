@@ -218,13 +218,34 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
   let p1Running = 0;
   let p2Running = 0;
   const isTeam = !!match.team1_player2_id;
-  const rows = match.games.map(g => {
+  // Per-round duration = time from the previous round's record to this one; round 1
+  // is measured from the match start. Uses the timestamp each game already carries,
+  // so it works retroactively on old matches with no schema change. Guarded against
+  // missing/backwards clocks (returns null → shown as "—").
+  const roundMins = (() => {
+    const out: (number | null)[] = [];
+    let prev = match.started_at ? new Date(match.started_at).getTime() : NaN;
+    for (const g of match.games) {
+      const t = g.timestamp ? new Date(g.timestamp).getTime() : NaN;
+      if (!isFinite(prev) || !isFinite(t) || t < prev) { out.push(null); prev = isFinite(t) ? t : prev; continue; }
+      out.push((t - prev) / 60000);
+      prev = t;
+    }
+    return out;
+  })();
+  const fmtMins = (m: number | null) => m == null ? '—' : m < 1 ? '<1m' : m < 60 ? `${Math.round(m)}m` : `${Math.floor(m / 60)}h ${Math.round(m % 60)}m`;
+  const matchMins = (match.started_at && match.completed_at)
+    ? (new Date(match.completed_at).getTime() - new Date(match.started_at).getTime()) / 60000
+    : null;
+
+  const rows = match.games.map((g, i) => {
     const p1Won = g.winner_id === p1Id;
     if (p1Won) p1Running += g.score_awarded;
     else p2Running += g.score_awarded;
     return {
       id: g.id,
       round: g.round_number,
+      mins: roundMins[i],
       p1Pts: p1Won ? g.score_awarded : null,
       p2Pts: p1Won ? null : g.score_awarded,
       t1Score: (g.t1_p1_cards ?? 0) + (g.t1_p2_cards ?? 0),
@@ -526,7 +547,7 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
           const topScore = topHand ? Math.max(topHand.p1Pts??0, topHand.p2Pts??0) : 0;
           return (
             <div>
-              <div className="ss-winner-banner">🏆 {winnerLabel} wins · +{margin}</div>
+              <div className="ss-winner-banner">🏆 {winnerLabel} wins · +{margin}{matchMins != null ? ` · ⏱ ${fmtMins(matchMins)}` : ''}</div>
               <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
                 {mvpPlayer && mvpDigus > 0 && (
                   <div style={{ flex: 1, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, padding: '0.5rem 0.75rem', textAlign: 'center' }}>
@@ -564,6 +585,7 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
             <thead>
               <tr>
                 <th className="ss-round-col" rowSpan={2}>Round</th>
+                <th className="ss-time-col" rowSpan={2}>Time</th>
                 <th className="ss-gin-header" rowSpan={2}>DIGU</th>
                 <th className="ss-team-header team-a">{team1Label}</th>
                 <th className="ss-team-header team-b">{team2Label}</th>
@@ -578,6 +600,7 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
               {rows.map(r => (
                 <tr key={r.id} className={r.winnerId === p1Id ? 'row-win-a' : 'row-win-b'}>
                   <td className="ss-round-num">{r.round}</td>
+                  <td className="ss-time-cell">{fmtMins(r.mins)}</td>
                   <td className="ss-gin-cell">
                     <select
                       className="gin-select"
@@ -640,6 +663,7 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
               {Array.from({ length: Math.max(0, totalRounds - rows.length) }).map((_, i) => (
                 <tr key={`empty-${i}`} className="empty-row">
                   <td className="ss-round-num">{rows.length + i + 1}</td>
+                  <td className="ss-time-cell"></td>
                   <td className="ss-gin-cell"></td>
                   <td className="ss-score-cell"></td>
                   <td className="ss-score-cell"></td>
@@ -650,6 +674,7 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
               {/* Total row */}
               <tr className="totals-row">
                 <td className="ss-round-num" style={{ fontWeight: 700 }}>Total</td>
+                <td className="ss-time-cell" style={{ fontWeight: 700, color: 'var(--gold)' }}>{matchMins != null ? fmtMins(matchMins) : '—'}</td>
                 <td className="ss-gin-cell"></td>
                 <td className="ss-score-cell" style={{ fontWeight: 800, fontSize: '1.25rem', color: 'var(--gold)' }}>
                   {p1DisplayTotal}
@@ -702,6 +727,8 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
         .ss-table { width: 100%; border-collapse: collapse; min-width: 300px; }
         .ss-table th, .ss-table td { border: 1px solid var(--border); text-align: center; font-size: 1rem; font-weight: 700; }
         .ss-round-col { width: 48px; }
+        .ss-time-col { width: 54px; font-size: 0.72rem; }
+        .ss-time-cell { padding: 0.5rem 0.25rem; text-align: center; color: var(--text-muted); font-size: 0.76rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
         .ss-gin-header {
           width: 100px;
           padding: 0.375rem 0.25rem;
