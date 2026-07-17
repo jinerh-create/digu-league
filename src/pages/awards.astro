@@ -1,0 +1,31 @@
+---
+export const prerender = false;
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AwardsBoard from '../components/awards/AwardsBoard';
+import { verifySession } from '../lib/auth';
+
+const runtime = (Astro.locals as Record<string, unknown>).runtime as { env: { SESSION_SECRET?: string } } | undefined;
+let isAdmin = false;
+const sessionSecret = runtime?.env?.SESSION_SECRET;
+if (sessionSecret) {
+  const r = await verifySession(Astro.request.headers.get('cookie'), sessionSecret);
+  isAdmin = r.valid && r.role === 'admin';
+} else {
+  isAdmin = true; // dev fallback (matches middleware behaviour when no secret is set)
+}
+const year = new Date().getFullYear();
+---
+<BaseLayout title="Annual Awards" activeTab="home">
+  <div class="container">
+    <div class="page-header">
+      <h1>&#127942; Special Annual Awards</h1>
+      <p class="sub">The trophy case — one winner per award, per year. Awarded by hand; the data just suggests.</p>
+    </div>
+    <AwardsBoard isAdmin={isAdmin} year={year} client:load />
+  </div>
+</BaseLayout>
+
+<style>
+  .page-header { margin-bottom: 1rem; }
+  .page-header .sub { color: var(--text-muted); font-size: 0.86rem; margin-top: 0.25rem; }
+</style>
