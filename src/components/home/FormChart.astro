@@ -32,7 +32,7 @@ const Y = (v: number) => PAD.t + ((yMax - v) / (yMax - yMin || 1)) * ih;
 const lines = series.map((p, k) => {
   const pts = p.points.map(pt => [X(pt.i), Y(pt.v)] as const);
   const d = pts.map((q, j) => `${j ? 'L' : 'M'}${q[0].toFixed(1)} ${q[1].toFixed(1)}`).join(' ');
-  return { p, d, color: COLORS[k % COLORS.length], last: pts[pts.length - 1] };
+  return { p, d, pts, color: COLORS[k % COLORS.length], last: pts[pts.length - 1] };
 });
 
 const ticks = [yMax, Math.round(yMax / 2), 0, -Math.round(yMax / 2), yMin]
@@ -82,6 +82,10 @@ if (overflow > 0) for (const l of labels) l.y -= overflow; // push the stack bac
               stroke-linecap="round" stroke-linejoin="round" pathLength="1"
               vector-effect="non-scaling-stroke" data-line={l.p.id} class="fc-line fc-draw" />
           ))}
+          {lines.map(l => l.pts.map(pt => (
+            <circle cx={pt[0]} cy={pt[1]} r="1.4" fill={l.color}
+              data-line={l.p.id} class="fc-line fc-node" />
+          )))}
           {lines.map(l => l.last && (
             <circle cx={l.last[0]} cy={l.last[1]} r="2.2" fill={l.color}
               stroke="var(--card)" stroke-width="1" data-dot={l.p.id} class="fc-line fc-fadein" />
@@ -140,9 +144,11 @@ if (overflow > 0) for (const l of labels) l.y -= overflow; // push the stack bac
   @keyframes fc-trace { to { stroke-dashoffset: 0; } }
   .fc-fadein { animation: fc-appear .5s ease 1.25s backwards; }
   @keyframes fc-appear { from { opacity: 0; } }
+  /* a node dot at every match result — fades in with the line trace */
+  .fc-node { opacity: .85; animation: fc-appear .8s ease .3s backwards; }
   @media (prefers-reduced-motion: reduce) {
     .fc-draw { stroke-dasharray: none; stroke-dashoffset: 0; animation: none; }
-    .fc-fadein { animation: none; }
+    .fc-fadein, .fc-node { animation: none; }
   }
 
   .fc-legend { display: flex; flex-wrap: wrap; gap: .3rem; margin-top: .55rem; }
