@@ -78,13 +78,13 @@ if (overflow > 0) for (const l of labels) l.y -= overflow; // push the stack bac
             </g>
           ))}
           {lines.map(l => (
-            <path d={l.d} fill="none" stroke={l.color} stroke-width="1.8"
+            <path d={l.d} fill="none" stroke={l.color} stroke-width="1"
               stroke-linecap="round" stroke-linejoin="round" pathLength="1"
               vector-effect="non-scaling-stroke" data-line={l.p.id} class="fc-line fc-draw" />
           ))}
           {lines.map(l => l.last && (
-            <circle cx={l.last[0]} cy={l.last[1]} r="3" fill={l.color}
-              stroke="var(--card)" stroke-width="1.5" data-dot={l.p.id} class="fc-line fc-fadein" />
+            <circle cx={l.last[0]} cy={l.last[1]} r="2.2" fill={l.color}
+              stroke="var(--card)" stroke-width="1" data-dot={l.p.id} class="fc-line fc-fadein" />
           ))}
         </svg>
         {/* HTML labels, not SVG <text>: the svg stretches with preserveAspectRatio="none",
