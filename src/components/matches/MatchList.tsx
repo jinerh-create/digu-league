@@ -262,6 +262,11 @@ export default function MatchList() {
                       : <span style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.22rem 0.65rem', background: 'linear-gradient(135deg, #b8922a 0%, #d4af37 50%, #e8c84a 100%)', color: '#1a1000', borderRadius: 999, fontWeight: 800, fontSize: '0.72rem', boxShadow: '0 1px 5px rgba(212,175,55,0.35)' }}>🏆 {winnerSide}</span>
                     }
                   </div>
+                  {m.king_name && (m.king_digus ?? 0) > 0 && (
+                    <div style={{ marginTop: '0.4rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.68rem', fontWeight: 700, color: '#D4AF37', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.28)', borderRadius: 999, padding: '0.15rem 0.55rem' }}>
+                      👑 King of the Table: {m.king_name} · {m.king_digus} digu
+                    </div>
+                  )}
                   <div className="match-sub" style={{ marginTop: '0.4rem' }}>
                     <span>{m.team1_player2_id ? '2v2' : '1v1'} · <DateEditor matchId={m.id} started_at={m.started_at} editing={editingDate === m.id} saving={savingDate}
                       onEdit={() => setEditingDate(m.id)} onSave={handleDateChange} onCancel={() => setEditingDate(null)} /></span>

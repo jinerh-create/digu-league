@@ -551,7 +551,7 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
               <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
                 {mvpPlayer && mvpDigus > 0 && (
                   <div style={{ flex: 1, background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 8, padding: '0.5rem 0.75rem', textAlign: 'center' }}>
-                    <div style={{ fontSize: '0.5rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)' }}>👑 MVP</div>
+                    <div style={{ fontSize: '0.5rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)' }}>👑 King of the Table</div>
                     <div style={{ fontSize: '0.875rem', fontWeight: 800, color: 'var(--gold)', marginTop: '0.2rem' }}>{mvpPlayer.name}</div>
                     <div style={{ fontSize: '0.5625rem', color: 'var(--text-muted)' }}>{mvpDigus} digu</div>
                   </div>
