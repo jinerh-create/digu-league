@@ -18,6 +18,20 @@ const stats = (r: GoatRow) => [
 ];
 ---
 <section class="goat-card">
+  <span class="goat-crest" aria-hidden="true">
+    <svg viewBox="0 0 120 78" width="52" height="34">
+      <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <!-- horns sweeping up & out -->
+        <path d="M60 42 C 45 31 31 31 25 8" stroke-width="9" />
+        <path d="M60 42 C 75 31 89 31 95 8" stroke-width="9" />
+        <!-- brow / cheeks -->
+        <path d="M34 47 C 42 40 52 43 60 55" stroke-width="8" />
+        <path d="M86 47 C 78 40 68 43 60 55" stroke-width="8" />
+        <!-- muzzle -->
+        <path d="M52 56 C 53 73 67 73 68 56" stroke-width="10" />
+      </g>
+    </svg>
+  </span>
   <div class="goat-head">
     <div>
       <h2>🐐 Greatest of All Time</h2>
@@ -74,7 +88,9 @@ const stats = (r: GoatRow) => [
 </section>
 
 <style>
-  .goat-card { background: var(--card); border: 1.5px solid rgba(212,175,55,0.5); border-radius: var(--radius-lg); box-shadow: 0 0 18px rgba(212,175,55,0.12); padding: 0.9rem 0.85rem 0.8rem; margin-bottom: 1rem; }
+  .goat-card { position: relative; background: var(--card); border: 1.5px solid rgba(212,175,55,0.5); border-radius: var(--radius-lg); box-shadow: 0 0 18px rgba(212,175,55,0.12); padding: 1.35rem 0.85rem 0.8rem; margin-top: .9rem; margin-bottom: 1rem; }
+  /* bull/GOAT crest straddling the top border */
+  .goat-crest { position: absolute; top: 0; left: 50%; transform: translate(-50%, -55%); width: 66px; height: 46px; display: grid; place-items: center; background: var(--card); border: 1.5px solid rgba(212,175,55,0.6); border-radius: 14px; color: #D4AF37; box-shadow: 0 4px 14px rgba(0,0,0,.35), 0 0 12px rgba(212,175,55,.25); }
   .goat-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; margin-bottom: .9rem; }
   .goat-head h2 { font-family: var(--font-heading); font-size: 1.05rem; margin: 0; color: var(--text-primary); }
   .goat-sub { font-size: .66rem; color: var(--text-muted); margin: .12rem 0 0; }
@@ -84,7 +100,7 @@ const stats = (r: GoatRow) => [
   /* podium: #1 on top, #2 & #3 below */
   .fut-podium { display: flex; flex-direction: column; align-items: center; gap: .5rem; }
   .fut-top { width: min(128px, 38%); }
-  .fut-bottom { display: flex; gap: .5rem; width: 100%; justify-content: center; }
+  .fut-bottom { display: flex; gap: 2.4rem; width: 100%; justify-content: center; }
   .fut-bottom .fut { width: min(122px, 35%); }
 
   .fut { text-decoration: none; display: block; animation: fut-in .55s cubic-bezier(.2,.8,.3,1) both; }
@@ -142,8 +158,8 @@ const stats = (r: GoatRow) => [
 
   @media (max-width: 480px) {
     .fut-top { width: 60%; }
-    .fut-bottom { gap: .4rem; }
-    .fut-bottom .fut { width: 48%; }
+    .fut-bottom { gap: 1.4rem; }
+    .fut-bottom .fut { width: 42%; }
     .fut-photo { height: 84px; } .fut-hero .fut-photo { height: 96px; }
   }
   @media (prefers-reduced-motion: reduce) { .fut { animation: none; } }
