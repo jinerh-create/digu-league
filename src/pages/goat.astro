@@ -22,7 +22,7 @@ if (runtime?.env?.DB) {
       <div class="empty-state"><p>No completed matches yet.</p></div>
     ) : (
       <div class="goat-cards">
-        {board.map(r => <FutCard r={r} rank={r.rank} big={r.rank === 1} />)}
+        {board.map(r => <FutCard r={r} rank={r.rank} big />)}
       </div>
     )}
     <p class="goat-note">{totalTitles} monthly {totalTitles === 1 ? 'title' : 'titles'} awarded · 8+ matches to realistically top the list · updates every match.</p>
@@ -32,9 +32,7 @@ if (runtime?.env?.DB) {
 <style>
   .page-header .sub { color: var(--text-muted); font-size: .82rem; margin-top: .25rem; line-height: 1.5; }
   .page-header .sub b { color: var(--text-secondary); }
-  .goat-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: .7rem; align-items: start; }
-  /* the #1 hero card spans a touch wider on roomy screens */
-  .goat-cards :global(.fut-hero) { }
+  .goat-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .8rem; align-items: start; }
   .goat-note { margin-top: 1.2rem; font-size: .72rem; color: var(--text-muted); text-align: center; }
-  @media (max-width: 400px) { .goat-cards { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: .5rem; } }
+  @media (max-width: 400px) { .goat-cards { grid-template-columns: repeat(2, 1fr); gap: .5rem; } }
 </style>
