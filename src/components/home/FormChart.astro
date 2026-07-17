@@ -101,8 +101,8 @@ if (overflow > 0) for (const l of labels) l.y -= overflow; // push the stack bac
 
       <div class="fc-legend" id="fcLegend">
         {lines.map(l => (
-          <button class="fc-chip on" data-toggle={l.p.id} type="button"
-            aria-pressed="true" title={`${l.p.name} · ${l.p.won}W ${l.p.lost}L${l.p.drawn ? ` ${l.p.drawn}D` : ''}`}>
+          <button class="fc-chip" data-focus={l.p.id} type="button"
+            aria-pressed="false" title={`Tap to highlight ${l.p.name} · ${l.p.won}W ${l.p.lost}L${l.p.drawn ? ` ${l.p.drawn}D` : ''}`}>
             <i style={`background:${l.color}`}></i>
             <b>{l.p.name}</b>
             <u class={l.p.final > 0 ? 'up' : l.p.final < 0 ? 'dn' : ''}>{l.p.final > 0 ? `+${l.p.final}` : l.p.final}</u>
@@ -134,7 +134,10 @@ if (overflow > 0) for (const l of labels) l.y -= overflow; // push the stack bac
   .fc-wrap { position: relative; }
   .fc-name { position: absolute; transform: translateY(-58%); font-size: .62rem; font-weight: 700; font-family: var(--font-body); white-space: nowrap; pointer-events: none; text-shadow: 0 1px 3px var(--card); }
   .fc-line { transition: opacity .18s; }
-  .fc-line.off { opacity: .1; }
+  /* spotlight: clicking a name dims everyone else and lifts the chosen line */
+  .fc-line.dim { opacity: .07; }
+  .fc-line.hl { opacity: 1; }
+  path.fc-draw.hl { stroke-width: 2.4; }
 
   /* entrance: each line traces itself, then dots + names fade in.
      pathLength="1" normalises the draw regardless of the stretched viewBox.
@@ -162,8 +165,8 @@ if (overflow > 0) for (const l of labels) l.y -= overflow; // push the stack bac
   .fc-chip b { font-size: .68rem; font-weight: 600; color: var(--text-primary); }
   .fc-chip u { text-decoration: none; font-size: .62rem; font-family: var(--font-mono); color: var(--text-muted); }
   .fc-chip u.up { color: var(--felt-light); } .fc-chip u.dn { color: var(--ember); }
-  .fc-chip:not(.on) { opacity: .38; }
-  .fc-chip:not(.on) b { color: var(--text-muted); }
+  .fc-chip.mut { opacity: .4; }
+  .fc-chip.sel { border-color: rgba(212,175,55,.7); background: color-mix(in srgb, var(--gold, #D4AF37) 12%, var(--card)); }
 
   @media (max-width: 480px) {
     .fc-svg { height: 168px; }
@@ -175,14 +178,27 @@ if (overflow > 0) for (const l of labels) l.y -= overflow; // push the stack bac
   (function () {
     var L = document.getElementById('fcLegend');
     if (!L) return;
+    var focused = null;
+    function clear() {
+      focused = null;
+      document.querySelectorAll('.fc-line').forEach(function (el) { el.classList.remove('dim', 'hl'); });
+      L.querySelectorAll('.fc-chip').forEach(function (c) { c.classList.remove('sel', 'mut'); c.setAttribute('aria-pressed', 'false'); });
+    }
     L.addEventListener('click', function (e) {
-      var b = e.target.closest('[data-toggle]');
+      var b = e.target.closest('[data-focus]');
       if (!b) return;
-      var id = b.getAttribute('data-toggle');
-      var on = b.classList.toggle('on');
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
-      document.querySelectorAll('[data-line="' + id + '"],[data-dot="' + id + '"]').forEach(function (el) {
-        el.classList.toggle('off', !on);
+      var id = b.getAttribute('data-focus');
+      if (focused === id) { clear(); return; }         // tap the highlighted name again → back to all
+      focused = id;
+      document.querySelectorAll('.fc-line').forEach(function (el) {
+        var elId = el.getAttribute('data-line') || el.getAttribute('data-dot');
+        var on = elId === id;
+        el.classList.toggle('hl', on); el.classList.toggle('dim', !on);
+      });
+      L.querySelectorAll('.fc-chip').forEach(function (c) {
+        var on = c.getAttribute('data-focus') === id;
+        c.classList.toggle('sel', on); c.classList.toggle('mut', !on);
+        c.setAttribute('aria-pressed', on ? 'true' : 'false');
       });
     });
   })();
