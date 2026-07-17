@@ -378,15 +378,22 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
   type BigMatch = { margin: number; myScore: number; oppScore: number; opponent: string; date: string; matchId: string };
   const [biggestVictory, setBiggestVictory] = useState<BigMatch | null>(null);
   const [biggestDefeat, setBiggestDefeat] = useState<BigMatch | null>(null);
+  type Advanced = {
+    avgWinMargin: number | null; avgMatchMins: number | null; fastestWinMins: number | null; bestHand: number | null;
+    clutchPct: number | null; clutchTotal: number;
+    nemesis: { name: string; record: string } | null; favourite: { name: string; record: string } | null;
+  };
+  const [advanced, setAdvanced] = useState<Advanced | null>(null);
 
   useEffect(() => {
     fetch(`/api/players/${playerId}/stats`)
       .then(r => r.json())
-      .then((data: { player: Player; matches: Match[]; totalScore: number; ginCount: number; maxWinStreak: number; perfectMatches: number; centuryHands: number; biggestVictory?: BigMatch | null; biggestDefeat?: BigMatch | null; error?: string }) => {
+      .then((data: { player: Player; matches: Match[]; totalScore: number; ginCount: number; maxWinStreak: number; perfectMatches: number; centuryHands: number; biggestVictory?: BigMatch | null; biggestDefeat?: BigMatch | null; advanced?: Advanced; error?: string }) => {
         if (data.error) { setError(data.error); setLoading(false); return; }
         setPlayer(data.player);
         setBiggestVictory(data.biggestVictory ?? null);
         setBiggestDefeat(data.biggestDefeat ?? null);
+        setAdvanced(data.advanced ?? null);
         setMatches(data.matches);
         setTotalScore(data.totalScore ?? 0);
         setGinCount(data.ginCount ?? 0);
@@ -773,6 +780,48 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
             ))}
           </div>
         )}
+
+        {/* Advanced stats */}
+        {advanced && (() => {
+          const diguRate = matches.length ? (ginCount / matches.filter(m => m.completed_at).length) : 0;
+          const fmtMins = (m: number | null) => m == null ? '—' : m < 60 ? `${m}m` : `${Math.floor(m / 60)}h ${m % 60}m`;
+          const tiles: { label: string; value: string; sub?: string; color: string }[] = [
+            { label: 'Digu / match', value: isFinite(diguRate) && diguRate > 0 ? diguRate.toFixed(2) : '—', color: '#a78bfa' },
+            { label: 'Avg win margin', value: advanced.avgWinMargin != null ? `+${advanced.avgWinMargin}` : '—', color: 'var(--felt-light)' },
+            { label: 'Avg match time', value: fmtMins(advanced.avgMatchMins), color: '#8ABFCC' },
+            { label: 'Clutch wins', value: advanced.clutchPct != null ? `${advanced.clutchPct}%` : '—', sub: advanced.clutchTotal ? `${advanced.clutchTotal} close games` : 'no close games', color: advanced.clutchPct != null && advanced.clutchPct >= 50 ? 'var(--felt-light)' : 'var(--ember)' },
+            { label: 'Best hand', value: advanced.bestHand != null ? String(advanced.bestHand) : '—', sub: 'top single round', color: '#c8980a' },
+            { label: 'Fastest win', value: fmtMins(advanced.fastestWinMins), color: '#638D6F' },
+          ];
+          return (
+            <div style={{ marginBottom: '1rem' }}>
+              <div style={{ fontSize: '0.6875rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Deep Stats</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
+                {tiles.map(t => (
+                  <div key={t.label} style={{ background: 'var(--card-raised)', borderRadius: 10, padding: '0.6rem 0.5rem', textAlign: 'center' }}>
+                    <div style={{ fontSize: '1.15rem', fontWeight: 800, color: t.color, fontVariantNumeric: 'tabular-nums' }}>{t.value}</div>
+                    <div style={{ fontSize: '0.5625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)', marginTop: '0.15rem', lineHeight: 1.3 }}>{t.label}</div>
+                    {t.sub && <div style={{ fontSize: '0.55rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>{t.sub}</div>}
+                  </div>
+                ))}
+              </div>
+              {(advanced.nemesis || advanced.favourite) && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  <div style={{ background: 'rgba(120,39,13,0.12)', border: '1px solid rgba(120,39,13,0.35)', borderRadius: 10, padding: '0.6rem 0.7rem' }}>
+                    <div style={{ fontSize: '0.5625rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>😈 Nemesis</div>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--ember)', marginTop: '0.15rem' }}>{advanced.nemesis?.name ?? '—'}</div>
+                    {advanced.nemesis && <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>{advanced.nemesis.record} vs you</div>}
+                  </div>
+                  <div style={{ background: 'rgba(43,79,55,0.15)', border: '1px solid rgba(99,141,111,0.35)', borderRadius: 10, padding: '0.6rem 0.7rem' }}>
+                    <div style={{ fontSize: '0.5625rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>😎 Favourite opponent</div>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--felt-light)', marginTop: '0.15rem' }}>{advanced.favourite?.name ?? '—'}</div>
+                    {advanced.favourite && <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>you lead {advanced.favourite.record}</div>}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* W/D/L bar */}
         {matches.length > 0 && (
