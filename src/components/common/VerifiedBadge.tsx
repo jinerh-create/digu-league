@@ -1,13 +1,31 @@
-/* Gold verified badge — a filled rosette check. Shown next to a verified player's
-   name. Existing players were grandfathered verified (migration 0013); new players
+/* Gold verified badge — Facebook-style scalloped seal with a clean white check.
+   Existing players were grandfathered verified (migration 0013); new players
    request verification and an admin approves. */
-export default function VerifiedBadge({ size = 15, title = 'Verified player' }: { size?: number; title?: string }) {
+export default function VerifiedBadge({ size = 16, title = 'Verified player' }: { size?: number; title?: string }) {
+  // 12-point scalloped circle (the Meta verified shape): alternating outer/inner
+  // radii around the centre, built once so the seal edge reads correctly.
+  const cx = 12, cy = 12, outer = 11.3, inner = 9.4, points = 12;
+  let d = '';
+  for (let i = 0; i < points * 2; i++) {
+    const r = i % 2 === 0 ? outer : inner;
+    const a = (Math.PI / points) * i - Math.PI / 2;
+    d += `${i === 0 ? 'M' : 'L'}${(cx + r * Math.cos(a)).toFixed(2)} ${(cy + r * Math.sin(a)).toFixed(2)} `;
+  }
+  d += 'Z';
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" role="img" aria-label={title}
-      style={{ flexShrink: 0, verticalAlign: 'middle', filter: 'drop-shadow(0 1px 1px rgba(184,138,0,0.4))' }}>
+      style={{ flexShrink: 0, verticalAlign: 'middle' }}>
       <title>{title}</title>
-      <path fill="#D4AF37" d="M12 1.5l2.35 1.7 2.9-.05 1.15 2.66 2.5 1.5-.55 2.85 1.35 2.59-2 2.08.05 2.9-2.76 1-1.5 2.5-2.84-.6-2.55 1.4-2.55-1.4-2.84.6-1.5-2.5-2.76-1 .05-2.9-2-2.08 1.35-2.59L1.55 7.3l2.5-1.5L5.2 3.15l2.9.05L12 1.5z"/>
-      <path fill="none" stroke="#3a2b00" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" d="M8 12.2l2.6 2.6L16 9.4"/>
+      <defs>
+        <linearGradient id="vb-gold" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#F4D160" />
+          <stop offset="0.5" stop-color="#E1B12C" />
+          <stop offset="1" stop-color="#C79415" />
+        </linearGradient>
+      </defs>
+      <path d={d} fill="url(#vb-gold)" />
+      <path d="M7.4 12.3l3 3 6.1-6.5" fill="none" stroke="#fff" stroke-width="2.3"
+        stroke-linecap="round" stroke-linejoin="round" />
     </svg>
   );
 }
