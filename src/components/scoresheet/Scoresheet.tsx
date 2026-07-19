@@ -674,7 +674,7 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
               {/* Total row */}
               <tr className="totals-row">
                 <td className="ss-round-num" style={{ fontWeight: 700 }}>Total</td>
-                <td className="ss-time-cell" style={{ fontWeight: 700, color: 'var(--gold)' }}>{matchMins != null ? fmtMins(matchMins) : '—'}</td>
+                <td className="ss-time-cell"></td>
                 <td className="ss-gin-cell"></td>
                 <td className="ss-score-cell" style={{ fontWeight: 800, fontSize: '1.25rem', color: 'var(--gold)' }}>
                   {p1DisplayTotal}
@@ -800,13 +800,13 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
           .ss-table-wrap { margin: 0 -0.45rem; overflow-x: hidden; }
           .ss-table { min-width: 0; width: 100%; table-layout: fixed; }
           .ss-table th, .ss-table td { font-size: 0.72rem; border-width: 1px; }
-          .ss-round-col { width: 18px; }
-          .ss-time-col { width: 26px; }
-          .ss-time-cell { padding: 0.3rem 0.02rem; font-size: 0.58rem; }
-          .ss-gin-header { width: 50px; padding: 0.28rem 0.05rem; font-size: 0.54rem; letter-spacing: 0; }
+          .ss-round-col { width: 30px; }
+          .ss-time-col { width: 30px; }
+          .ss-time-cell { padding: 0.3rem 0.02rem; font-size: 0.6rem; }
+          .ss-gin-header { width: 64px; padding: 0.28rem 0.05rem; font-size: 0.56rem; letter-spacing: 0; }
           .ss-gin-cell { padding: 0.18rem 0.06rem; min-width: 0; }
-          .ss-team-header { padding: 0.35rem 0.08rem; font-size: 0.6rem; letter-spacing: 0; }
-          .ss-table thead tr:nth-child(2) th { padding: 0.3rem 0.05rem; font-size: 0.56rem; max-width: none; }
+          .ss-team-header { padding: 0.35rem 0.06rem; font-size: 0.6rem; letter-spacing: 0; white-space: normal; word-break: break-word; line-height: 1.15; }
+          .ss-table thead tr:nth-child(2) th { padding: 0.3rem 0.04rem; font-size: 0.56rem; max-width: none; white-space: normal; word-break: break-word; line-height: 1.15; }
           .ss-round-num { padding: 0.35rem 0.05rem; font-size: 0.66rem; }
           .ss-score-cell { padding: 0.4rem 0.05rem; font-size: 0.85rem; min-width: 0; }
           .ss-score-cell input { width: 100% !important; max-width: 100%; box-sizing: border-box; padding: 0.1rem 0 !important; }
