@@ -5,7 +5,9 @@ import { getActiveMatch, getMatches, getActivePlayers, getTotalMatchCount, getTo
 import ScheduledMatches from '../components/scheduled/ScheduledMatches';
 import FormChart from '../components/home/FormChart.astro';
 import GoatCard from '../components/home/GoatCard.astro';
-import { computeGOAT } from '../lib/goat';
+import ReigningChampion from '../components/home/ReigningChampion.astro';
+import { computeGOAT, getReigningChampion } from '../lib/goat';
+import type { ReigningChampion as ReigningChampionType } from '../lib/goat';
 import { verifySession } from '../lib/auth';
 
 const runtime = (Astro.locals as Record<string, unknown>).runtime as
@@ -20,6 +22,7 @@ let roundsCount = 0;
 let isAdmin = false;
 let form: Awaited<ReturnType<typeof getPlayerForm>> = { series: [], matches: 0 };
 let goat: Awaited<ReturnType<typeof computeGOAT>> = { goat: null, board: [], totalTitles: 0 };
+let champion: ReigningChampionType | null = null;
 
 const sessionSecret = runtime?.env?.SESSION_SECRET as string | undefined;
 if (sessionSecret) {
@@ -31,7 +34,7 @@ if (runtime?.env?.DB) {
   try {
     // These were six serial round-trips; the page waits on the slowest, not the sum.
     const DB = runtime.env.DB;
-    const [am, rm, players, mc, rc, fc, gt] = await Promise.all([
+    const [am, rm, players, mc, rc, fc, gt, rc2] = await Promise.all([
       getActiveMatch(DB),
       getMatches(DB, 5),
       getActivePlayers(DB),
@@ -39,8 +42,10 @@ if (runtime?.env?.DB) {
       getTotalGamesCount(DB),
       getPlayerForm(DB, 10, { activeOnly: true, minPlayed: 2 }),
       computeGOAT(DB),
+      getReigningChampion(DB),
     ]);
     goat = gt;
+    champion = rc2;
     activeMatch = am;
     recentMatches = rm;
     playerCount = players.length;
@@ -115,6 +120,9 @@ function side2(m: typeof recentMatches[0]) {
         <span class="stat-label">Awards</span>
       </a>
     </div>
+
+    <!-- Reigning Champion -->
+    <ReigningChampion champ={champion} />
 
     <!-- Greatest of All Time -->
     <GoatCard board={goat.board} totalTitles={goat.totalTitles} />

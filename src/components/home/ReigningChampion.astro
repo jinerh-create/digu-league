@@ -1,0 +1,170 @@
+---
+import type { ReigningChampion } from '../../lib/goat';
+interface Props { champ: ReigningChampion | null; }
+const { champ } = Astro.props;
+const monthLabel = (ym: string) => {
+  const [y, m] = ym.split('-').map(Number);
+  return new Date(y, (m || 1) - 1, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' });
+};
+const displayName = champ ? (champ.nickname || champ.name) : '';
+const avatar = champ?.avatar_b64 ? `data:image/jpeg;base64,${champ.avatar_b64}` : null;
+const initials = displayName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+---
+{champ && (
+  <div class="rc-card" data-champ-id={champ.id}>
+    <div class="rc-label">👑 Reigning Champion</div>
+
+    <div class="rc-stage">
+      <!-- Crown sits above the avatar; it animates in / transfers -->
+      <div class="rc-crown" aria-hidden="true">
+        <svg viewBox="0 0 120 80" width="70" height="47">
+          <defs>
+            <linearGradient id="rcGold" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#FDECA8"/>
+              <stop offset="0.45" stop-color="#E8C24B"/>
+              <stop offset="1" stop-color="#B8860B"/>
+            </linearGradient>
+          </defs>
+          <path d="M10 66 L18 24 L40 50 L60 14 L80 50 L102 24 L110 66 Z" fill="url(#rcGold)" stroke="#8a6400" stroke-width="2" stroke-linejoin="round"/>
+          <rect x="10" y="66" width="100" height="10" rx="3" fill="url(#rcGold)" stroke="#8a6400" stroke-width="2"/>
+          <circle cx="18" cy="20" r="6" fill="#FFF3C4" stroke="#8a6400" stroke-width="1.5"/>
+          <circle cx="60" cy="10" r="7" fill="#FFF3C4" stroke="#8a6400" stroke-width="1.5"/>
+          <circle cx="102" cy="20" r="6" fill="#FFF3C4" stroke="#8a6400" stroke-width="1.5"/>
+          <circle cx="35" cy="70" r="2.6" fill="#B8860B"/>
+          <circle cx="60" cy="70" r="2.6" fill="#B8860B"/>
+          <circle cx="85" cy="70" r="2.6" fill="#B8860B"/>
+        </svg>
+        <span class="rc-spark s1">✦</span>
+        <span class="rc-spark s2">✧</span>
+        <span class="rc-spark s3">✦</span>
+      </div>
+
+      <div class="rc-avatar-ring">
+        {avatar
+          ? <img src={avatar} alt={displayName} class="rc-avatar" />
+          : <div class="rc-avatar rc-initials">{initials}</div>}
+      </div>
+    </div>
+
+    <a href={`/players/${champ.id}`} class="rc-name">{displayName}</a>
+
+    <div class="rc-meta">
+      <div class="rc-days">
+        <span class="rc-days-num">{champ.sinceDays}</span>
+        <span class="rc-days-lbl">{champ.sinceDays === 1 ? 'day' : 'days'} as champion</span>
+      </div>
+      <div class="rc-sep"></div>
+      <div class="rc-days">
+        <span class="rc-days-num">{champ.titles}</span>
+        <span class="rc-days-lbl">{champ.titles === 1 ? 'title' : 'titles'} in a row</span>
+      </div>
+    </div>
+    <div class="rc-since">Holding the crown since {monthLabel(champ.reignStartMonth)}</div>
+  </div>
+)}
+
+<style>
+  .rc-card {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 0.35rem;
+    padding: 2.6rem 1.25rem 1.25rem;
+    margin: 0.5rem 0 1rem;
+    border-radius: 20px;
+    background:
+      radial-gradient(120% 80% at 50% 0%, rgba(212,175,55,0.14), transparent 60%),
+      linear-gradient(160deg, rgba(20,26,40,0.9), rgba(10,14,24,0.95));
+    border: 1.5px solid rgba(212,175,55,0.4);
+    box-shadow: 0 0 30px rgba(212,175,55,0.08), inset 0 1px 0 rgba(212,175,55,0.15);
+    overflow: hidden;
+  }
+  .rc-card::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(60% 40% at 50% -10%, rgba(212,175,55,0.22), transparent 70%);
+  }
+  .rc-label {
+    font-family: 'Cinzel', 'Playfair Display', serif;
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold, #D4AF37);
+  }
+  .rc-stage { position: relative; margin-top: 0.4rem; }
+  .rc-crown {
+    position: absolute; top: -34px; left: 50%; transform: translateX(-50%);
+    z-index: 3; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+    animation: rc-crown-idle 3.5s ease-in-out infinite;
+  }
+  @keyframes rc-crown-idle { 0%,100% { transform: translateX(-50%) translateY(0) rotate(0deg); } 50% { transform: translateX(-50%) translateY(-4px) rotate(-1.5deg); } }
+
+  /* Crown drop-in on first paint */
+  .rc-crown { animation: rc-crown-drop 0.9s cubic-bezier(.34,1.56,.64,1) both, rc-crown-idle 3.5s ease-in-out 0.9s infinite; }
+  @keyframes rc-crown-drop {
+    0% { transform: translateX(-50%) translateY(-60px) rotate(-25deg) scale(0.6); opacity: 0; }
+    60% { opacity: 1; }
+    100% { transform: translateX(-50%) translateY(0) rotate(0deg) scale(1); opacity: 1; }
+  }
+
+  /* Enhanced crown TRANSFER animation (added by script when the champion changes) */
+  .rc-card.rc-transfer .rc-crown { animation: rc-crown-fly 1.6s cubic-bezier(.5,1.4,.5,1) both, rc-crown-idle 3.5s ease-in-out 1.6s infinite; }
+  @keyframes rc-crown-fly {
+    0% { transform: translateX(-220px) translateY(-30px) rotate(-90deg) scale(0.5); opacity: 0; }
+    35% { opacity: 1; }
+    70% { transform: translateX(-50%) translateY(-14px) rotate(8deg) scale(1.25); }
+    100% { transform: translateX(-50%) translateY(0) rotate(0deg) scale(1); }
+  }
+  .rc-card.rc-transfer .rc-avatar-ring { animation: rc-ring-pop 1.6s ease-out both; }
+  @keyframes rc-ring-pop { 0%,55% { box-shadow: 0 0 0 rgba(212,175,55,0); } 72% { box-shadow: 0 0 0 6px rgba(212,175,55,0.35), 0 0 30px rgba(212,175,55,0.6); } 100% { box-shadow: 0 0 0 rgba(212,175,55,0.2); } }
+
+  .rc-spark { position: absolute; color: #FFE99A; font-size: 0.7rem; opacity: 0; }
+  .rc-spark.s1 { top: -6px; left: -8px; }
+  .rc-spark.s2 { top: 2px; right: -10px; }
+  .rc-spark.s3 { bottom: -4px; left: 50%; }
+  .rc-card.rc-transfer .rc-spark { animation: rc-sparkle 1.4s ease-out 0.5s; }
+  .rc-card.rc-transfer .rc-spark.s2 { animation-delay: 0.7s; }
+  .rc-card.rc-transfer .rc-spark.s3 { animation-delay: 0.9s; }
+  @keyframes rc-sparkle { 0% { opacity: 0; transform: scale(0.4); } 40% { opacity: 1; transform: scale(1.3); } 100% { opacity: 0; transform: scale(0.6) translateY(-10px); } }
+
+  .rc-avatar-ring {
+    width: 96px; height: 96px; border-radius: 50%;
+    padding: 3px; background: linear-gradient(140deg, #FDECA8, #D4AF37, #8a6400);
+    box-shadow: 0 0 22px rgba(212,175,55,0.35);
+  }
+  .rc-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; background: var(--card-raised, #141a28); }
+  .rc-initials { display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-weight: 700; font-size: 2rem; color: var(--gold, #D4AF37); }
+
+  .rc-name {
+    font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 1.5rem;
+    color: var(--cream, #f5ecd6); text-decoration: none; letter-spacing: 0.01em; margin-top: 0.2rem;
+    text-shadow: 0 2px 12px rgba(212,175,55,0.25);
+  }
+  .rc-name:hover { color: var(--gold, #D4AF37); }
+
+  .rc-meta { display: flex; align-items: center; gap: 1rem; margin-top: 0.4rem; }
+  .rc-days { display: flex; flex-direction: column; align-items: center; }
+  .rc-days-num { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.6rem; color: var(--gold, #D4AF37); line-height: 1; font-variant-numeric: tabular-nums; }
+  .rc-days-lbl { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted, #8b93a7); margin-top: 0.2rem; }
+  .rc-sep { width: 1px; height: 32px; background: rgba(212,175,55,0.25); }
+  .rc-since { font-size: 0.7rem; color: var(--text-muted, #8b93a7); font-style: italic; margin-top: 0.35rem; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rc-crown, .rc-card.rc-transfer .rc-crown, .rc-card.rc-transfer .rc-avatar-ring, .rc-card.rc-transfer .rc-spark { animation: none; }
+  }
+</style>
+
+<script>
+  // Detect a change of champion vs the last time this browser saw the card,
+  // and play the crown-transfer animation when the crown has changed hands.
+  (function () {
+    const card = document.querySelector('.rc-card');
+    if (!card) return;
+    const id = card.getAttribute('data-champ-id');
+    if (!id) return;
+    try {
+      const KEY = 'dl_last_champ';
+      const prev = localStorage.getItem(KEY);
+      if (prev && prev !== id) {
+        card.classList.add('rc-transfer');
+      }
+      localStorage.setItem(KEY, id);
+    } catch (_) { /* localStorage blocked — just skip the transfer flourish */ }
+  })();
+</script>

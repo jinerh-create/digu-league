@@ -499,6 +499,119 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
     }
   }
 
+  // Generate & share a "VS" match card graphic (photos of both sides).
+  async function handleShareVS() {
+    const S = 1080;
+    const canvas = document.createElement('canvas');
+    canvas.width = S; canvas.height = S;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Background
+    const bg = ctx.createLinearGradient(0, 0, S, S);
+    bg.addColorStop(0, '#0d1524'); bg.addColorStop(0.5, '#0a1120'); bg.addColorStop(1, '#080d18');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, S, S);
+    const glowA = ctx.createRadialGradient(300, 430, 40, 300, 430, 420);
+    glowA.addColorStop(0, 'rgba(200,32,48,0.20)'); glowA.addColorStop(1, 'transparent');
+    ctx.fillStyle = glowA; ctx.fillRect(0, 0, S, S);
+    const glowB = ctx.createRadialGradient(780, 430, 40, 780, 430, 420);
+    glowB.addColorStop(0, 'rgba(56,110,220,0.20)'); glowB.addColorStop(1, 'transparent');
+    ctx.fillStyle = glowB; ctx.fillRect(0, 0, S, S);
+
+    // Gold frame
+    ctx.strokeStyle = 'rgba(212,175,55,0.55)'; ctx.lineWidth = 6;
+    ctx.strokeRect(24, 24, S - 48, S - 48);
+
+    // Header
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#D4AF37';
+    ctx.font = '700 60px Georgia, serif';
+    ctx.fillText('DIGU LEAGUE', S / 2, 120);
+    // live pill
+    const inProg = !match.completed_at;
+    ctx.font = '700 30px Arial, sans-serif';
+    const pill = inProg ? '● MATCH ONGOING' : (winnerLabel ? 'FINAL' : 'MATCH');
+    ctx.fillStyle = inProg ? '#ff5a5f' : '#D4AF37';
+    ctx.fillText(pill, S / 2, 172);
+
+    const loadImg = (b64: string | null | undefined): Promise<HTMLImageElement | null> =>
+      new Promise((res) => {
+        if (!b64) return res(null);
+        const im = new Image();
+        im.onload = () => res(im); im.onerror = () => res(null);
+        im.src = `data:image/jpeg;base64,${b64}`;
+      });
+    const [imgA, imgB] = await Promise.all([
+      loadImg(match.player1_avatar), loadImg(match.player2_avatar),
+    ]);
+
+    const initialsOf = (s: string) => (s || '?').split(/[\s/]+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    function avatar(img: HTMLImageElement | null, cx: number, cy: number, r: number, ini: string, ring: string) {
+      ctx!.save();
+      ctx!.beginPath(); ctx!.arc(cx, cy, r + 12, 0, Math.PI * 2);
+      ctx!.fillStyle = ring; ctx!.fill();
+      ctx!.beginPath(); ctx!.arc(cx, cy, r, 0, Math.PI * 2); ctx!.closePath(); ctx!.clip();
+      if (img) {
+        const s = Math.min(img.width, img.height);
+        ctx!.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, cx - r, cy - r, r * 2, r * 2);
+      } else {
+        ctx!.fillStyle = '#161d2e'; ctx!.fillRect(cx - r, cy - r, r * 2, r * 2);
+        ctx!.fillStyle = '#D4AF37'; ctx!.font = '700 96px Georgia, serif';
+        ctx!.textAlign = 'center'; ctx!.textBaseline = 'middle'; ctx!.fillText(ini, cx, cy + 4);
+      }
+      ctx!.restore();
+    }
+    const gold = (() => { const g = ctx.createLinearGradient(0, 300, 0, 640); g.addColorStop(0, '#FDECA8'); g.addColorStop(1, '#B8860B'); return g; })();
+
+    const cy = 440, r = 165;
+    avatar(imgA, 300, cy, r, initialsOf(team1Label), gold);
+    avatar(imgB, 780, cy, r, initialsOf(team2Label), gold);
+
+    // Names
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#f5ecd6'; ctx.font = '700 44px Georgia, serif';
+    const fit = (t: string, max: number) => { let f = 44; ctx.font = `700 ${f}px Georgia, serif`; while (ctx.measureText(t).width > max && f > 22) { f -= 2; ctx.font = `700 ${f}px Georgia, serif`; } };
+    fit(team1Label, 430); ctx.fillText(team1Label, 300, 700);
+    fit(team2Label, 430); ctx.fillText(team2Label, 780, 700);
+    if (isTeam) {
+      ctx.fillStyle = '#D4AF37'; ctx.font = '500 26px Arial, sans-serif';
+      ctx.fillText(team1Players, 300, 742);
+      ctx.fillText(team2Players, 780, 742);
+    }
+
+    // VS center
+    ctx.save();
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(212,175,55,0.8)'; ctx.shadowBlur = 30;
+    ctx.fillStyle = gold; ctx.font = '900 130px Georgia, serif';
+    ctx.fillText('VS', S / 2, cy);
+    ctx.restore();
+
+    // Footer
+    ctx.textAlign = 'center'; ctx.fillStyle = '#8b93a7'; ctx.font = '500 28px Arial, sans-serif';
+    const modeTxt = match.max_rounds > 0 ? `${match.max_rounds} rounds` : `First to ${match.target_score}`;
+    ctx.fillText(`${monthLabel(match.started_at)}  ·  ${modeTxt}`, S / 2, 900);
+    ctx.fillStyle = '#D4AF37'; ctx.font = '600 30px Arial, sans-serif';
+    ctx.fillText('digu-league.pages.dev', S / 2, 990);
+
+    // Share
+    const caption = `🎴 Digu League — ${inProg ? 'match ongoing' : 'match'}!\n${team1Label} 🆚 ${team2Label}`;
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+      const file = new File([blob], 'digu-match.png', { type: 'image/png' });
+      try {
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], text: caption });
+          return;
+        }
+      } catch { /* fall through to download */ }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'digu-match.png'; a.click();
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  }
+
   return (
     <div>
       {/* Header */}
@@ -506,16 +619,23 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
         <a href={`/match/${matchId}`} style={{ color: 'var(--text-muted)', fontSize: '0.875rem', display: 'inline-block', marginBottom: '0.625rem' }}>← Back</a>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button
+            onClick={handleShareVS}
+            className="btn btn-secondary"
+            style={{ flex: 1, fontSize: '0.875rem', padding: '0.625rem 0.5rem' }}
+          >
+            🆚 Match Card
+          </button>
+          <button
             onClick={handleShare}
             className="btn btn-secondary"
-            style={{ flex: 1, fontSize: '0.875rem', padding: '0.625rem 0.75rem' }}
+            style={{ flex: 1, fontSize: '0.875rem', padding: '0.625rem 0.5rem' }}
           >
             🔗 Share
           </button>
           <button
             onClick={() => window.print()}
             className="btn btn-secondary"
-            style={{ flex: 1, fontSize: '0.875rem', padding: '0.625rem 0.75rem' }}
+            style={{ flex: 1, fontSize: '0.875rem', padding: '0.625rem 0.5rem' }}
           >
             🖨️ Print
           </button>

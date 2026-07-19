@@ -10,7 +10,7 @@
    A minimum-matches gate keeps a one-game wonder off the throne. Everything is
    derived from the same numbers the leaderboard uses — nothing is stored, so it
    updates the moment a match is recorded. */
-import { computePlayerStats } from './db';
+import { computePlayerStats, getPlayer } from './db';
 import type { PlayerStats } from './types';
 
 /** Lightweight match row — just what monthly-title ranking needs. */
@@ -44,6 +44,45 @@ export function monthlyTitles(matches: TitleMatch[]): { titles: Record<string, n
     if (champ && champ.won > 0) { titles[champ.id] = (titles[champ.id] || 0) + 1; champByMonth[ym] = champ.id; }
   }
   return { titles, champByMonth, months };
+}
+
+export interface ReigningChampion {
+  id: string; name: string; nickname: string | null; avatar_b64: string | null;
+  sinceDays: number; reignStartMonth: string; month: string; titles: number;
+}
+
+/** The current champion (winner of the most recent month with a decided champion),
+ *  how many CONSECUTIVE months they've held the crown, and days since that reign began. */
+export async function getReigningChampion(db: D1Database): Promise<ReigningChampion | null> {
+  const mres = await db.prepare(
+    `SELECT winner_id, player1_id, player2_id, team1_player2_id, team2_player2_id, started_at
+       FROM matches WHERE is_classic = 0 AND completed_at IS NOT NULL AND started_at IS NOT NULL`,
+  ).all<TitleMatch>();
+  const { champByMonth, months } = monthlyTitles(mres.results || []);
+  const withChamp = months.filter(m => champByMonth[m]);
+  if (withChamp.length === 0) return null;
+
+  const latest = withChamp[withChamp.length - 1];
+  const champId = champByMonth[latest];
+
+  // Walk back through consecutive months the same player held.
+  let reignStart = latest;
+  for (let i = withChamp.length - 1; i > 0; i--) {
+    if (champByMonth[withChamp[i]] === champId && champByMonth[withChamp[i - 1]] === champId) reignStart = withChamp[i - 1];
+    else break;
+  }
+
+  const player = await getPlayer(db, champId);
+  if (!player) return null;
+
+  const start = new Date(`${reignStart}-01T00:00:00Z`).getTime();
+  const sinceDays = Math.max(0, Math.floor((Date.now() - start) / 86_400_000));
+  const titles = withChamp.filter(m => champByMonth[m] === champId).length;
+
+  return {
+    id: champId, name: player.name, nickname: player.nickname, avatar_b64: player.avatar_b64,
+    sinceDays, reignStartMonth: reignStart, month: latest, titles,
+  };
 }
 
 export interface GoatRow {
