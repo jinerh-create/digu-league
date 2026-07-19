@@ -5,6 +5,8 @@ const PUBLIC_PATHS = [
   '/login',
   '/api/auth/login',
   '/api/auth/logout',
+  '/api/auth/google',
+  '/api/auth/google/callback',
   '/manifest.webmanifest',
   '/sw.js',
   '/logo.png',

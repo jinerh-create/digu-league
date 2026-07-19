@@ -106,6 +106,9 @@ const next = Astro.url.searchParams.get('next') ?? '/';
           <p class="rp-sub">Welcome back to the league</p>
         </div>
 
+        <!-- OAuth error banner -->
+        <p class="rp-oauth-err" id="oauth-err" style="display:none"></p>
+
         <!-- Role selector -->
         <div class="rp-tabs">
           <button type="button" class="rp-tab rp-tab-active" id="tab-player" onclick="switchTab('player')">
@@ -145,6 +148,13 @@ const next = Astro.url.searchParams.get('next') ?? '/';
           </form>
         </div>
 
+        <!-- Google sign-in (allow-listed emails → admin) -->
+        <div class="rp-or"><span>or</span></div>
+        <a href="/api/auth/google" class="rp-google-btn">
+          <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571.001-.001.002-.001.003-.002l6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>
+          <span>Continue with Google</span>
+        </a>
+
         <!-- Admin form -->
         <div id="panel-admin" style="display:none">
           <div class="rp-hint rp-hint-red">
@@ -182,6 +192,23 @@ const next = Astro.url.searchParams.get('next') ?? '/';
 </div>
 
 <script is:inline>
+  // Show a friendly banner if Google sign-in redirected back with ?err=
+  (function () {
+    var params = new URLSearchParams(window.location.search);
+    var err = params.get('err');
+    if (!err) return;
+    var msgs = {
+      not_authorized: 'That Google account is not authorized for this league.',
+      not_configured: 'Google sign-in is not configured yet.',
+      google_denied: 'Google sign-in was cancelled.',
+      invalid_state: 'Session expired — please try Google sign-in again.',
+      token_exchange: 'Could not complete Google sign-in. Try again.',
+      no_email: 'Could not read your Google email. Try again.'
+    };
+    var el = document.getElementById('oauth-err');
+    if (el) { el.textContent = msgs[err] || 'Google sign-in failed. Try again.'; el.style.display = 'block'; }
+  })();
+
   function processIcon(img) {
     var canvas = document.getElementById('icon-canvas');
     if (!canvas) return;
@@ -730,6 +757,30 @@ body {
 .rp-btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
 
 .rp-footer{margin-top:1.5rem;font-size:.5rem;color:rgba(212,175,55,.2);letter-spacing:.14em;font-family:'Cinzel',serif;text-align:center;text-transform:uppercase}
+
+/* OAuth error banner */
+.rp-oauth-err{
+  font-size:.75rem;color:#e88a6a;font-weight:700;text-align:center;
+  background:rgba(120,39,13,.12);border:1px solid rgba(120,39,13,.3);
+  border-radius:8px;padding:.5rem .75rem;margin-bottom:1rem;letter-spacing:.02em;
+}
+
+/* "or" divider */
+.rp-or{display:flex;align-items:center;gap:.75rem;margin:1rem 0;color:rgba(200,180,140,.35);font-size:.6875rem;letter-spacing:.16em;text-transform:uppercase;font-family:'Cinzel',serif}
+.rp-or::before,.rp-or::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,.22),transparent)}
+
+/* Google button */
+.rp-google-btn{
+  display:flex;align-items:center;justify-content:center;gap:.625rem;
+  width:100%;padding:.8125rem;border-radius:10px;
+  background:#fff;color:#1f2937;text-decoration:none;
+  font-family:'Josefin Sans',sans-serif;font-size:.8125rem;font-weight:700;letter-spacing:.06em;
+  border:1px solid rgba(0,0,0,.1);box-shadow:0 2px 12px rgba(0,0,0,.3);
+  transition:transform .18s,box-shadow .18s;
+}
+.rp-google-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.45)}
+.rp-google-btn:active{transform:translateY(0)}
+.rp-google-btn svg{flex-shrink:0}
 
 /* ── MOBILE ── */
 @media(max-width:720px){

@@ -59,3 +59,60 @@ export async function verifySession(
 export function clearSessionCookie(): string {
   return `${COOKIE_NAME}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`;
 }
+
+// ── Google OAuth CSRF state (stateless, signed cookie — no KV needed) ──
+const STATE_COOKIE = 'dl_oauth_state';
+
+export async function createStateCookie(secret: string, provider: string, state: string): Promise<string> {
+  const payload = `${provider}:${state}`;
+  const sig = await hmacSign(secret, payload);
+  const token = `${btoa(payload)}.${sig}`;
+  return `${STATE_COOKIE}=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=600`;
+}
+
+export async function verifyStateCookie(
+  cookieHeader: string | null,
+  secret: string,
+  provider: string,
+  state: string
+): Promise<boolean> {
+  if (!cookieHeader || !state) return false;
+  const cookies = Object.fromEntries(
+    cookieHeader.split(';').map((c) => {
+      const [k, ...v] = c.trim().split('=');
+      return [k.trim(), v.join('=')];
+    })
+  );
+  const token = cookies[STATE_COOKIE];
+  if (!token) return false;
+  const [encodedPayload, sig] = token.split('.');
+  if (!encodedPayload || !sig) return false;
+  try {
+    const payload = atob(encodedPayload);
+    if (!(await hmacVerify(secret, payload, sig))) return false;
+    return payload === `${provider}:${state}`;
+  } catch {
+    return false;
+  }
+}
+
+export function clearStateCookie(): string {
+  return `${STATE_COOKIE}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`;
+}
+
+/** Decode the email out of a Google id_token (JWT). No signature check needed — it came straight from Google's HTTPS token endpoint. */
+export function emailFromIdToken(idToken: string | undefined): { email: string | null; verified: boolean } {
+  if (!idToken) return { email: null, verified: false };
+  const parts = idToken.split('.');
+  if (parts.length < 2) return { email: null, verified: false };
+  try {
+    let b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    while (b64.length % 4) b64 += '=';
+    const json = JSON.parse(atob(b64)) as { email?: string; email_verified?: boolean | string };
+    const email = (json.email ?? '').trim().toLowerCase() || null;
+    const verified = json.email_verified === true || json.email_verified === 'true';
+    return { email, verified };
+  } catch {
+    return { email: null, verified: false };
+  }
+}

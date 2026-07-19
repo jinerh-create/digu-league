@@ -584,8 +584,8 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
           <table className="ss-table">
             <thead>
               <tr>
-                <th className="ss-round-col" rowSpan={2}>Round</th>
-                <th className="ss-time-col" rowSpan={2}>Time</th>
+                <th className="ss-round-col" rowSpan={2}>R</th>
+                <th className="ss-time-col" rowSpan={2}>T</th>
                 <th className="ss-gin-header" rowSpan={2}>DIGU</th>
                 <th className="ss-team-header team-a">{team1Label}</th>
                 <th className="ss-team-header team-b">{team2Label}</th>
@@ -793,6 +793,30 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
         }
         .gin-select:focus { outline: none; border-color: var(--gold); }
         .gin-select option { color: var(--cream); background: var(--card); }
+
+        /* Compact mobile: fit the whole sheet on a phone screen (no horizontal scroll) */
+        @media (max-width: 480px) {
+          .scoresheet { padding: 0.45rem; }
+          .ss-table-wrap { margin: 0 -0.45rem; overflow-x: hidden; }
+          .ss-table { min-width: 0; width: 100%; table-layout: fixed; }
+          .ss-table th, .ss-table td { font-size: 0.72rem; border-width: 1px; }
+          .ss-round-col { width: 18px; }
+          .ss-time-col { width: 26px; }
+          .ss-time-cell { padding: 0.3rem 0.02rem; font-size: 0.58rem; }
+          .ss-gin-header { width: 50px; padding: 0.28rem 0.05rem; font-size: 0.54rem; letter-spacing: 0; }
+          .ss-gin-cell { padding: 0.18rem 0.06rem; min-width: 0; }
+          .ss-team-header { padding: 0.35rem 0.08rem; font-size: 0.6rem; letter-spacing: 0; }
+          .ss-table thead tr:nth-child(2) th { padding: 0.3rem 0.05rem; font-size: 0.56rem; max-width: none; }
+          .ss-round-num { padding: 0.35rem 0.05rem; font-size: 0.66rem; }
+          .ss-score-cell { padding: 0.4rem 0.05rem; font-size: 0.85rem; min-width: 0; }
+          .ss-score-cell input { width: 100% !important; max-width: 100%; box-sizing: border-box; padding: 0.1rem 0 !important; }
+          .totals-row td { padding: 0.4rem 0.05rem; }
+          .ss-score-cell[style*="1.25rem"] { font-size: 0.95rem !important; }
+          .gin-select { font-size: 0.6rem; padding: 0.18rem 0; }
+          .ss-del-col { width: 20px; }
+          .ss-del-cell { padding: 0.12rem 0.03rem; }
+          .del-round-btn { width: 18px; height: 18px; font-size: 0.55rem; }
+        }
 
         /* Print */
         @media print {
