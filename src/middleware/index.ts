@@ -7,6 +7,7 @@ const PUBLIC_PATHS = [
   '/api/auth/logout',
   '/api/auth/google',
   '/api/auth/google/callback',
+  '/api/bot/query',
   '/manifest.webmanifest',
   '/sw.js',
   '/logo.png',
