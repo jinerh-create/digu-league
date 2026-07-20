@@ -41,17 +41,17 @@ html {
 
 /* ── Font system ── */
 :root {
-  --font-display: 'Sora', system-ui, sans-serif;
-  --font-heading: 'Sora', system-ui, sans-serif;
-  --font-name: 'Sora', system-ui, sans-serif;
-  --font-body: 'Manrope', system-ui, sans-serif;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-heading: 'Cormorant Garamond', Georgia, serif;
+  --font-name: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Proza Libre', system-ui, sans-serif;
   --font-mono: 'Share Tech Mono', monospace;
 }
 
 body {
   background: var(--surface);
   color: var(--text-primary);
-  font-family: 'Manrope', system-ui, sans-serif;
+  font-family: 'Proza Libre', system-ui, sans-serif;
   line-height: 1.5;
   min-height: 100dvh;
   padding-bottom: 5.5rem;
