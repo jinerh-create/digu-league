@@ -264,7 +264,7 @@ export default function PlayerList() {
                 </form>
               ) : (
                 <>
-                  <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600, fontSize: 'clamp(0.82rem, 3.6vw, 1.1rem)', letterSpacing: '0.01em', color: 'var(--cream, #f5ecd6)', display: 'flex', alignItems: 'center', gap: '0.3rem', whiteSpace: 'nowrap', minWidth: 0 }}>
+                  <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600, fontSize: 'clamp(0.82rem, 3.6vw, 1.1rem)', letterSpacing: '0.02em', color: 'var(--cream, #f5ecd6)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.3rem', whiteSpace: 'nowrap', minWidth: 0 }}>
                     <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</span>
                     {(p as { verified?: number }).verified ? <VerifiedBadge /> : null}
                   </div>
@@ -289,7 +289,7 @@ export default function PlayerList() {
                       <button
                         type="button"
                         onClick={() => { setNickEditId(p.id); setNickDraft(p.nickname ?? ''); }}
-                        style={{ background: 'none', border: '1px dashed var(--border)', borderRadius: 4, padding: '0.1rem 0.4rem', cursor: 'pointer', fontSize: '0.6875rem', color: p.nickname ? 'var(--felt-light)' : 'var(--text-muted)', fontWeight: p.nickname ? 600 : 400 }}
+                        style={{ background: 'none', border: '1px dashed var(--border)', borderRadius: 4, padding: '0.1rem 0.4rem', cursor: 'pointer', fontSize: '0.6875rem', color: p.nickname ? 'var(--felt-light)' : 'var(--text-muted)', fontWeight: p.nickname ? 600 : 400, textTransform: p.nickname ? 'uppercase' : 'none', letterSpacing: p.nickname ? '0.03em' : 0 }}
                       >
                         {p.nickname ? `"${p.nickname}"` : '+ nickname'}
                       </button>

@@ -624,7 +624,7 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <div style={{ fontSize: '1.375rem', fontWeight: 800, color: 'var(--text-primary)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+              <div style={{ fontSize: '1.375rem', fontWeight: 800, color: 'var(--text-primary)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', textTransform: 'uppercase' }}>
                 {player.nickname || player.name}
                 {(player as { verified?: number }).verified ? <VerifiedBadge size={19} /> : null}
               </div>
@@ -638,7 +638,7 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
                 {level.icon} {level.name}
               </div>
             </div>
-            {player.nickname && <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>{player.name}</div>}
+            {player.nickname && <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>{player.name}</div>}
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
               Since {formatDate(player.joined_at)}
             </div>

@@ -75,11 +75,21 @@ h2, h3, .section-title, .page-header h1,
   letter-spacing: 0.06em;
 }
 
-/* Player names, elegant text — Cormorant Garamond */
+/* Player names, elegant text — Cormorant Garamond, always uppercase */
 .player-name, [class*="player-name"],
-[class*="winner"], .nickname {
+.player-nick, [class*="player-nick"],
+[class*="nick"], .nickname,
+[class*="winner"] {
   font-family: var(--font-name);
   font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Uppercase every other place a player name / nickname is shown, app-wide */
+.match-players, .active-match-players,
+.fut-name, .fc-name, .oc-qual-name, .rec-holder,
+.ss-sub-col, .goat-name, .h2h-name, .king-name {
+  text-transform: uppercase;
 }
 
 /* Numbers & scores — Share Tech Mono */
