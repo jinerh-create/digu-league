@@ -41,17 +41,17 @@ html {
 
 /* ── Font system ── */
 :root {
-  --font-display: 'Poppins', system-ui, sans-serif;
-  --font-heading: 'Poppins', system-ui, sans-serif;
-  --font-name: 'Poppins', system-ui, sans-serif;
-  --font-body: 'Quicksand', system-ui, sans-serif;
+  --font-display: 'Sora', system-ui, sans-serif;
+  --font-heading: 'Sora', system-ui, sans-serif;
+  --font-name: 'Sora', system-ui, sans-serif;
+  --font-body: 'Manrope', system-ui, sans-serif;
   --font-mono: 'Share Tech Mono', monospace;
 }
 
 body {
   background: var(--surface);
   color: var(--text-primary);
-  font-family: 'Quicksand', 'Josefin Sans', system-ui, sans-serif;
+  font-family: 'Manrope', system-ui, sans-serif;
   line-height: 1.5;
   min-height: 100dvh;
   padding-bottom: 5.5rem;
