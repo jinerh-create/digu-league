@@ -637,20 +637,20 @@ export default function LeaderboardTable() {
                           }
                         </div>
                         {/* Title pill */}
-                        <div style={{ background:'linear-gradient(135deg,rgba(212,175,55,0.3),rgba(212,175,55,0.15))',border:'1.5px solid rgba(212,175,55,0.6)',borderRadius:20,padding:'3px 12px',fontFamily:"'Proza Libre',sans-serif",fontSize:'0.5625rem',fontWeight:900,color:'#D4AF37',letterSpacing:'0.12em',textTransform:'uppercase',marginBottom:'0.5rem' }}>
+                        <div style={{ background:'linear-gradient(135deg,rgba(212,175,55,0.3),rgba(212,175,55,0.15))',border:'1.5px solid rgba(212,175,55,0.6)',borderRadius:20,padding:'3px 12px',fontFamily:"'Inter',sans-serif",fontSize:'0.5625rem',fontWeight:900,color:'#D4AF37',letterSpacing:'0.12em',textTransform:'uppercase',marginBottom:'0.5rem' }}>
                           CHAMPION
                         </div>
                         {/* Name */}
-                        <div style={{ fontFamily:"'Cormorant Garamond',serif",fontSize:'1.0625rem',fontWeight:900,color:'#fff',textAlign:'center',lineHeight:1.15,marginBottom:2 }}>
+                        <div style={{ fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:'1.0625rem',fontWeight:900,color:'#fff',textAlign:'center',lineHeight:1.15,marginBottom:2 }}>
                           {playerOfMonth.nickname || playerOfMonth.name.split(' ')[0]}
                         </div>
                         {playerOfMonth.nickname && (
-                          <div style={{ fontSize:'0.5625rem',color:'rgba(200,180,140,0.45)',fontFamily:"'Proza Libre',sans-serif",marginBottom:'0.625rem',textAlign:'center' }}>
+                          <div style={{ fontSize:'0.5625rem',color:'rgba(200,180,140,0.45)',fontFamily:"'Inter',sans-serif",marginBottom:'0.625rem',textAlign:'center' }}>
                             {playerOfMonth.name}
                           </div>
                         )}
                         {/* Stat */}
-                        <div style={{ background:'linear-gradient(135deg,rgba(212,175,55,0.25),rgba(212,175,55,0.1))',border:'2px solid rgba(212,175,55,0.6)',borderRadius:20,padding:'4px 14px',fontSize:'0.6875rem',fontWeight:900,color:'#D4AF37',fontFamily:"'Cormorant Garamond',serif",boxShadow:'0 0 10px rgba(212,175,55,0.2)' }}>
+                        <div style={{ background:'linear-gradient(135deg,rgba(212,175,55,0.25),rgba(212,175,55,0.1))',border:'2px solid rgba(212,175,55,0.6)',borderRadius:20,padding:'4px 14px',fontSize:'0.6875rem',fontWeight:900,color:'#D4AF37',fontFamily:"'Plus Jakarta Sans',sans-serif",boxShadow:'0 0 10px rgba(212,175,55,0.2)' }}>
                           {playerOfMonth.league_points} PTS
                         </div>
                       </div>
@@ -674,7 +674,7 @@ export default function LeaderboardTable() {
                       <div style={{ fontFamily:"'Cinzel',serif",fontSize:'0.4rem',color:'rgba(212,175,55,0.35)',letterSpacing:'0.1em',textTransform:'uppercase',textAlign:'center',lineHeight:1.7 }}>
                         One League<br/>One Crown<br/>One Champion
                       </div>
-                      <div style={{ fontSize:'0.5rem',color:'rgba(212,175,55,0.3)',fontFamily:"'Proza Libre',sans-serif",marginTop:2 }}>
+                      <div style={{ fontSize:'0.5rem',color:'rgba(212,175,55,0.3)',fontFamily:"'Inter',sans-serif",marginTop:2 }}>
                         {month ? new Date(month+'-01').toLocaleString('en',{month:'long',year:'numeric'}) : new Date().toLocaleString('en',{month:'long',year:'numeric'})}
                       </div>
                     </div>
@@ -700,20 +700,20 @@ export default function LeaderboardTable() {
                           }
                         </div>
                         {/* Title pill */}
-                        <div style={{ background:'linear-gradient(135deg,rgba(200,16,46,0.3),rgba(200,16,46,0.15))',border:'1.5px solid rgba(200,16,46,0.6)',borderRadius:20,padding:'3px 12px',fontFamily:"'Proza Libre',sans-serif",fontSize:'0.5625rem',fontWeight:900,color:'#FF4A6A',letterSpacing:'0.12em',textTransform:'uppercase',marginBottom:'0.5rem' }}>
+                        <div style={{ background:'linear-gradient(135deg,rgba(200,16,46,0.3),rgba(200,16,46,0.15))',border:'1.5px solid rgba(200,16,46,0.6)',borderRadius:20,padding:'3px 12px',fontFamily:"'Inter',sans-serif",fontSize:'0.5625rem',fontWeight:900,color:'#FF4A6A',letterSpacing:'0.12em',textTransform:'uppercase',marginBottom:'0.5rem' }}>
                           DIGU KING
                         </div>
                         {/* Name */}
-                        <div style={{ fontFamily:"'Cormorant Garamond',serif",fontSize:'1.0625rem',fontWeight:900,color:'#fff',textAlign:'center',lineHeight:1.15,marginBottom:2 }}>
+                        <div style={{ fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:'1.0625rem',fontWeight:900,color:'#fff',textAlign:'center',lineHeight:1.15,marginBottom:2 }}>
                           {diguKing.nickname || diguKing.name.split(' ')[0]}
                         </div>
                         {diguKing.nickname && (
-                          <div style={{ fontSize:'0.5625rem',color:'rgba(200,180,140,0.45)',fontFamily:"'Proza Libre',sans-serif",marginBottom:'0.625rem',textAlign:'center' }}>
+                          <div style={{ fontSize:'0.5625rem',color:'rgba(200,180,140,0.45)',fontFamily:"'Inter',sans-serif",marginBottom:'0.625rem',textAlign:'center' }}>
                             {diguKing.name}
                           </div>
                         )}
                         {/* Stat */}
-                        <div style={{ background:'linear-gradient(135deg,rgba(200,16,46,0.25),rgba(200,16,46,0.1))',border:'2px solid rgba(200,16,46,0.6)',borderRadius:20,padding:'4px 14px',fontSize:'0.6875rem',fontWeight:900,color:'#FF4A6A',fontFamily:"'Cormorant Garamond',serif",boxShadow:'0 0 10px rgba(200,16,46,0.2)' }}>
+                        <div style={{ background:'linear-gradient(135deg,rgba(200,16,46,0.25),rgba(200,16,46,0.1))',border:'2px solid rgba(200,16,46,0.6)',borderRadius:20,padding:'4px 14px',fontSize:'0.6875rem',fontWeight:900,color:'#FF4A6A',fontFamily:"'Plus Jakarta Sans',sans-serif",boxShadow:'0 0 10px rgba(200,16,46,0.2)' }}>
                           {diguKing.gin_count} DIGU
                         </div>
                       </div>
