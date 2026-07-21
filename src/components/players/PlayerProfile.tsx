@@ -624,7 +624,7 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <div style={{ fontSize: 'clamp(1.05rem, 5vw, 1.375rem)', fontWeight: 800, color: 'var(--text-primary)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', textTransform: 'uppercase', flexBasis: '100%', minWidth: 0, flexWrap: 'wrap', lineHeight: 1.15 }}>
+              <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 'clamp(1rem, 4.6vw, 1.3rem)', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--text-primary)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', textTransform: 'uppercase', flexBasis: '100%', minWidth: 0, flexWrap: 'wrap', lineHeight: 1.2 }}>
                 {player.nickname || player.name}
                 {(player as { verified?: number }).verified ? <VerifiedBadge size={19} /> : null}
               </div>

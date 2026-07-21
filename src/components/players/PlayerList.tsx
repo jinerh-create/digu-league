@@ -294,7 +294,7 @@ export default function PlayerList() {
                       <button
                         type="button"
                         onClick={() => { setNickEditId(p.id); setNickDraft(p.nickname ?? ''); }}
-                        style={{ background: 'none', border: p.nickname ? '1px dashed rgba(212,175,55,0.45)' : '1px dashed var(--border)', borderRadius: 4, padding: '0.1rem 0.4rem', cursor: 'pointer', fontSize: '0.6875rem', color: p.nickname ? 'var(--gold, #FFD700)' : 'var(--text-muted)', fontWeight: p.nickname ? 700 : 400, textTransform: p.nickname ? 'uppercase' : 'none', letterSpacing: p.nickname ? '0.03em' : 0 }}
+                        style={{ background: 'none', border: p.nickname ? '1px dashed rgba(212,175,55,0.45)' : '1px dashed var(--border)', borderRadius: 4, padding: '0.1rem 0.45rem', cursor: 'pointer', fontSize: '0.7rem', fontFamily: p.nickname ? "'Orbitron', sans-serif" : 'inherit', color: p.nickname ? 'var(--gold, #FFD700)' : 'var(--text-muted)', fontWeight: p.nickname ? 600 : 400, textTransform: p.nickname ? 'uppercase' : 'none', letterSpacing: p.nickname ? '0.08em' : 0 }}
                       >
                         {p.nickname ? `"${p.nickname}"` : '+ nickname'}
                       </button>

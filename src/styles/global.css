@@ -43,7 +43,7 @@ html {
 :root {
   --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
   --font-heading: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-name: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-name: 'Orbitron', 'Plus Jakarta Sans', sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
   --font-mono: 'Share Tech Mono', monospace;
 }
@@ -83,6 +83,7 @@ h2, h3, .section-title, .page-header h1,
   font-family: var(--font-name);
   font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 /* Uppercase every other place a player name / nickname is shown, app-wide */
