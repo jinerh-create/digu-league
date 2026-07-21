@@ -269,7 +269,7 @@ export default function PlayerList() {
                 </form>
               ) : (
                 <>
-                  <div style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", fontWeight: 700, fontSize: 'clamp(0.82rem, 3.6vw, 1.1rem)', letterSpacing: '0.02em', color: '#F2F5FA', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.3rem', whiteSpace: 'nowrap', minWidth: 0 }}>
+                  <div style={{ fontFamily: "'Figtree', system-ui, sans-serif", fontWeight: 700, fontSize: 'clamp(0.82rem, 3.6vw, 1.1rem)', letterSpacing: '0.02em', color: '#F2F5FA', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.3rem', whiteSpace: 'nowrap', minWidth: 0 }}>
                     <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</span>
                     {(p as { verified?: number }).verified ? <VerifiedBadge /> : null}
                   </div>
@@ -294,7 +294,7 @@ export default function PlayerList() {
                       <button
                         type="button"
                         onClick={() => { setNickEditId(p.id); setNickDraft(p.nickname ?? ''); }}
-                        style={{ background: 'none', border: p.nickname ? '1px dashed rgba(212,175,55,0.45)' : '1px dashed var(--border)', borderRadius: 4, padding: '0.1rem 0.4rem', cursor: 'pointer', fontSize: '0.6rem', fontFamily: 'inherit', color: p.nickname ? 'var(--gold, #FFD700)' : 'var(--text-muted)', fontWeight: p.nickname ? 700 : 400, textTransform: p.nickname ? 'uppercase' : 'none', letterSpacing: p.nickname ? '0.03em' : 0 }}
+                        style={{ background: 'none', border: p.nickname ? '1px dashed rgba(212,175,55,0.45)' : '1px dashed var(--border)', borderRadius: 4, padding: '0.1rem 0.4rem', cursor: 'pointer', fontSize: '0.6rem', fontFamily: "'Figtree', sans-serif", color: p.nickname ? 'var(--gold, #FFD700)' : 'var(--text-muted)', fontWeight: p.nickname ? 700 : 400, textTransform: p.nickname ? 'uppercase' : 'none', letterSpacing: p.nickname ? '0.03em' : 0 }}
                       >
                         {p.nickname ? `"${p.nickname}"` : '+ nickname'}
                       </button>
