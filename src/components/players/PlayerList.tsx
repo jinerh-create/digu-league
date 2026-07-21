@@ -171,7 +171,12 @@ export default function PlayerList() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-      <style>{`@keyframes goldShimmer { 0%{left:-100%} 60%{left:150%} 100%{left:150%} }`}</style>
+      <style>{`
+        @keyframes goldShimmer { 0%{left:-100%} 60%{left:150%} 100%{left:150%} }
+        @media (max-width: 560px) {
+          .pl-actions { flex-basis: 100%; justify-content: flex-end; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border); }
+        }
+      `}</style>
       {/* Add Player Form */}
       <div className="card">
         <div className="form-label" style={{ marginBottom: '0.75rem' }}>Add New Player</div>
@@ -207,7 +212,7 @@ export default function PlayerList() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
         {players.map(p => (
-          <div key={p.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', padding: '0.875rem 1rem', border: '1.5px solid rgba(212,175,55,0.45)', boxShadow: '0 0 14px rgba(212,175,55,0.1), inset 0 1px 0 rgba(212,175,55,0.08)', position: 'relative', overflow: 'hidden' }}>
+          <div key={p.id} className="card pl-card" style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', padding: '0.875rem 1rem', border: '1.5px solid rgba(212,175,55,0.45)', boxShadow: '0 0 14px rgba(212,175,55,0.1), inset 0 1px 0 rgba(212,175,55,0.08)', position: 'relative', overflow: 'hidden', flexWrap: 'wrap' }}>
             <div style={{ position: 'absolute', top: 0, left: '-100%', width: '60%', height: '2px', background: 'linear-gradient(90deg,transparent,rgba(212,175,55,0.9),rgba(255,255,255,0.6),rgba(212,175,55,0.9),transparent)', animation: 'goldShimmer 3.5s ease-in-out infinite' }} />
             <button
               type="button"
@@ -303,7 +308,7 @@ export default function PlayerList() {
             </div>
 
             {editingId !== p.id && (
-              <div style={{ display: 'flex', gap: '0.375rem', flexShrink: 0, alignItems: 'center' }}>
+              <div className="pl-actions" style={{ display: 'flex', gap: '0.375rem', flexShrink: 0, alignItems: 'center' }}>
                 {!(p as { verified?: number }).verified && (p as { verify_requested?: number }).verify_requested ? (
                   <button type="button" onClick={() => handleVerify(p.id)}
                     style={{ fontSize: '0.72rem', padding: '0.375rem 0.7rem', minHeight: 'auto', borderRadius: 6, border: '1px solid #D4AF37', background: 'rgba(212,175,55,0.14)', color: '#D4AF37', fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
