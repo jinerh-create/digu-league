@@ -41,6 +41,8 @@ export interface Match {
   player2_nickname?: string | null;
   team1_player2_nickname?: string | null;
   team2_player2_nickname?: string | null;
+  team1_player2_avatar?: string | null;
+  team2_player2_avatar?: string | null;
   king_name?: string | null;   // King of the Table: most digus in the match
   king_digus?: number | null;
 }

@@ -316,36 +316,55 @@ export default function ActiveMatch({ matchId, isAdmin = false, isAuthed = false
 
     const loadImg = (b64: string | null | undefined): Promise<HTMLImageElement | null> =>
       new Promise((res) => { if (!b64) return res(null); const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = `data:image/jpeg;base64,${b64}`; });
-    const [imgA, imgB] = await Promise.all([loadImg((match as any).player1_avatar), loadImg((match as any).player2_avatar)]);
+    const [imgA, imgB, imgA2, imgB2] = await Promise.all([
+      loadImg((match as any).player1_avatar),
+      loadImg((match as any).player2_avatar),
+      loadImg((match as any).team1_player2_avatar),
+      loadImg((match as any).team2_player2_avatar),
+    ]);
 
     const initials = (s: string) => (s || '?').split(/[\s/]+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
     const gold = (() => { const g = ctx.createLinearGradient(0, 300, 0, 640); g.addColorStop(0, '#FDECA8'); g.addColorStop(1, '#B8860B'); return g; })();
-    function avatar(img: HTMLImageElement | null, cx: number, r: number, ini: string) {
-      const cy = 440; ctx!.save();
-      ctx!.beginPath(); ctx!.arc(cx, cy, r + 12, 0, Math.PI * 2); ctx!.fillStyle = gold; ctx!.fill();
+    function avatar(img: HTMLImageElement | null, cx: number, cy: number, r: number, ini: string) {
+      ctx!.save();
+      ctx!.beginPath(); ctx!.arc(cx, cy, r + 9, 0, Math.PI * 2); ctx!.fillStyle = gold; ctx!.fill();
       ctx!.beginPath(); ctx!.arc(cx, cy, r, 0, Math.PI * 2); ctx!.closePath(); ctx!.clip();
       if (img) { const s = Math.min(img.width, img.height); ctx!.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, cx - r, cy - r, r * 2, r * 2); }
-      else { ctx!.fillStyle = '#161d2e'; ctx!.fillRect(cx - r, cy - r, r * 2, r * 2); ctx!.fillStyle = '#D4AF37'; ctx!.font = '700 96px Georgia, serif'; ctx!.textAlign = 'center'; ctx!.textBaseline = 'middle'; ctx!.fillText(ini, cx, cy + 4); }
+      else { ctx!.fillStyle = '#161d2e'; ctx!.fillRect(cx - r, cy - r, r * 2, r * 2); ctx!.fillStyle = '#D4AF37'; ctx!.font = `700 ${Math.round(r * 0.9)}px Georgia, serif`; ctx!.textAlign = 'center'; ctx!.textBaseline = 'middle'; ctx!.fillText(ini, cx, cy + 4); }
       ctx!.restore();
     }
-    avatar(imgA, 300, 165, initials(team1Label));
-    avatar(imgB, 780, 165, initials(team2Label));
+
+    const cyAv = 430;
+    if (isTeam) {
+      const r = 80;
+      avatar(imgA, 208, cyAv, r, initials(p1Nick));
+      avatar(imgA2, 392, cyAv, r, initials(t1p2Nick));
+      avatar(imgB, 688, cyAv, r, initials(p2Nick));
+      avatar(imgB2, 872, cyAv, r, initials(t2p2Nick));
+    } else {
+      avatar(imgA, 300, cyAv, 165, initials(team1Label));
+      avatar(imgB, 780, cyAv, 165, initials(team2Label));
+    }
 
     ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.fillStyle = '#f5ecd6';
-    const fit = (t: string, max: number) => { let f = 44; ctx.font = `700 ${f}px Georgia, serif`; while (ctx.measureText(t).width > max && f > 20) { f -= 2; ctx.font = `700 ${f}px Georgia, serif`; } };
-    fit(team1Label, 430); ctx.fillText(team1Label, 300, 705);
-    fit(team2Label, 430); ctx.fillText(team2Label, 780, 705);
+    const fit = (t: string, max: number) => { let f = 42; ctx.font = `700 ${f}px Georgia, serif`; while (ctx.measureText(t).width > max && f > 18) { f -= 2; ctx.font = `700 ${f}px Georgia, serif`; } };
+    fit(team1Label, 440); ctx.fillText(team1Label, 300, cyAv + 230);
+    fit(team2Label, 440); ctx.fillText(team2Label, 780, cyAv + 230);
 
     ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(212,175,55,0.8)'; ctx.shadowBlur = 30; ctx.fillStyle = gold; ctx.font = '900 130px Georgia, serif';
-    ctx.fillText('VS', S / 2, 440); ctx.restore();
+    ctx.shadowColor = 'rgba(212,175,55,0.8)'; ctx.shadowBlur = 28; ctx.fillStyle = gold; ctx.font = '900 118px Georgia, serif';
+    ctx.fillText('VS', S / 2, cyAv); ctx.restore();
 
-    ctx.textAlign = 'center'; ctx.fillStyle = '#8b93a7'; ctx.font = '500 28px Arial, sans-serif';
+    const startTime = new Date(match.started_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    const dateStr = new Date(match.started_at).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
     const mode = match.max_rounds > 0 ? `${match.max_rounds} rounds` : `First to ${match.target_score}`;
-    const d = new Date(match.started_at).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
-    ctx.fillText(`${d}  ·  ${mode}`, S / 2, 900);
-    ctx.fillStyle = '#D4AF37'; ctx.font = '600 30px Arial, sans-serif';
-    ctx.fillText('digu-league.pages.dev', S / 2, 990);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#f5ecd6'; ctx.font = '600 34px Arial, sans-serif';
+    ctx.fillText(`⏱  Start ${startTime}   ·   ${mode}`, S / 2, 890);
+    ctx.fillStyle = '#8b93a7'; ctx.font = '500 26px Arial, sans-serif';
+    ctx.fillText(dateStr, S / 2, 933);
+    ctx.fillStyle = '#D4AF37'; ctx.font = '600 28px Arial, sans-serif';
+    ctx.fillText('digu-league.pages.dev', S / 2, 988);
 
     const caption = `🎴 Digu League — ${done ? 'full time!' : 'match starting!'}\n${team1Label} 🆚 ${team2Label}`;
     canvas.toBlob(async (blob) => {
