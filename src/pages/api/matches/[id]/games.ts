@@ -1,6 +1,7 @@
 export const prerender = false;
 import type { APIRoute } from 'astro';
-import { getMatch, getGames, addGame } from '../../../../lib/db';
+import { getMatch, getGames, addGame, completeMatch } from '../../../../lib/db';
+import { verifySession } from '../../../../lib/auth';
 import type { Game } from '../../../../lib/types';
 
 const GIN_BONUS = 25;
@@ -11,12 +12,31 @@ function getDB(locals: Record<string, unknown>): D1Database {
   return runtime.env.DB;
 }
 
+function getSecret(locals: Record<string, unknown>): string | undefined {
+  const runtime = locals.runtime as { env: Record<string, string> } | undefined;
+  return (runtime?.env.SESSION_SECRET ?? (import.meta.env.SESSION_SECRET as string | undefined))?.trim();
+}
+
 export const POST: APIRoute = async ({ params, request, locals }) => {
   try {
     const db = getDB(locals as Record<string, unknown>);
     const match = await getMatch(db, params.id!);
     if (!match) return new Response(JSON.stringify({ error: 'Match not found' }), { status: 404 });
-    if (match.completed_at) return new Response(JSON.stringify({ error: 'Match already completed' }), { status: 400 });
+    // A finished match is locked — except an admin can add the missing rounds of a
+    // rounds-based match that was finished early (so they don't have to delete + re-enter).
+    if (match.completed_at) {
+      const secret = getSecret(locals as Record<string, unknown>);
+      let isAdmin = !secret; // no secret configured (dev) → allow
+      if (secret) {
+        const { role } = await verifySession(request.headers.get('cookie'), secret);
+        isAdmin = role === 'admin';
+      }
+      const existing = await getGames(db, params.id!);
+      const roundsIncomplete = match.max_rounds > 0 && existing.length < match.max_rounds;
+      if (!(isAdmin && roundsIncomplete)) {
+        return new Response(JSON.stringify({ error: 'Match already completed' }), { status: 400 });
+      }
+    }
 
     const body = await request.json() as {
       // 1v1 format
@@ -102,6 +122,13 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     const allGames = [...existingGames, game];
     const p1Score = allGames.filter(g => g.winner_id === match.player1_id).reduce((s, g) => s + g.score_awarded, 0);
     const p2Score = allGames.filter(g => g.winner_id === match.player2_id).reduce((s, g) => s + g.score_awarded, 0);
+
+    // If an admin is filling rounds of an already-finished match, keep the recorded
+    // winner in sync with the new totals (same rule as Finish: higher total wins).
+    if (match.completed_at) {
+      const w = p1Score > p2Score ? match.player1_id : p2Score > p1Score ? match.player2_id : null;
+      await completeMatch(db, params.id!, w as string, match.completed_at);
+    }
 
     return new Response(
       JSON.stringify({ game, p1Score, p2Score, matchComplete: false, matchWinnerId: null }),

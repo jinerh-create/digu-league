@@ -282,11 +282,87 @@ export default function ActiveMatch({ matchId, isAdmin = false, isAuthed = false
   }
 
   const canDelete = isAuthed && (!match?.completed_at || isAdmin);
+  // Admin may fill in the remaining rounds of a rounds-based match that was finished early.
+  const adminFillRounds = !!match?.completed_at && isAdmin && (match?.max_rounds ?? 0) > 0 && (match?.games.length ?? 0) < (match?.max_rounds ?? 0);
 
   const winnerName = completionData?.winnerId === p1Id ? team1Label : completionData?.winnerId === p2Id ? team2Label : '';
 
+  // Generate & share a "match starting" VS card (photos of both sides) to WhatsApp etc.
+  async function handleShareStart() {
+    if (!match) return;
+    const S = 1080;
+    const canvas = document.createElement('canvas');
+    canvas.width = S; canvas.height = S;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const bg = ctx.createLinearGradient(0, 0, S, S);
+    bg.addColorStop(0, '#0d1524'); bg.addColorStop(0.5, '#0a1120'); bg.addColorStop(1, '#080d18');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, S, S);
+    const gA = ctx.createRadialGradient(300, 430, 40, 300, 430, 420);
+    gA.addColorStop(0, 'rgba(255,74,106,0.20)'); gA.addColorStop(1, 'transparent');
+    ctx.fillStyle = gA; ctx.fillRect(0, 0, S, S);
+    const gB = ctx.createRadialGradient(780, 430, 40, 780, 430, 420);
+    gB.addColorStop(0, 'rgba(77,159,255,0.20)'); gB.addColorStop(1, 'transparent');
+    ctx.fillStyle = gB; ctx.fillRect(0, 0, S, S);
+    ctx.strokeStyle = 'rgba(212,175,55,0.55)'; ctx.lineWidth = 6; ctx.strokeRect(24, 24, S - 48, S - 48);
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#D4AF37'; ctx.font = '700 60px Georgia, serif';
+    ctx.fillText('DIGU LEAGUE', S / 2, 120);
+    const done = !!match.completed_at;
+    ctx.font = '700 30px Arial, sans-serif'; ctx.fillStyle = done ? '#D4AF37' : '#ff5a5f';
+    ctx.fillText(done ? 'FULL TIME' : '● MATCH STARTING', S / 2, 172);
+
+    const loadImg = (b64: string | null | undefined): Promise<HTMLImageElement | null> =>
+      new Promise((res) => { if (!b64) return res(null); const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = `data:image/jpeg;base64,${b64}`; });
+    const [imgA, imgB] = await Promise.all([loadImg((match as any).player1_avatar), loadImg((match as any).player2_avatar)]);
+
+    const initials = (s: string) => (s || '?').split(/[\s/]+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    const gold = (() => { const g = ctx.createLinearGradient(0, 300, 0, 640); g.addColorStop(0, '#FDECA8'); g.addColorStop(1, '#B8860B'); return g; })();
+    function avatar(img: HTMLImageElement | null, cx: number, r: number, ini: string) {
+      const cy = 440; ctx!.save();
+      ctx!.beginPath(); ctx!.arc(cx, cy, r + 12, 0, Math.PI * 2); ctx!.fillStyle = gold; ctx!.fill();
+      ctx!.beginPath(); ctx!.arc(cx, cy, r, 0, Math.PI * 2); ctx!.closePath(); ctx!.clip();
+      if (img) { const s = Math.min(img.width, img.height); ctx!.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, cx - r, cy - r, r * 2, r * 2); }
+      else { ctx!.fillStyle = '#161d2e'; ctx!.fillRect(cx - r, cy - r, r * 2, r * 2); ctx!.fillStyle = '#D4AF37'; ctx!.font = '700 96px Georgia, serif'; ctx!.textAlign = 'center'; ctx!.textBaseline = 'middle'; ctx!.fillText(ini, cx, cy + 4); }
+      ctx!.restore();
+    }
+    avatar(imgA, 300, 165, initials(team1Label));
+    avatar(imgB, 780, 165, initials(team2Label));
+
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.fillStyle = '#f5ecd6';
+    const fit = (t: string, max: number) => { let f = 44; ctx.font = `700 ${f}px Georgia, serif`; while (ctx.measureText(t).width > max && f > 20) { f -= 2; ctx.font = `700 ${f}px Georgia, serif`; } };
+    fit(team1Label, 430); ctx.fillText(team1Label, 300, 705);
+    fit(team2Label, 430); ctx.fillText(team2Label, 780, 705);
+
+    ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(212,175,55,0.8)'; ctx.shadowBlur = 30; ctx.fillStyle = gold; ctx.font = '900 130px Georgia, serif';
+    ctx.fillText('VS', S / 2, 440); ctx.restore();
+
+    ctx.textAlign = 'center'; ctx.fillStyle = '#8b93a7'; ctx.font = '500 28px Arial, sans-serif';
+    const mode = match.max_rounds > 0 ? `${match.max_rounds} rounds` : `First to ${match.target_score}`;
+    const d = new Date(match.started_at).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+    ctx.fillText(`${d}  ·  ${mode}`, S / 2, 900);
+    ctx.fillStyle = '#D4AF37'; ctx.font = '600 30px Arial, sans-serif';
+    ctx.fillText('digu-league.pages.dev', S / 2, 990);
+
+    const caption = `🎴 Digu League — ${done ? 'full time!' : 'match starting!'}\n${team1Label} 🆚 ${team2Label}`;
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+      const file = new File([blob], 'digu-match.png', { type: 'image/png' });
+      try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text: caption }); return; } } catch { /* download */ }
+      const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'digu-match.png'; a.click(); URL.revokeObjectURL(url);
+    }, 'image/png');
+  }
+
   return (
     <div style={{ paddingBottom: '2rem' }}>
+      {isAuthed && (
+        <button onClick={handleShareStart} className="btn btn-secondary" style={{ width: '100%', marginBottom: '1rem', fontSize: '0.875rem', padding: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+          🆚 Share Match {match.completed_at ? 'Result' : 'Start'} to WhatsApp
+        </button>
+      )}
       {/* Score Header */}
       <div className="card" style={{ marginBottom: '1rem', padding: '1.25rem' }}>
         {isTeam ? (
@@ -641,8 +717,13 @@ export default function ActiveMatch({ matchId, isAdmin = false, isAuthed = false
         </div>
       )}
       {/* Round Entry Form */}
-      {!match.completed_at && (!roundsDone || allowExtraRounds) && (
+      {((!match.completed_at && (!roundsDone || allowExtraRounds)) || adminFillRounds) && (
         <form onSubmit={handleAddRound} noValidate className="card" style={{ marginBottom: '1rem', padding: '1.25rem' }}>
+          {adminFillRounds && (
+            <div style={{ fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--gold)', marginBottom: '0.625rem' }}>
+              ✎ Admin · adding missing rounds ({match.games.length}/{match.max_rounds})
+            </div>
+          )}
           <div style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: '0.875rem' }}>
             Add Round {match.games.length + 1}
           </div>
