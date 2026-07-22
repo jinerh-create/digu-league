@@ -241,6 +241,57 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
   const mostTitles = mapLead(titles);
   const goatTop = goat.goat;
 
+  // ── Best Partnership — the 2v2 pair with the most wins together (min 3 games) ──
+  const pairStats = new Map<string, { played: number; won: number; a: string; b: string }>();
+  for (const m of matches) {
+    if (!m.team1_player2_id) continue; // team matches only
+    const t1Won = m.winner_id ? m.winner_id === m.player1_id : null;
+    for (const [x, y, on1] of [[m.player1_id, m.team1_player2_id, true], [m.player2_id, m.team2_player2_id, false]] as [string | null, string | null, boolean][]) {
+      if (!x || !y) continue;
+      const key = [x, y].sort().join('|');
+      const ps = pairStats.get(key) || pairStats.set(key, { played: 0, won: 0, a: x, b: y }).get(key)!;
+      ps.played++;
+      if (t1Won !== null && on1 === t1Won) ps.won++;
+    }
+  }
+  let bestPair: { a: string; b: string; won: number; played: number; rate: number } | null = null;
+  for (const ps of pairStats.values()) {
+    if (ps.played < 3 || ps.won === 0) continue;
+    const rate = Math.round((ps.won / ps.played) * 1000) / 10;
+    if (!bestPair || ps.won > bestPair.won || (ps.won === bestPair.won && rate > bestPair.rate)) bestPair = { a: ps.a, b: ps.b, won: ps.won, played: ps.played, rate };
+  }
+  const pairLabel = bestPair ? `${P.get(bestPair.a)?.nick ?? ''} & ${P.get(bestPair.b)?.nick ?? ''}` : '';
+
+  // ── Most Improved — biggest win-rate jump, recent half vs early half (min 8) ──
+  const seq = new Map<string, number[]>();
+  for (const m of matches) {
+    const t1Won = m.winner_id ? m.winner_id === m.player1_id : null;
+    if (t1Won === null) continue; // draws don't count toward improvement
+    for (const [pid, on1] of [[m.player1_id, true], [m.player2_id, false], [m.team1_player2_id, true], [m.team2_player2_id, false]] as [string | null, boolean][]) {
+      if (!pid) continue;
+      (seq.get(pid) || seq.set(pid, []).get(pid)!).push(on1 === t1Won ? 1 : 0);
+    }
+  }
+  let mostImproved: { id: string; delta: number } | null = null;
+  for (const [id, arr] of seq) {
+    if (arr.length < 8) continue;
+    const half = Math.floor(arr.length / 2);
+    const r1 = arr.slice(0, half).reduce((a, b) => a + b, 0) / half;
+    const r2 = arr.slice(half).reduce((a, b) => a + b, 0) / (arr.length - half);
+    const delta = Math.round((r2 - r1) * 1000) / 10;
+    if (delta > 0 && (!mostImproved || delta > mostImproved.delta)) mostImproved = { id, delta };
+  }
+
+  // ── Most Active — most matches in the 30 days up to the latest match ──
+  const latestTs = matches.length ? new Date(matches[matches.length - 1].started_at).getTime() : 0;
+  const windowStart = latestTs - 30 * 86400000;
+  const activeCount = new Map<string, number>();
+  for (const m of matches) {
+    if (new Date(m.started_at).getTime() < windowStart) continue;
+    for (const pid of [m.player1_id, m.player2_id, m.team1_player2_id, m.team2_player2_id].filter(Boolean) as string[]) activeCount.set(pid, (activeCount.get(pid) || 0) + 1);
+  }
+  const mostActive = mapLead(activeCount);
+
   // Youngest / oldest champion — among title-holders with a birthday on record.
   const titleHolders = [...titles.keys()];
   const withBday = titleHolders.map(id => ({ id, bd: P.get(id)?.birthday })).filter(x => x.bd) as { id: string; bd: string }[];
@@ -270,6 +321,8 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
       untracked('most-finals', 'Most Final Appearances', '🎯', 'No finals/playoff structure yet'),
       untracked('most-tournaments', 'Most Tournament Appearances', '🏟️', 'No tournament structure yet'),
       entry('longest-career', 'Longest Career', '⏳', longestCareer?.id, longestCareer ? `${longestCareer.v} days` : '—'),
+      mostActive ? entry('most-active', 'Most Active Player', '⚡', mostActive.id, `${mostActive.v} matches`, 'Last 30 days') : untracked('most-active', 'Most Active Player', '⚡', 'No matches in the last 30 days'),
+      bestPair ? entry('best-partnership', 'Best Partnership', '🤝', bestPair.a, `${bestPair.won} wins`, `${pairLabel} · ${bestPair.rate}%`) : untracked('best-partnership', 'Best Partnership', '🤝', 'Needs a 2v2 pair with 3+ games'),
       entry('most-mvp', 'Most MVP Awards', '⭐', awardHolder('mvp')?.id, `${awardHolder('mvp')?.n ?? 0} MVP`),
       untracked('most-seasons', 'Most Consecutive Seasons', '📅', 'Only one season configured so far'),
       entry('most-opps', 'Most Opponents Defeated', '⚔️', mostOpps?.id, mostOpps ? `${mostOpps.v} beaten` : '—'),
@@ -349,7 +402,7 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
       entry('season-scorer', 'Season Top Scorer', '🎯', bestSeasonPts.id, `${bestSeasonPts.v} pts`),
       entry('season-rate', 'Season Best Win Rate', '📊', bestSeasonRate.id, `${bestSeasonRate.v}%`, bestSeasonRate.ym),
       entry('season-streak', 'Longest Season Win Streak', '🔥', longestStreak?.id, `${longestStreak?.v ?? 0}`),
-      entry('most-improved', 'Most Improved Player', '📈', awardHolder('improved')?.id, awardHolder('improved') ? 'Awarded' : '—'),
+      mostImproved ? entry('most-improved', 'Most Improved Player', '📈', mostImproved.id, `+${mostImproved.delta}%`, 'Recent vs early win rate') : untracked('most-improved', 'Most Improved Player', '📈', 'Needs 8+ matches to measure improvement'),
       entry('rookie', 'Rookie of the Season', '🌟', awardHolder('rookie')?.id, awardHolder('rookie') ? 'Awarded' : '—'),
       entry('comeback-player', 'Comeback Player', '💪', awardHolder('comeback')?.id, awardHolder('comeback') ? 'Awarded' : '—'),
       entry('fair-play', 'Fair Play Champion', '🤝', awardHolder('sportsmanship')?.id, awardHolder('sportsmanship') ? 'Awarded' : '—'),
