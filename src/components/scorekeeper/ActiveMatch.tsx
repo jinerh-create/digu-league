@@ -290,81 +290,125 @@ export default function ActiveMatch({ matchId, isAdmin = false, isAuthed = false
   // Generate & share a "match starting" VS card (photos of both sides) to WhatsApp etc.
   async function handleShareStart() {
     if (!match) return;
-    const S = 1080;
+    const W = 1080, H = 1350;
+    const RED = '#FF4A6A', BLUE = '#4D9FFF';
     const canvas = document.createElement('canvas');
-    canvas.width = S; canvas.height = S;
+    canvas.width = W; canvas.height = H;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-
-    const bg = ctx.createLinearGradient(0, 0, S, S);
-    bg.addColorStop(0, '#0d1524'); bg.addColorStop(0.5, '#0a1120'); bg.addColorStop(1, '#080d18');
-    ctx.fillStyle = bg; ctx.fillRect(0, 0, S, S);
-    const gA = ctx.createRadialGradient(300, 430, 40, 300, 430, 420);
-    gA.addColorStop(0, 'rgba(255,74,106,0.20)'); gA.addColorStop(1, 'transparent');
-    ctx.fillStyle = gA; ctx.fillRect(0, 0, S, S);
-    const gB = ctx.createRadialGradient(780, 430, 40, 780, 430, 420);
-    gB.addColorStop(0, 'rgba(77,159,255,0.20)'); gB.addColorStop(1, 'transparent');
-    ctx.fillStyle = gB; ctx.fillRect(0, 0, S, S);
-    ctx.strokeStyle = 'rgba(212,175,55,0.55)'; ctx.lineWidth = 6; ctx.strokeRect(24, 24, S - 48, S - 48);
-
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#D4AF37'; ctx.font = '700 60px Georgia, serif';
-    ctx.fillText('DIGU LEAGUE', S / 2, 120);
     const done = !!match.completed_at;
-    ctx.font = '700 30px Arial, sans-serif'; ctx.fillStyle = done ? '#D4AF37' : '#ff5a5f';
-    ctx.fillText(done ? 'FULL TIME' : '● MATCH STARTING', S / 2, 172);
 
+    // helpers
+    const rr = (x: number, y: number, w: number, h: number, r: number) => {
+      ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+    };
+
+    // background
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#101a2e'); bg.addColorStop(0.5, '#0a1120'); bg.addColorStop(1, '#070c17');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    const glow = (cx: number, cy: number, col: string) => { const g = ctx.createRadialGradient(cx, cy, 30, cx, cy, 560); g.addColorStop(0, col); g.addColorStop(1, 'transparent'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); };
+    glow(230, 520, 'rgba(255,74,106,0.18)');
+    glow(850, 520, 'rgba(77,159,255,0.18)');
+    ctx.strokeStyle = 'rgba(212,175,55,0.5)'; ctx.lineWidth = 5; rr(26, 26, W - 52, H - 52, 34); ctx.stroke();
+
+    // header
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#D4AF37'; ctx.font = '700 56px Georgia, serif';
+    ctx.fillText('D I G U   L E A G U E', W / 2, 118);
+    ctx.strokeStyle = 'rgba(212,175,55,0.4)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(W / 2 - 150, 148); ctx.lineTo(W / 2 + 150, 148); ctx.stroke();
+    // status pill
+    {
+      const label = done ? 'FULL TIME' : 'MATCH STARTING';
+      const col = done ? '#D4AF37' : '#ff5a5f';
+      ctx.font = '800 30px Arial, sans-serif';
+      const tw = ctx.measureText(label).width;
+      const dot = 16, gap = 14, padX = 30, w = tw + padX * 2 + dot + gap, h = 58, x = W / 2 - w / 2, y = 178;
+      rr(x, y, w, h, h / 2); ctx.fillStyle = done ? 'rgba(212,175,55,0.14)' : 'rgba(255,90,95,0.14)'; ctx.fill();
+      ctx.strokeStyle = col + '88'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.beginPath(); ctx.arc(x + padX + dot / 2, y + h / 2, dot / 2, 0, Math.PI * 2); ctx.fillStyle = col; ctx.fill();
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillStyle = col;
+      ctx.fillText(label, x + padX + dot + gap, y + h / 2 + 1);
+    }
+
+    // load photos
     const loadImg = (b64: string | null | undefined): Promise<HTMLImageElement | null> =>
       new Promise((res) => { if (!b64) return res(null); const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = `data:image/jpeg;base64,${b64}`; });
     const [imgA, imgB, imgA2, imgB2] = await Promise.all([
-      loadImg((match as any).player1_avatar),
-      loadImg((match as any).player2_avatar),
-      loadImg((match as any).team1_player2_avatar),
-      loadImg((match as any).team2_player2_avatar),
+      loadImg((match as any).player1_avatar), loadImg((match as any).player2_avatar),
+      loadImg((match as any).team1_player2_avatar), loadImg((match as any).team2_player2_avatar),
     ]);
 
     const initials = (s: string) => (s || '?').split(/[\s/]+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
-    const gold = (() => { const g = ctx.createLinearGradient(0, 300, 0, 640); g.addColorStop(0, '#FDECA8'); g.addColorStop(1, '#B8860B'); return g; })();
-    function avatar(img: HTMLImageElement | null, cx: number, cy: number, r: number, ini: string) {
+    function avatar(img: HTMLImageElement | null, cx: number, cy: number, r: number, ini: string, ring: string) {
       ctx!.save();
-      ctx!.beginPath(); ctx!.arc(cx, cy, r + 9, 0, Math.PI * 2); ctx!.fillStyle = gold; ctx!.fill();
+      ctx!.beginPath(); ctx!.arc(cx, cy, r + 8, 0, Math.PI * 2); ctx!.fillStyle = ring; ctx!.fill();
+      ctx!.beginPath(); ctx!.arc(cx, cy, r + 8, 0, Math.PI * 2); ctx!.lineWidth = 4; ctx!.strokeStyle = 'rgba(255,255,255,0.15)'; ctx!.stroke();
       ctx!.beginPath(); ctx!.arc(cx, cy, r, 0, Math.PI * 2); ctx!.closePath(); ctx!.clip();
       if (img) { const s = Math.min(img.width, img.height); ctx!.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, cx - r, cy - r, r * 2, r * 2); }
-      else { ctx!.fillStyle = '#161d2e'; ctx!.fillRect(cx - r, cy - r, r * 2, r * 2); ctx!.fillStyle = '#D4AF37'; ctx!.font = `700 ${Math.round(r * 0.9)}px Georgia, serif`; ctx!.textAlign = 'center'; ctx!.textBaseline = 'middle'; ctx!.fillText(ini, cx, cy + 4); }
+      else { ctx!.fillStyle = '#161d2e'; ctx!.fillRect(cx - r, cy - r, r * 2, r * 2); ctx!.fillStyle = '#c7d1e0'; ctx!.font = `700 ${Math.round(r * 0.85)}px Arial, sans-serif`; ctx!.textAlign = 'center'; ctx!.textBaseline = 'middle'; ctx!.fillText(ini, cx, cy + 4); }
       ctx!.restore();
     }
 
-    const cyAv = 430;
+    // team labels
+    const cyAv = 540;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.font = '800 30px Arial, sans-serif'; ctx.fillStyle = RED; ctx.fillText('TEAM A', 300, 320);
+    ctx.fillStyle = BLUE; ctx.fillText('TEAM B', 780, 320);
+
     if (isTeam) {
-      const r = 80;
-      avatar(imgA, 208, cyAv, r, initials(p1Nick));
-      avatar(imgA2, 392, cyAv, r, initials(t1p2Nick));
-      avatar(imgB, 688, cyAv, r, initials(p2Nick));
-      avatar(imgB2, 872, cyAv, r, initials(t2p2Nick));
+      const r = 96;
+      avatar(imgA, 214, cyAv, r, initials(p1Nick), RED);
+      avatar(imgA2, 406, cyAv, r, initials(t1p2Nick), RED);
+      avatar(imgB, 674, cyAv, r, initials(p2Nick), BLUE);
+      avatar(imgB2, 866, cyAv, r, initials(t2p2Nick), BLUE);
     } else {
-      avatar(imgA, 300, cyAv, 165, initials(team1Label));
-      avatar(imgB, 780, cyAv, 165, initials(team2Label));
+      avatar(imgA, 300, cyAv, 150, initials(team1Label), RED);
+      avatar(imgB, 780, cyAv, 150, initials(team2Label), BLUE);
     }
 
-    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.fillStyle = '#f5ecd6';
-    const fit = (t: string, max: number) => { let f = 42; ctx.font = `700 ${f}px Georgia, serif`; while (ctx.measureText(t).width > max && f > 18) { f -= 2; ctx.font = `700 ${f}px Georgia, serif`; } };
-    fit(team1Label, 440); ctx.fillText(team1Label, 300, cyAv + 230);
-    fit(team2Label, 440); ctx.fillText(team2Label, 780, cyAv + 230);
+    // team names + accent underline
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.fillStyle = '#f2f5fa';
+    const fit = (t: string, max: number) => { let f = 44; ctx.font = `800 ${f}px Arial, sans-serif`; while (ctx.measureText(t).width > max && f > 20) { f -= 2; ctx.font = `800 ${f}px Arial, sans-serif`; } };
+    fit(team1Label, 440); ctx.fillText(team1Label.toUpperCase(), 300, cyAv + 240);
+    fit(team2Label, 440); ctx.fillText(team2Label.toUpperCase(), 780, cyAv + 240);
+    ctx.strokeStyle = RED; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(300 - 46, cyAv + 262); ctx.lineTo(300 + 46, cyAv + 262); ctx.stroke();
+    ctx.strokeStyle = BLUE; ctx.beginPath(); ctx.moveTo(780 - 46, cyAv + 262); ctx.lineTo(780 + 46, cyAv + 262); ctx.stroke();
 
-    ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(212,175,55,0.8)'; ctx.shadowBlur = 28; ctx.fillStyle = gold; ctx.font = '900 118px Georgia, serif';
-    ctx.fillText('VS', S / 2, cyAv); ctx.restore();
+    // VS badge
+    {
+      const cx = W / 2, cy = cyAv, r = 76;
+      const ring = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r); ring.addColorStop(0, '#FDECA8'); ring.addColorStop(1, '#B8860B');
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = ring; ctx.fill();
+      ctx.beginPath(); ctx.arc(cx, cy, r - 7, 0, Math.PI * 2); ctx.fillStyle = '#0b1120'; ctx.fill();
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '900 58px Georgia, serif';
+      ctx.fillStyle = '#FDECA8'; ctx.fillText('VS', cx, cy + 2);
+    }
 
+    // info panel
     const startTime = new Date(match.started_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    const dateStr = new Date(match.started_at).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
-    const mode = match.max_rounds > 0 ? `${match.max_rounds} rounds` : `First to ${match.target_score}`;
+    const dateStr = new Date(match.started_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+    const mode = match.max_rounds > 0 ? `${match.max_rounds} Rounds` : `To ${match.target_score}`;
+    rr(80, 1000, W - 160, 168, 24); ctx.fillStyle = 'rgba(255,255,255,0.04)'; ctx.fill();
+    ctx.strokeStyle = 'rgba(212,175,55,0.25)'; ctx.lineWidth = 1.5; ctx.stroke();
+    const cols: [string, string][] = [['START', startTime], ['FORMAT', mode], ['DATE', dateStr]];
+    const cxs = [260, 540, 820];
+    cols.forEach(([lbl, val], i) => {
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#f2f5fa'; ctx.textBaseline = 'alphabetic';
+      let f = 40; ctx.font = `800 ${f}px Arial, sans-serif`; while (ctx.measureText(val).width > 260 && f > 22) { f -= 2; ctx.font = `800 ${f}px Arial, sans-serif`; }
+      ctx.fillText(val, cxs[i], 1078);
+      ctx.fillStyle = '#D4AF37'; ctx.font = '700 22px Arial, sans-serif'; ctx.fillText(lbl, cxs[i], 1122);
+      if (i < 2) { ctx.strokeStyle = 'rgba(212,175,55,0.2)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(cxs[i] + 140, 1030); ctx.lineTo(cxs[i] + 140, 1138); ctx.stroke(); }
+    });
+
+    // footer
     ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle = '#f5ecd6'; ctx.font = '600 34px Arial, sans-serif';
-    ctx.fillText(`⏱  Start ${startTime}   ·   ${mode}`, S / 2, 890);
-    ctx.fillStyle = '#8b93a7'; ctx.font = '500 26px Arial, sans-serif';
-    ctx.fillText(dateStr, S / 2, 933);
-    ctx.fillStyle = '#D4AF37'; ctx.font = '600 28px Arial, sans-serif';
-    ctx.fillText('digu-league.pages.dev', S / 2, 988);
+    ctx.fillStyle = '#D4AF37'; ctx.font = '700 30px Arial, sans-serif'; ctx.fillText('digu-league.pages.dev', W / 2, 1250);
+    ctx.fillStyle = 'rgba(200,180,140,0.4)'; ctx.font = '600 22px Arial, sans-serif';
+    ctx.fillText('PLAY SMART  ·  WIN THE CROWN', W / 2, 1290);
 
     const caption = `🎴 Digu League — ${done ? 'full time!' : 'match starting!'}\n${team1Label} 🆚 ${team2Label}`;
     canvas.toBlob(async (blob) => {

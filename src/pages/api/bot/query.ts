@@ -133,10 +133,14 @@ export const GET: APIRoute = async ({ locals, url, request }) => {
         const pa = matchPlayer(stats, url.searchParams.get('a') || '');
         const pb = matchPlayer(stats, url.searchParams.get('b') || '');
         if (!pa || !pb) return json({ error: 'Could not identify both players', known: stats.map(displayName) });
-        const matches = await getMatches(db, 500);
+        // Lean query — just the fields needed to count head-to-head wins.
+        const matches = (await db.prepare(
+          `SELECT winner_id, player1_id, player2_id, team1_player2_id, team2_player2_id
+             FROM matches WHERE is_classic = 0 AND completed_at IS NOT NULL AND winner_id IS NOT NULL`,
+        ).all<{ winner_id: string; player1_id: string; player2_id: string; team1_player2_id: string | null; team2_player2_id: string | null }>()).results || [];
         let aWins = 0, bWins = 0, total = 0;
         for (const m of matches) {
-          if (!m.completed_at || !m.winner_id) continue;
+          if (!m.winner_id) continue;
           const sideA = [m.player1_id, m.team1_player2_id].filter(Boolean) as string[];
           const sideB = [m.player2_id, m.team2_player2_id].filter(Boolean) as string[];
           const aInA = sideA.includes(pa.player_id), aInB = sideB.includes(pa.player_id);

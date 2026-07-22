@@ -7,7 +7,7 @@ const runtime = (Astro.locals as Record<string, unknown>).runtime as { env: { DB
 let groups: RecordGroup[] = [];
 let totalTracked = 0;
 if (runtime?.env?.DB) {
-  try { const r = await computeRecords(runtime.env.DB); groups = r.groups; totalTracked = r.totalTracked; } catch (e) { console.error(e); }
+  try { const r = await computeRecords(runtime.env.DB); groups = r.groups; totalTracked = r.totalTracked; } catch { /* render empty on failure */ }
 }
 const initials = (name: string) => name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);

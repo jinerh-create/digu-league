@@ -85,8 +85,8 @@ export async function getMatches(db: D1Database, limit = 50): Promise<Match[]> {
   const result = await db
     .prepare(
       `SELECT m.*,
-        p1.name AS player1_name, p1.avatar_b64 AS player1_avatar, p1.nickname AS player1_nickname,
-        p2.name AS player2_name, p2.avatar_b64 AS player2_avatar, p2.nickname AS player2_nickname,
+        p1.name AS player1_name, p1.nickname AS player1_nickname,
+        p2.name AS player2_name, p2.nickname AS player2_nickname,
         pw.name AS winner_name,
         p3.name AS team1_player2_name, p3.nickname AS team1_player2_nickname,
         p4.name AS team2_player2_name, p4.nickname AS team2_player2_nickname,
@@ -115,8 +115,8 @@ export async function getClassicMatches(db: D1Database, limit = 100): Promise<Ma
   const result = await db
     .prepare(
       `SELECT m.*,
-        p1.name AS player1_name, p1.avatar_b64 AS player1_avatar, p1.nickname AS player1_nickname,
-        p2.name AS player2_name, p2.avatar_b64 AS player2_avatar, p2.nickname AS player2_nickname,
+        p1.name AS player1_name, p1.nickname AS player1_nickname,
+        p2.name AS player2_name, p2.nickname AS player2_nickname,
         pw.name AS winner_name,
         p3.name AS team1_player2_name, p3.nickname AS team1_player2_nickname,
         p4.name AS team2_player2_name, p4.nickname AS team2_player2_nickname
@@ -139,8 +139,8 @@ export async function getMatch(db: D1Database, id: string): Promise<Match | null
   return db
     .prepare(
       `SELECT m.*,
-        p1.name AS player1_name, p1.avatar_b64 AS player1_avatar, p1.nickname AS player1_nickname,
-        p2.name AS player2_name, p2.avatar_b64 AS player2_avatar, p2.nickname AS player2_nickname,
+        p1.name AS player1_name, p1.nickname AS player1_nickname,
+        p2.name AS player2_name, p2.nickname AS player2_nickname,
         pw.name AS winner_name,
         p3.name AS team1_player2_name, p3.nickname AS team1_player2_nickname, p3.avatar_b64 AS team1_player2_avatar,
         p4.name AS team2_player2_name, p4.nickname AS team2_player2_nickname, p4.avatar_b64 AS team2_player2_avatar
@@ -569,8 +569,6 @@ export async function computeTeamStats(db: D1Database, month?: string): Promise<
 
   return Array.from(teamMap.values()).sort((a, b) => b.league_points - a.league_points);
 }
-
-export const OC_SEASON_ID = 'oc-champions-league';
 
 export interface OCPlayerStanding {
   player_id: string;

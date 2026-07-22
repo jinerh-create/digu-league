@@ -1,4 +1,4 @@
-const CACHE = 'digu-v54';
+const CACHE = 'digu-v55';
 const SHELL = [
   '/',
   '/leaderboard',
@@ -38,16 +38,23 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Network-first for HTML pages, fall back to cache
+  // Stale-while-revalidate for HTML pages: serve the cached page instantly, then
+  // refresh it in the background. Only cache clean 200 responses (never redirects,
+  // so a login/redirect is never stored and served stale).
   if (e.request.mode === 'navigate') {
     e.respondWith(
-      fetch(e.request)
-        .then(res => {
-          const clone = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
-          return res;
-        })
-        .catch(() => caches.match(e.request).then(r => r || caches.match('/')))
+      caches.match(e.request).then(cached => {
+        const network = fetch(e.request)
+          .then(res => {
+            if (res && res.ok && res.status === 200 && !res.redirected && res.type === 'basic') {
+              const clone = res.clone();
+              caches.open(CACHE).then(c => c.put(e.request, clone));
+            }
+            return res;
+          })
+          .catch(() => cached || caches.match('/'));
+        return cached || network;
+      })
     );
     return;
   }

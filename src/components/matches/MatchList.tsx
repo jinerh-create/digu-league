@@ -54,6 +54,7 @@ type Tab = 'all' | 'single' | 'team' | 'classic';
 export default function MatchList() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [classicMatches, setClassicMatches] = useState<Match[]>([]);
+  const [classicLoaded, setClassicLoaded] = useState(false);
   const [canCreate, setCanCreate] = useState(false);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>('all');
@@ -69,15 +70,21 @@ export default function MatchList() {
       .then(r => r.json())
       .then((data: Match[]) => { setMatches(Array.isArray(data) ? data : []); setLoading(false); })
       .catch(() => setLoading(false));
-    fetch('/api/classic')
-      .then(r => r.json())
-      .then((data: Match[]) => setClassicMatches(Array.isArray(data) ? data : []))
-      .catch(() => {});
     // reveal "New" buttons only for logged-in users (empty POST → 400 authed, 401 not)
     fetch('/api/matches', { method: 'POST', body: '{}', headers: { 'Content-Type': 'application/json' } })
       .then(r => { if (r.status !== 401) setCanCreate(true); })
       .catch(() => {});
   }, []);
+
+  // Classic (Quick) matches load only when that tab is first opened.
+  useEffect(() => {
+    if (tab !== 'classic' || classicLoaded) return;
+    setClassicLoaded(true);
+    fetch('/api/classic')
+      .then(r => r.json())
+      .then((data: Match[]) => setClassicMatches(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, [tab, classicLoaded]);
 
   async function handleSaveComment(matchId: string) {
     await fetch(`/api/matches/${matchId}`, {

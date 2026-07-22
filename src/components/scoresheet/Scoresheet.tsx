@@ -477,12 +477,30 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
     return new Promise(resolve => canvas.toBlob(b => resolve(b!), 'image/png'));
   }
 
+  // Caption for WhatsApp etc: "DIGU LEAGUE" / date / which match of that day.
+  async function buildCaption(): Promise<string> {
+    const started = match?.started_at ? new Date(match.started_at) : new Date();
+    const dateStr = started.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+    let matchNo = 1;
+    try {
+      const list = await fetch('/api/matches').then(r => r.json()) as Match[];
+      const day = (match!.started_at || '').slice(0, 10);
+      const sameDay = (Array.isArray(list) ? list : [])
+        .filter(m => (m.started_at || '').slice(0, 10) === day)
+        .sort((a, b) => (a.started_at || '').localeCompare(b.started_at || ''));
+      const idx = sameDay.findIndex(m => m.id === matchId);
+      if (idx >= 0) matchNo = idx + 1;
+    } catch { /* default to 1 */ }
+    return `DIGU LEAGUE\n${dateStr}\nMATCH NO : ${matchNo}`;
+  }
+
   async function handleShare() {
     try {
       const blob = await generateShareImage();
       const file = new File([blob], 'digu-scoresheet.png', { type: 'image/png' });
+      const caption = await buildCaption();
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'Digu League Match' });
+        await navigator.share({ files: [file], text: caption });
         return;
       }
       // Fallback: download the image
