@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { Player, Match } from '../../lib/types';
 import VerifiedBadge from '../common/VerifiedBadge';
 import VerifyControl from '../common/VerifyControl';
+import PerformanceChart from './PerformanceChart';
 
 function Avatar({ name, b64, size = 64 }: { name: string; b64?: string | null; size?: number }) {
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
@@ -384,16 +385,18 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
     nemesis: { name: string; record: string } | null; favourite: { name: string; record: string } | null;
   };
   const [advanced, setAdvanced] = useState<Advanced | null>(null);
+  const [timeline, setTimeline] = useState<{ ym: string; date: string; won: number; digus: number }[]>([]);
 
   useEffect(() => {
     fetch(`/api/players/${playerId}/stats`)
       .then(r => r.json())
-      .then((data: { player: Player; matches: Match[]; totalScore: number; ginCount: number; maxWinStreak: number; perfectMatches: number; centuryHands: number; biggestVictory?: BigMatch | null; biggestDefeat?: BigMatch | null; advanced?: Advanced; error?: string }) => {
+      .then((data: { player: Player; matches: Match[]; totalScore: number; ginCount: number; maxWinStreak: number; perfectMatches: number; centuryHands: number; biggestVictory?: BigMatch | null; biggestDefeat?: BigMatch | null; advanced?: Advanced; timeline?: { ym: string; date: string; won: number; digus: number }[]; error?: string }) => {
         if (data.error) { setError(data.error); setLoading(false); return; }
         setPlayer(data.player);
         setBiggestVictory(data.biggestVictory ?? null);
         setBiggestDefeat(data.biggestDefeat ?? null);
         setAdvanced(data.advanced ?? null);
+        setTimeline(data.timeline ?? []);
         setMatches(data.matches);
         setTotalScore(data.totalScore ?? 0);
         setGinCount(data.ginCount ?? 0);
@@ -753,6 +756,9 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
           ))}
         </div>
 
+        {/* Performance graph — wins & digus per month (default recent, selectable) */}
+        <PerformanceChart timeline={timeline} />
+
         {/* Biggest victory / defeat */}
         {(biggestVictory || biggestDefeat) && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.625rem', marginBottom: '1rem' }}>
@@ -892,9 +898,9 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
                   src={b.image}
                   alt={b.name}
                   style={{
-                    width: b.fullBleed ? '100%' : '84%',
-                    height: b.fullBleed ? '100%' : '84%',
-                    objectFit: b.fullBleed ? 'cover' : 'contain',
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
                     position: 'absolute',
                     top: '50%', left: '50%',
                     transform: 'translate(-50%, -50%)',

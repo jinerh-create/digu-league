@@ -139,6 +139,21 @@ export const GET: APIRoute = async ({ params, locals }) => {
       'SELECT MAX(g.score_awarded) AS m FROM games g JOIN matches mm ON mm.id=g.match_id WHERE mm.is_classic=0 AND g.winner_id=?',
     ).bind(id).first<{ m: number }>();
 
+    // Performance timeline — per completed league match, chronological: month, win, digus.
+    const tlRows = await db.prepare(`
+      SELECT m.id, m.started_at, m.winner_id, m.player1_id, m.player2_id, m.team1_player2_id, m.team2_player2_id,
+        (SELECT COUNT(*) FROM games g WHERE g.match_id = m.id AND g.gin_player_id = ?) AS digus
+      FROM matches m
+      WHERE m.is_classic = 0 AND m.completed_at IS NOT NULL
+        AND (m.player1_id = ? OR m.player2_id = ? OR m.team1_player2_id = ? OR m.team2_player2_id = ?)
+      ORDER BY m.started_at ASC
+    `).bind(id, id, id, id, id).all<any>();
+    const timeline = (tlRows.results || []).map((r: any) => {
+      const onTeam1 = r.player1_id === id || r.team1_player2_id === id;
+      const won = onTeam1 ? r.winner_id === r.player1_id : r.winner_id === r.player2_id;
+      return { ym: (r.started_at || '').slice(0, 7), date: r.started_at as string, won: won ? 1 : 0, digus: (r.digus as number) || 0 };
+    });
+
     const advanced = {
       avgWinMargin: winCount ? Math.round(winMarginSum / winCount) : null,
       avgMatchMins: durCount ? Math.round(durSum / durCount) : null,
@@ -170,6 +185,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
       biggestVictory,
       biggestDefeat,
       advanced,
+      timeline,
     }), { headers: { 'Content-Type': 'application/json' } });
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), { status: 500 });
