@@ -25,24 +25,16 @@ const { activeTab } = Astro.props;
 </nav>
 
 <style>
-  /* Floating rounded "pill" nav — dark theme, gold accents */
   .bottom-nav {
     position: fixed;
-    bottom: calc(0.55rem + env(safe-area-inset-bottom));
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: 0;
+    left: 0;
+    right: 0;
     z-index: 100;
-    width: calc(100% - 1.5rem);
-    max-width: 460px;
+    background: var(--card);
+    border-top: 1px solid var(--border);
     display: flex;
-    gap: 0.2rem;
-    padding: 0.3rem;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--card) 88%, transparent);
-    -webkit-backdrop-filter: blur(14px);
-    backdrop-filter: blur(14px);
-    border: 1px solid rgba(212, 175, 55, 0.28);
-    box-shadow: 0 10px 34px rgba(0, 0, 0, 0.55), 0 0 22px rgba(212, 175, 55, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   .nav-item {
@@ -50,33 +42,25 @@ const { activeTab } = Astro.props;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 0.12rem;
-    padding: 0.5rem 0.35rem;
-    border-radius: 999px;
-    border: 1px solid transparent;
+    gap: 0.25rem;
+    padding: 0.625rem 0.5rem;
     color: var(--text-muted);
-    transition: color 0.18s, background 0.18s, box-shadow 0.18s;
+    transition: color 0.15s;
   }
-
-  .nav-item:hover { color: var(--text-secondary); }
 
   .nav-item.active {
     color: var(--gold);
-    background: linear-gradient(135deg, rgba(212, 175, 55, 0.22), rgba(212, 175, 55, 0.1));
-    border: 1px solid rgba(212, 175, 55, 0.4);
-    box-shadow: 0 2px 12px rgba(212, 175, 55, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
 
   .nav-icon {
-    font-size: 1.05rem;
+    font-size: 1.125rem;
     line-height: 1;
   }
 
   .nav-label {
-    font-size: 0.58rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
   }
 </style>
