@@ -269,7 +269,7 @@ export default function PlayerList() {
                 </form>
               ) : (
                 <>
-                  <div style={{ fontFamily: "'Montserrat', system-ui, sans-serif", fontWeight: 700, fontSize: 'clamp(0.82rem, 3.6vw, 1.1rem)', letterSpacing: '0.02em', color: '#F2F5FA', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.3rem', whiteSpace: 'nowrap', minWidth: 0 }}>
+                  <div style={{ fontFamily: "'Montserrat', system-ui, sans-serif", fontWeight: 500, fontSize: 'clamp(0.82rem, 3.6vw, 1.1rem)', letterSpacing: '0.02em', color: '#F2F5FA', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.3rem', whiteSpace: 'nowrap', minWidth: 0 }}>
                     <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</span>
                     {(p as { verified?: number }).verified ? <VerifiedBadge /> : null}
                   </div>
