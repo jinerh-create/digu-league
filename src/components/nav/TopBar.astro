@@ -1,0 +1,53 @@
+---
+// Slim floating top branding bar — metallic Digu League logo + wordmark.
+---
+<a href="/" class="top-bar" aria-label="Digu League home">
+  <img src="/dl-logo-v2.png" alt="Digu League" class="tb-logo" />
+  <span class="tb-word">DIGU LEAGUE</span>
+</a>
+
+<style>
+  .top-bar {
+    position: fixed;
+    top: calc(0.5rem + env(safe-area-inset-top));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    width: calc(100% - 1.5rem);
+    max-width: 460px;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.4rem 0.95rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--card) 88%, transparent);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(212, 175, 55, 0.28);
+    box-shadow: 0 8px 26px rgba(0, 0, 0, 0.5), 0 0 20px rgba(212, 175, 55, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  .tb-logo {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.25);
+  }
+
+  /* Metallic gold wordmark */
+  .tb-word {
+    font-family: 'Montserrat', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    background: linear-gradient(180deg, #FDF3C0 0%, #F0D563 40%, #C79A1E 58%, #FBECA6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+  }
+</style>

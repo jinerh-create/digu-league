@@ -1,5 +1,6 @@
 ---
 import BottomNav from '../components/nav/BottomNav.astro';
+import TopBar from '../components/nav/TopBar.astro';
 import '../styles/global.css';
 import '../styles/typography.css';
 import '../styles/components.css';
@@ -34,7 +35,8 @@ const { title, description = 'Digu League — Gin Rummy Competition Tracker', ac
     <title>{title} · Digu League</title>
   </head>
   <body>
-    <main>
+    <TopBar />
+    <main style="padding-top: 3.15rem;">
       <slot />
     </main>
     <BottomNav activeTab={activeTab} />
