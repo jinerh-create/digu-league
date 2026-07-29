@@ -64,6 +64,8 @@ export default function MatchList() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [editingComment, setEditingComment] = useState<string | null>(null);
   const [commentDraft, setCommentDraft] = useState('');
+  // Which completed match has its details drawer open (date, type, scoresheet, note).
+  const [openId, setOpenId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/matches')
@@ -255,68 +257,73 @@ export default function MatchList() {
               const s2 = side2(m);
               const isDraw = m.completed_at && !m.winner_id;
               const winnerSide = m.winner_id === m.player1_id ? s1 : s2;
+              const open = openId === m.id;
               return (
-                <div key={m.id} className="card match-card" style={{ border: '1.5px solid rgba(212,175,55,0.45)', boxShadow: '0 0 14px rgba(212,175,55,0.12), inset 0 1px 0 rgba(212,175,55,0.08)', position: 'relative', overflow: 'hidden' }}>
-                  
-              <div className="match-row" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                    <div className="match-vs" style={{ flex: 1, minWidth: 0 }}>
+                <div key={m.id} className="card match-card">
+                  {/* Face of the tile: names, King of the Table, winner. Nothing else. */}
+                  <div className="match-head" onClick={() => setOpenId(open ? null : m.id)}
+                    role="button" tabIndex={0}
+                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenId(open ? null : m.id); } }}
+                    aria-expanded={open} aria-label={`${s1} versus ${s2} — show details`}>
+                    <div className="match-vs">
                       <span className={`player-name ${m.winner_id === m.player1_id ? 'winner' : isDraw ? '' : 'loser'}`}>{s1}</span>
                       <span className="vs-text">vs</span>
                       <span className={`player-name ${m.winner_id === m.player2_id ? 'winner' : isDraw ? '' : 'loser'}`}>{s2}</span>
                     </div>
+                    {m.king_name && (m.king_digus ?? 0) > 0 && (
+                      <span className="king-chip" title={`King of the Table: ${m.king_name} · ${m.king_digus} digu`}>
+                        👑 {m.king_name} · {m.king_digus}
+                      </span>
+                    )}
                     {isDraw
-                      ? <span style={{ flexShrink: 0, padding: '0.2rem 0.6rem', background: 'rgba(100,100,100,0.28)', color: '#aaa', borderRadius: 999, fontSize: '0.72rem', fontWeight: 700 }}>Draw</span>
-                      : <span style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.22rem 0.65rem', background: 'linear-gradient(135deg, #b8922a 0%, #d4af37 50%, #e8c84a 100%)', color: '#1a1000', borderRadius: 999, fontWeight: 800, fontSize: '0.72rem', boxShadow: '0 1px 5px rgba(212,175,55,0.35)' }}>🏆 {winnerSide}</span>
-                    }
-                  </div>
-                  {m.king_name && (m.king_digus ?? 0) > 0 && (
-                    <div style={{ marginTop: '0.4rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.68rem', fontWeight: 700, color: '#D4AF37', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.28)', borderRadius: 999, padding: '0.15rem 0.55rem' }}>
-                      👑 King of the Table: {m.king_name} · {m.king_digus} digu
-                    </div>
-                  )}
-                  <div className="match-sub" style={{ marginTop: '0.4rem' }}>
-                    <span>{m.team1_player2_id ? '2v2' : '1v1'} · <DateEditor matchId={m.id} started_at={m.started_at} editing={editingDate === m.id} saving={savingDate}
-                      onEdit={() => setEditingDate(m.id)} onSave={handleDateChange} onCancel={() => setEditingDate(null)} /></span>
-                    <a href={`/scoresheet/${m.id}`} style={{ color: 'var(--felt-light)', fontWeight: 600 }}>Scoresheet →</a>
-                  </div>
-                  {editingComment === m.id ? (
-                    <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.375rem' }}>
-                      <input
-                        autoFocus
-                        value={commentDraft}
-                        onChange={e => setCommentDraft(e.target.value)}
-                        onKeyDown={e => { if (e.key === 'Enter') handleSaveComment(m.id); if (e.key === 'Escape') setEditingComment(null); }}
-                        placeholder="Add a note…"
-                        style={{ flex: 1, fontSize: '0.8125rem', padding: '0.25rem 0.5rem', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--card-raised)', color: 'var(--text-primary)' }}
-                      />
-                      <button onClick={() => handleSaveComment(m.id)} style={{ padding: '0.25rem 0.5rem', borderRadius: 6, background: 'var(--felt)', color: '#fff', fontWeight: 700, fontSize: '0.75rem', border: 'none', cursor: 'pointer' }}>Save</button>
-                      <button onClick={() => setEditingComment(null)} style={{ padding: '0.25rem 0.5rem', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', cursor: 'pointer', fontSize: '0.75rem' }}>✕</button>
-                    </div>
-                  ) : (
-                    <div
-                      onClick={() => { setEditingComment(m.id); setCommentDraft(m.comment || ''); }}
-                      style={{ marginTop: '0.375rem', fontSize: '0.75rem', color: m.comment ? 'var(--text-secondary)' : 'var(--text-muted)', cursor: 'pointer', fontStyle: m.comment ? 'italic' : 'normal' }}
-                    >
-                      {m.comment ? `"${m.comment}"` : '+ Add note'}
-                    </div>
-                  )}
-                  {canCreate && (
-                    confirmDeleteId === m.id ? (
-                      <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: '0.72rem', color: 'var(--ember)', fontWeight: 700 }}>Delete this match? The scoresheet, records &amp; standings all adjust.</span>
-                        <button onClick={() => handleDelete(m.id)} disabled={deletingId === m.id}
-                          style={{ padding: '0.25rem 0.6rem', borderRadius: 6, background: 'var(--ember)', color: '#fff', fontWeight: 700, fontSize: '0.72rem', border: 'none', cursor: 'pointer' }}>
-                          {deletingId === m.id ? 'Deleting…' : 'Yes, delete'}
-                        </button>
-                        <button onClick={() => setConfirmDeleteId(null)}
-                          style={{ padding: '0.25rem 0.6rem', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-secondary)', fontWeight: 700, fontSize: '0.72rem', cursor: 'pointer' }}>Cancel</button>
-                      </div>
-                    ) : (
-                      <button onClick={() => setConfirmDeleteId(m.id)} title="Delete match (admin)"
-                        style={{ marginTop: '0.4rem', padding: '0.15rem 0.5rem', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: '0.68rem', fontWeight: 700, cursor: 'pointer' }}>
-                        🗑 Delete match
+                      ? <span className="result-chip draw">Draw</span>
+                      : <span className="result-chip win">🏆 {winnerSide}</span>}
+                    <span className={`caret${open ? ' open' : ''}`} aria-hidden="true">⌄</span>
+                    {canCreate && (
+                      <button className="x-btn" title="Delete match" aria-label="Delete match"
+                        onClick={e => { e.stopPropagation(); setConfirmDeleteId(m.id); setOpenId(null); }}>
+                        ✕
                       </button>
-                    )
+                    )}
+                  </div>
+
+                  {canCreate && confirmDeleteId === m.id && (
+                    <div className="confirm-strip">
+                      <span>Delete this match? Scoresheet, records &amp; standings all adjust.</span>
+                      <button className="c-yes" disabled={deletingId === m.id} onClick={() => handleDelete(m.id)}>
+                        {deletingId === m.id ? 'Deleting…' : 'Delete'}
+                      </button>
+                      <button className="c-no" onClick={() => setConfirmDeleteId(null)}>Cancel</button>
+                    </div>
+                  )}
+
+                  {open && (
+                    <div className="match-details">
+                      <div className="detail-row">
+                        <span>{m.team1_player2_id ? '2v2' : '1v1'}</span>
+                        <span className="dot">·</span>
+                        <DateEditor matchId={m.id} started_at={m.started_at} editing={editingDate === m.id} saving={savingDate}
+                          onEdit={() => setEditingDate(m.id)} onSave={handleDateChange} onCancel={() => setEditingDate(null)} />
+                        <a href={`/scoresheet/${m.id}`} className="sheet-link">Scoresheet →</a>
+                      </div>
+                      {editingComment === m.id ? (
+                        <div className="note-edit">
+                          <input
+                            autoFocus
+                            value={commentDraft}
+                            onChange={e => setCommentDraft(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') handleSaveComment(m.id); if (e.key === 'Escape') setEditingComment(null); }}
+                            placeholder="Add a note…"
+                          />
+                          <button className="n-save" onClick={() => handleSaveComment(m.id)}>Save</button>
+                          <button className="n-cancel" onClick={() => setEditingComment(null)}>✕</button>
+                        </div>
+                      ) : (
+                        <div className="note-view" onClick={() => { setEditingComment(m.id); setCommentDraft(m.comment || ''); }}>
+                          {m.comment ? `"${m.comment}"` : '+ Add note'}
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               );
@@ -327,7 +334,7 @@ export default function MatchList() {
 
       <style>{`
         .match-card {
-    padding: 0.6rem 0.8rem; cursor: default;
+    padding: 0.45rem 0.65rem; cursor: default;
     border: 1px solid rgba(212,175,55,0.32) !important;
     box-shadow: 0 0 10px rgba(212,175,55,0.07), inset 0 1px 0 rgba(212,175,55,0.06) !important;
     position: relative; overflow: hidden;
@@ -342,9 +349,73 @@ export default function MatchList() {
         a.match-card { cursor: pointer; }
         a.match-card:hover { border-color: rgba(212,175,55,0.6) !important; box-shadow: 0 0 16px rgba(212,175,55,0.15) !important; }
   @keyframes match-gold-line { 0%{left:-100%} 50%{left:150%} 100%{left:150%} }
-         60%{left:150%} 100%{left:150%} }
         .match-row { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
         .match-vs { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9375rem; flex-wrap: wrap; }
+
+        /* ── slim completed tile ── */
+        .match-head {
+          display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;
+          cursor: pointer; outline: none;
+        }
+        .match-head:focus-visible { box-shadow: 0 0 0 2px rgba(212,175,55,0.55); border-radius: 6px; }
+        .match-head .match-vs { flex: 1; min-width: 0; font-size: 0.875rem; }
+        .king-chip {
+          flex-shrink: 0; display: inline-flex; align-items: center; gap: 0.2rem;
+          font-size: 0.65rem; font-weight: 700; color: #D4AF37;
+          background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.28);
+          border-radius: 999px; padding: 0.1rem 0.45rem; white-space: nowrap;
+        }
+        .result-chip {
+          flex-shrink: 0; display: inline-flex; align-items: center; gap: 0.25rem;
+          border-radius: 999px; font-weight: 800; font-size: 0.68rem;
+          padding: 0.18rem 0.55rem; white-space: nowrap;
+        }
+        .result-chip.win {
+          background: linear-gradient(135deg, #b8922a 0%, #d4af37 50%, #e8c84a 100%);
+          color: #1a1000; box-shadow: 0 1px 5px rgba(212,175,55,0.35);
+        }
+        .result-chip.draw { background: rgba(100,100,100,0.28); color: #aaa; font-weight: 700; }
+        .caret {
+          flex-shrink: 0; color: var(--text-muted); font-size: 0.8rem; line-height: 1;
+          transition: transform 0.18s ease; transform-origin: center;
+        }
+        .caret.open { transform: rotate(180deg); }
+        .x-btn {
+          flex-shrink: 0; width: 20px; height: 20px; display: grid; place-items: center;
+          border-radius: 5px; border: 1px solid var(--border); background: transparent;
+          color: var(--text-muted); font-size: 0.7rem; line-height: 1; cursor: pointer;
+          padding: 0; transition: all 0.15s;
+        }
+        .x-btn:hover { border-color: rgba(255,61,90,0.45); color: #FF6B8A; background: rgba(255,61,90,0.1); }
+
+        .confirm-strip {
+          margin-top: 0.45rem; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;
+          font-size: 0.7rem; color: var(--ember); font-weight: 700;
+        }
+        .confirm-strip button { padding: 0.2rem 0.55rem; border-radius: 6px; font-weight: 700; font-size: 0.7rem; cursor: pointer; }
+        .confirm-strip .c-yes { background: var(--ember); color: #fff; border: none; }
+        .confirm-strip .c-yes:disabled { opacity: 0.6; cursor: default; }
+        .confirm-strip .c-no { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); }
+
+        .match-details {
+          margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border);
+          display: flex; flex-direction: column; gap: 0.4rem;
+        }
+        .detail-row {
+          display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap;
+          font-size: 0.72rem; color: var(--text-muted);
+        }
+        .detail-row .dot { opacity: 0.6; }
+        .detail-row .sheet-link { margin-left: auto; color: var(--felt-light); font-weight: 600; text-decoration: none; }
+        .note-view { font-size: 0.72rem; color: var(--text-muted); cursor: pointer; }
+        .note-edit { display: flex; gap: 0.35rem; }
+        .note-edit input {
+          flex: 1; font-size: 0.78rem; padding: 0.22rem 0.45rem; border-radius: 6px;
+          border: 1px solid var(--border); background: var(--card-raised); color: var(--text-primary);
+        }
+        .note-edit button { padding: 0.22rem 0.5rem; border-radius: 6px; font-size: 0.72rem; font-weight: 700; cursor: pointer; }
+        .note-edit .n-save { background: var(--felt); color: #fff; border: none; }
+        .note-edit .n-cancel { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); }
         .player-name { font-weight: 600; }
         .player-name.winner { color: var(--gold); }
         .player-name.loser { color: var(--text-secondary); }
