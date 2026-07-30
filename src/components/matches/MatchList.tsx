@@ -265,10 +265,12 @@ export default function MatchList() {
                     role="button" tabIndex={0}
                     onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenId(open ? null : m.id); } }}
                     aria-expanded={open} aria-label={`${s1} versus ${s2} — show details`}>
+                    {/* Sides are colour-coded by position, not by result — the
+                        trophy chip already says who won. */}
                     <div className="match-vs">
-                      <span className={`player-name ${m.winner_id === m.player1_id ? 'winner' : isDraw ? '' : 'loser'}`}>{s1}</span>
+                      <span className="player-name side-a">{s1}</span>
                       <span className="vs-text">vs</span>
-                      <span className={`player-name ${m.winner_id === m.player2_id ? 'winner' : isDraw ? '' : 'loser'}`}>{s2}</span>
+                      <span className="player-name side-b">{s2}</span>
                     </div>
                     {m.king_name && (m.king_digus ?? 0) > 0 && (
                       <span className="king-chip" title={`King of the Table: ${m.king_name} · ${m.king_digus} digu`}>
@@ -289,7 +291,7 @@ export default function MatchList() {
 
                   {canCreate && confirmDeleteId === m.id && (
                     <div className="confirm-strip">
-                      <span>Delete this match? Scoresheet, records &amp; standings all adjust.</span>
+                      <span>Delete {s1} vs {s2}? Scoresheet, records &amp; standings all adjust.</span>
                       <button className="c-yes" disabled={deletingId === m.id} onClick={() => handleDelete(m.id)}>
                         {deletingId === m.id ? 'Deleting…' : 'Delete'}
                       </button>
@@ -375,18 +377,23 @@ export default function MatchList() {
           color: #1a1000; box-shadow: 0 1px 5px rgba(212,175,55,0.35);
         }
         .result-chip.draw { background: rgba(100,100,100,0.28); color: #aaa; font-weight: 700; }
+        /* Home side blue, away side red — fixed by position so the eye can track
+           a player across the list regardless of who won. */
+        .player-name.side-a { color: #4C9BFF; }
+        .player-name.side-b { color: var(--ember); }
+
         .caret {
-          flex-shrink: 0; color: var(--text-muted); font-size: 0.8rem; line-height: 1;
+          flex-shrink: 0; color: var(--gold); font-size: 0.8rem; line-height: 1;
           transition: transform 0.18s ease; transform-origin: center;
         }
         .caret.open { transform: rotate(180deg); }
         .x-btn {
           flex-shrink: 0; width: 20px; height: 20px; display: grid; place-items: center;
-          border-radius: 5px; border: 1px solid var(--border); background: transparent;
-          color: var(--text-muted); font-size: 0.7rem; line-height: 1; cursor: pointer;
+          border-radius: 5px; border: 1px solid rgba(255,74,106,0.38); background: transparent;
+          color: var(--ember); font-size: 0.7rem; line-height: 1; cursor: pointer;
           padding: 0; transition: all 0.15s;
         }
-        .x-btn:hover { border-color: rgba(255,61,90,0.45); color: #FF6B8A; background: rgba(255,61,90,0.1); }
+        .x-btn:hover { border-color: var(--ember); background: rgba(255,74,106,0.14); }
 
         .confirm-strip {
           margin-top: 0.45rem; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;
