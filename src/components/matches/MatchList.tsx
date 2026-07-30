@@ -265,6 +265,12 @@ export default function MatchList() {
                     role="button" tabIndex={0}
                     onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenId(open ? null : m.id); } }}
                     aria-expanded={open} aria-label={`${s1} versus ${s2} — show details`}>
+                    <span className={`caret${open ? ' open' : ''}`} aria-hidden="true">
+                      <svg viewBox="0 0 10 6" width="9" height="6">
+                        <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor"
+                          strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </span>
                     {/* Sides are colour-coded by position, not by result — the
                         trophy chip already says who won. */}
                     <div className="match-vs">
@@ -280,7 +286,6 @@ export default function MatchList() {
                     {isDraw
                       ? <span className="result-chip draw">Draw</span>
                       : <span className="result-chip win">🏆 {winnerSide}</span>}
-                    <span className={`caret${open ? ' open' : ''}`} aria-hidden="true">⌄</span>
                     {canCreate && (
                       <button className="x-btn" title="Delete match" aria-label="Delete match"
                         onClick={e => { e.stopPropagation(); setConfirmDeleteId(m.id); setOpenId(null); }}>
@@ -382,10 +387,16 @@ export default function MatchList() {
         .player-name.side-a { color: var(--team-a); }
         .player-name.side-b { color: var(--team-b); }
 
+        /* Gold circle at the head of the row — the tile's expand affordance.
+           An SVG chevron centres reliably where a glyph's metrics would not. */
         .caret {
-          flex-shrink: 0; color: var(--gold); font-size: 0.8rem; line-height: 1;
-          transition: transform 0.18s ease; transform-origin: center;
+          flex-shrink: 0; width: 21px; height: 21px; border-radius: 50%;
+          display: grid; place-items: center;
+          border: 1px solid rgba(255,215,0,0.42); background: rgba(255,215,0,0.08);
+          color: var(--gold); transition: transform 0.18s ease, background 0.15s;
+          transform-origin: center;
         }
+        .match-head:hover .caret { background: rgba(255,215,0,0.16); }
         .caret.open { transform: rotate(180deg); }
         .x-btn {
           flex-shrink: 0; width: 20px; height: 20px; display: grid; place-items: center;
