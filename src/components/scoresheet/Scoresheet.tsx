@@ -365,9 +365,11 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
     const tableW = W - PAD - 8 - x0;
 
     // Table header row 1 — team names
-    ctx.fillStyle = 'rgba(200,16,46,0.18)';
+    // Same --team-a / --team-b hues as the on-screen table, so the exported
+    // image and the app agree on which colour a team is.
+    ctx.fillStyle = 'rgba(255,74,106,0.18)';
     ctx.fillRect(x2, y, COL_TEAM, TABLE_TH1);
-    ctx.fillStyle = 'rgba(59,130,246,0.18)';
+    ctx.fillStyle = 'rgba(77,159,255,0.18)';
     ctx.fillRect(x3, y, COL_TEAM, TABLE_TH1);
 
     ctx.font = 'bold 14px system-ui, sans-serif';
@@ -377,17 +379,17 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
     ctx.fillText('Round', x0 + COL_ROUND / 2, y + TABLE_TH1 / 2);
     ctx.fillStyle = '#D4AF37';
     ctx.fillText('DIGU', x1 + COL_GIN / 2, y + TABLE_TH1 / 2);
-    ctx.fillStyle = '#C8102E';
+    ctx.fillStyle = '#FF4A6A';
     ctx.fillText(team1Label.toUpperCase(), x2 + COL_TEAM / 2, y + TABLE_TH1 / 2);
-    ctx.fillStyle = '#3B82F6';
+    ctx.fillStyle = '#4D9FFF';
     ctx.fillText(team2Label.toUpperCase(), x3 + COL_TEAM / 2, y + TABLE_TH1 / 2);
 
     y += TABLE_TH1;
 
     // Table header row 2 — player names
-    ctx.fillStyle = 'rgba(200,16,46,0.08)';
+    ctx.fillStyle = 'rgba(255,74,106,0.08)';
     ctx.fillRect(x2, y, COL_TEAM, TABLE_TH2);
-    ctx.fillStyle = 'rgba(59,130,246,0.08)';
+    ctx.fillStyle = 'rgba(77,159,255,0.08)';
     ctx.fillRect(x3, y, COL_TEAM, TABLE_TH2);
     ctx.fillStyle = '#D4AF37';
     ctx.font = '800 14px system-ui, sans-serif';

@@ -148,11 +148,11 @@ function side2(m: typeof recentMatches[0]) {
               class="match-row card home-match-card"
             >
               <div class="match-players">
-                <span class={m.winner_id === m.player1_id ? 'winner' : ''}>
+                <span class="side-a">
                   {m.winner_id === m.player1_id && <span>🏆 </span>}{side1(m)}
                 </span>
                 <span class="vs">vs</span>
-                <span class={m.winner_id === m.player2_id ? 'winner' : ''}>
+                <span class="side-b">
                   {m.winner_id === m.player2_id && <span>🏆 </span>}{side2(m)}
                 </span>
               </div>
@@ -403,6 +403,10 @@ function side2(m: typeof recentMatches[0]) {
   .winner {
     color: var(--gold);
   }
+
+  /* Teams keep their colour here too — the trophy still marks the winner. */
+  .match-players .side-a { color: var(--team-a); }
+  .match-players .side-b { color: var(--team-b); }
 
   .match-meta {
     display: flex;

@@ -377,10 +377,10 @@ export default function MatchList() {
           color: #1a1000; box-shadow: 0 1px 5px rgba(212,175,55,0.35);
         }
         .result-chip.draw { background: rgba(100,100,100,0.28); color: #aaa; font-weight: 700; }
-        /* Home side blue, away side red — fixed by position so the eye can track
-           a player across the list regardless of who won. */
-        .player-name.side-a { color: #4C9BFF; }
-        .player-name.side-b { color: var(--ember); }
+        /* Side 1 red, side 2 blue — the same --team-a / --team-b tokens the
+           scoresheet uses, so a team keeps its colour across the whole app. */
+        .player-name.side-a { color: var(--team-a); }
+        .player-name.side-b { color: var(--team-b); }
 
         .caret {
           flex-shrink: 0; color: var(--gold); font-size: 0.8rem; line-height: 1;
