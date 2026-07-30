@@ -139,8 +139,8 @@ export async function getMatch(db: D1Database, id: string): Promise<Match | null
   return db
     .prepare(
       `SELECT m.*,
-        p1.name AS player1_name, p1.nickname AS player1_nickname,
-        p2.name AS player2_name, p2.nickname AS player2_nickname,
+        p1.name AS player1_name, p1.nickname AS player1_nickname, p1.avatar_b64 AS player1_avatar,
+        p2.name AS player2_name, p2.nickname AS player2_nickname, p2.avatar_b64 AS player2_avatar,
         pw.name AS winner_name,
         p3.name AS team1_player2_name, p3.nickname AS team1_player2_nickname, p3.avatar_b64 AS team1_player2_avatar,
         p4.name AS team2_player2_name, p4.nickname AS team2_player2_nickname, p4.avatar_b64 AS team2_player2_avatar
@@ -162,8 +162,8 @@ export async function getActiveMatch(db: D1Database): Promise<Match | null> {
       `SELECT m.*,
         p1.name AS player1_name, p1.avatar_b64 AS player1_avatar, p1.nickname AS player1_nickname,
         p2.name AS player2_name, p2.avatar_b64 AS player2_avatar, p2.nickname AS player2_nickname,
-        p3.name AS team1_player2_name, p3.nickname AS team1_player2_nickname,
-        p4.name AS team2_player2_name, p4.nickname AS team2_player2_nickname
+        p3.name AS team1_player2_name, p3.nickname AS team1_player2_nickname, p3.avatar_b64 AS team1_player2_avatar,
+        p4.name AS team2_player2_name, p4.nickname AS team2_player2_nickname, p4.avatar_b64 AS team2_player2_avatar
        FROM matches m
        JOIN players p1 ON p1.id = m.player1_id
        JOIN players p2 ON p2.id = m.player2_id

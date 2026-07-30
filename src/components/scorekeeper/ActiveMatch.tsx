@@ -404,11 +404,10 @@ export default function ActiveMatch({ matchId, isAdmin = false, isAuthed = false
       if (i < 2) { ctx.strokeStyle = 'rgba(212,175,55,0.2)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(cxs[i] + 140, 1030); ctx.lineTo(cxs[i] + 140, 1138); ctx.stroke(); }
     });
 
-    // footer
+    // footer — tagline only, no URL
     ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle = '#D4AF37'; ctx.font = '700 30px Arial, sans-serif'; ctx.fillText('digu-league.pages.dev', W / 2, 1250);
-    ctx.fillStyle = 'rgba(200,180,140,0.4)'; ctx.font = '600 22px Arial, sans-serif';
-    ctx.fillText('PLAY SMART  ·  WIN THE CROWN', W / 2, 1290);
+    ctx.fillStyle = 'rgba(212,175,55,0.55)'; ctx.font = '700 24px Arial, sans-serif';
+    ctx.fillText('PLAY SMART  ·  WIN THE CROWN', W / 2, 1270);
 
     const caption = `🎴 Digu League — ${done ? 'full time!' : 'match starting!'}\n${team1Label} 🆚 ${team2Label}`;
     canvas.toBlob(async (blob) => {
