@@ -14,7 +14,34 @@ import { computePlayerStats } from './db';
 import type { PlayerStats } from './types';
 
 /** Lightweight match row — just what monthly-title ranking needs. */
-export interface TitleMatch { winner_id: string | null; player1_id: string; player2_id: string; team1_player2_id: string | null; team2_player2_id: string | null; started_at: string; }
+export interface TitleMatch { winner_id: string | null; player1_id: string; player2_id: string; team1_player2_id: string | null; team2_player2_id: string | null; started_at: string; season_id?: string | null; }
+
+/** The OC Champions League is a season, not a month — see 0010_oc_champions.sql. */
+const OC_SEASON = 'oc-champions-league';
+
+/** Wins/played per player across a set of matches, counting both team members. */
+function tallyMatches(matches: TitleMatch[]): Map<string, { won: number; played: number }> {
+  const tab = new Map<string, { won: number; played: number }>();
+  for (const m of matches) {
+    const t1Won = m.winner_id ? m.winner_id === m.player1_id : null;
+    const ids: [string | null, boolean][] = [[m.player1_id, true], [m.player2_id, false], [m.team1_player2_id, true], [m.team2_player2_id, false]];
+    for (const [pid, on1] of ids) {
+      if (!pid) continue;
+      const e = tab.get(pid) || tab.set(pid, { won: 0, played: 0 }).get(pid)!;
+      e.played++;
+      if (t1Won !== null && on1 === t1Won) e.won++;
+    }
+  }
+  return tab;
+}
+
+/** Who topped a whole competition — used for the OC Champions League title. */
+function seasonChampion(matches: TitleMatch[]): string | null {
+  const ranked = [...tallyMatches(matches).entries()]
+    .map(([id, s]) => ({ id, won: s.won, rate: s.played ? s.won / s.played : 0 }))
+    .sort((a, b) => b.won - a.won || b.rate - a.rate);
+  return ranked[0] && ranked[0].won > 0 ? ranked[0].id : null;
+}
 
 /** Monthly champions computed IN MEMORY from matches (no per-month DB round-trips).
  *  Ranks each month by wins → win rate, matching the leaderboard. Returns titles
@@ -52,7 +79,9 @@ export interface GoatRow {
   played: number; won: number; score: number; rank: number;
 }
 
-const WEIGHTS = { titles: 0.35, winRate: 0.30, gamePct: 0.20, digus: 0.15 };
+// Silverware and digus decide the GOAT; rates only separate players who are level
+// on both. Titles include the OC Champions League.
+const WEIGHTS = { titles: 0.50, digus: 0.30, winRate: 0.12, gamePct: 0.08 };
 const MIN_MATCHES = 8; // below this, a player is ranked but can't realistically top
 
 export async function computeGOAT(
@@ -64,14 +93,19 @@ export async function computeGOAT(
 
   // League titles — reuse the caller's, or compute in ONE lightweight matches
   // fetch (was N× computePlayerStats, one per month).
-  let titles = shared?.titles;
-  if (!titles) {
-    const mres = await db.prepare(
-      `SELECT winner_id, player1_id, player2_id, team1_player2_id, team2_player2_id, started_at
-         FROM matches WHERE is_classic = 0 AND completed_at IS NOT NULL AND started_at IS NOT NULL`,
-    ).all<TitleMatch>();
-    titles = monthlyTitles(mres.results || []).titles;
-  }
+  // One fetch covers both: monthly league titles AND the OC Champions League,
+  // which is a season rather than a month and was previously never counted.
+  const mres = await db.prepare(
+    `SELECT winner_id, player1_id, player2_id, team1_player2_id, team2_player2_id, started_at, season_id
+       FROM matches WHERE is_classic = 0 AND completed_at IS NOT NULL AND started_at IS NOT NULL`,
+  ).all<TitleMatch>();
+  const rows = mres.results || [];
+  const ocRows = rows.filter(m => m.season_id === OC_SEASON);
+
+  // League titles exclude OC matches so a cup run can't also win you the month.
+  const titles: Record<string, number> = { ...(shared?.titles ?? monthlyTitles(rows.filter(m => m.season_id !== OC_SEASON)).titles) };
+  const ocChamp = seasonChampion(ocRows);
+  if (ocChamp) titles[ocChamp] = (titles[ocChamp] || 0) + 1;
   const totalTitles = Object.values(titles).reduce((a, b) => a + b, 0);
 
   // Assemble raw rows (only players who have actually played).
@@ -101,7 +135,7 @@ export async function computeGOAT(
       WEIGHTS.digus * (r.digus / mDig)
     ) * 100 * gate;
     return { ...r, score: Math.round(score * 10) / 10, rank: 0 };
-  }).sort((a, b) => b.score - a.score || b.titles - a.titles || b.winRate - a.winRate);
+  }).sort((a, b) => b.score - a.score || b.titles - a.titles || b.digus - a.digus || b.winRate - a.winRate);
 
   board.forEach((r, i) => { r.rank = i + 1; });
   return { goat: board[0] || null, board, totalTitles };
