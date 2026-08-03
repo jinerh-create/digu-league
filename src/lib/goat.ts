@@ -93,19 +93,35 @@ export async function computeGOAT(
 
   // League titles — reuse the caller's, or compute in ONE lightweight matches
   // fetch (was N× computePlayerStats, one per month).
-  // One fetch covers both: monthly league titles AND the OC Champions League,
-  // which is a season rather than a month and was previously never counted.
-  const mres = await db.prepare(
-    `SELECT winner_id, player1_id, player2_id, team1_player2_id, team2_player2_id, started_at, season_id
-       FROM matches WHERE is_classic = 0 AND completed_at IS NOT NULL AND started_at IS NOT NULL`,
-  ).all<TitleMatch>();
-  const rows = mres.results || [];
-  const ocRows = rows.filter(m => m.season_id === OC_SEASON);
+  // Titles come from the trophies actually awarded to each player — the league's
+  // own record, counted all time. Deriving them from match wins disagreed with
+  // reality: it crowned whoever won the most matches in a month rather than who
+  // was actually awarded it, and it could not see the OC Champions League at all.
+  // Both the monthly league title and the Champions League count as titles here.
+  const tres = await db.prepare(`SELECT id, trophies_json FROM players`)
+    .all<{ id: string; trophies_json: string | null }>();
+  const titles: Record<string, number> = {};
+  let anyRecorded = false;
+  for (const r of tres.results || []) {
+    let arr: unknown;
+    try { arr = JSON.parse(r.trophies_json || '[]'); } catch { arr = []; }
+    if (!Array.isArray(arr)) continue;
+    // "Digu King" is a most-digus award, not a title — only championships count.
+    const n = arr.filter((t: any) => /champion/i.test(`${t?.id ?? ''} ${t?.name ?? ''}`)).length;
+    if (n > 0) { titles[r.id] = n; anyRecorded = true; }
+  }
 
-  // League titles exclude OC matches so a cup run can't also win you the month.
-  const titles: Record<string, number> = { ...(shared?.titles ?? monthlyTitles(rows.filter(m => m.season_id !== OC_SEASON)).titles) };
-  const ocChamp = seasonChampion(ocRows);
-  if (ocChamp) titles[ocChamp] = (titles[ocChamp] || 0) + 1;
+  // Only if no trophies have been awarded yet, fall back to computing from matches.
+  if (!anyRecorded) {
+    const mres = await db.prepare(
+      `SELECT winner_id, player1_id, player2_id, team1_player2_id, team2_player2_id, started_at, season_id
+         FROM matches WHERE is_classic = 0 AND completed_at IS NOT NULL AND started_at IS NOT NULL`,
+    ).all<TitleMatch>();
+    const rows = mres.results || [];
+    Object.assign(titles, monthlyTitles(rows.filter(m => m.season_id !== OC_SEASON)).titles);
+    const ocChamp = seasonChampion(rows.filter(m => m.season_id === OC_SEASON));
+    if (ocChamp) titles[ocChamp] = (titles[ocChamp] || 0) + 1;
+  }
   const totalTitles = Object.values(titles).reduce((a, b) => a + b, 0);
 
   // Assemble raw rows (only players who have actually played).
