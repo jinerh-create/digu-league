@@ -1,6 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import type { Player } from '../../lib/types';
 import VerifiedBadge from '../common/VerifiedBadge';
+import ChampionsLeagueBadge from '../common/ChampionsLeagueBadge';
+
+/** How many OC Champions League titles this player holds. Counted from the
+ *  awarded trophies, so the badge updates the moment a trophy is given. */
+function championsLeagueTitles(p: unknown): number {
+  try {
+    const raw = (p as { trophies_json?: string | null })?.trophies_json;
+    const arr = JSON.parse(raw || '[]');
+    if (!Array.isArray(arr)) return 0;
+    return arr.filter((t: { id?: string; name?: string }) =>
+      /oc-champion|champions\s*league/i.test(`${t?.id ?? ''} ${t?.name ?? ''}`)).length;
+  } catch { return 0; }
+}
 
 function Avatar({ name, avatar_b64, size = 40 }: { name: string; avatar_b64: string | null; size?: number }) {
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
@@ -272,6 +285,9 @@ export default function PlayerList() {
                   <div style={{ fontFamily: "'Montserrat', system-ui, sans-serif", fontWeight: 500, fontSize: 'clamp(0.7rem, 3vw, 0.92rem)', letterSpacing: '0.02em', color: '#F2F5FA', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.3rem', whiteSpace: 'nowrap', minWidth: 0 }}>
                     <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</span>
                     {(p as { verified?: number }).verified ? <VerifiedBadge /> : null}
+                    {championsLeagueTitles(p) > 0
+                      ? <ChampionsLeagueBadge count={championsLeagueTitles(p)} />
+                      : null}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', marginTop: '0.15rem', flexWrap: 'wrap' }}>
                     {nickEditId === p.id ? (
