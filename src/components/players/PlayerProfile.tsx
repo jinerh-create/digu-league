@@ -205,15 +205,25 @@ function TrophyCase({ trophiesJson }: { trophiesJson: string | undefined | null 
                   {/* Trophy display — circular for coins, transparent PNG for champion */}
                   <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     {(t.image.includes('champion') || t.image.includes('trophy') || t.image.includes('clear')) ? (
-                      <img
-                        src={t.image}
-                        alt={t.name}
-                        style={{
-                          width: 118, height: 'auto',
-                          display: 'block', position: 'relative', zIndex: 1,
-                          filter: 'drop-shadow(0 0 9px rgba(212,175,55,0.6)) drop-shadow(0 0 18px rgba(212,175,55,0.28)) drop-shadow(0 6px 14px rgba(0,0,0,0.6))',
-                        }}
-                      />
+                      /* Fixed-height box with the cup sitting on its floor: trophy
+                         artwork differs in aspect ratio, so without this each one
+                         renders a different height and the captions below stop
+                         lining up across the row. */
+                      <div style={{
+                        height: 160, width: 124, display: 'flex',
+                        alignItems: 'flex-end', justifyContent: 'center',
+                      }}>
+                        <img
+                          src={t.image}
+                          alt={t.name}
+                          style={{
+                            maxWidth: '100%', maxHeight: '100%',
+                            width: 'auto', height: 'auto', objectFit: 'contain',
+                            display: 'block', position: 'relative', zIndex: 1,
+                            filter: 'drop-shadow(0 0 9px rgba(212,175,55,0.6)) drop-shadow(0 0 18px rgba(212,175,55,0.28)) drop-shadow(0 6px 14px rgba(0,0,0,0.6))',
+                          }}
+                        />
+                      </div>
                     ) : (
                       <div style={{
                         width: 100, height: 100, borderRadius: '50%',
