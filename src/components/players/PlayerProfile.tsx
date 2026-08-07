@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { Player, Match } from '../../lib/types';
 import VerifiedBadge from '../common/VerifiedBadge';
+import ChampionsLeagueBadge from '../common/ChampionsLeagueBadge';
 import VerifyControl from '../common/VerifyControl';
 import PerformanceChart from './PerformanceChart';
 
@@ -640,6 +641,18 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
               <div style={{ fontFamily: "'Montserrat', system-ui, sans-serif", fontSize: 'clamp(1.05rem, 5vw, 1.375rem)', fontWeight: 800, color: 'var(--text-primary)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', textTransform: 'uppercase', flexBasis: '100%', minWidth: 0, flexWrap: 'wrap', lineHeight: 1.15 }}>
                 {player.nickname || player.name}
                 {(player as { verified?: number }).verified ? <VerifiedBadge size={19} /> : null}
+                {(() => {
+                  // Champions League titles, counted from this player's awarded trophies.
+                  let n = 0;
+                  try {
+                    const arr = JSON.parse((player as { trophies_json?: string | null }).trophies_json || '[]');
+                    if (Array.isArray(arr)) {
+                      n = arr.filter((t: { id?: string; name?: string }) =>
+                        /oc-champion|champions\s*league/i.test(`${t?.id ?? ''} ${t?.name ?? ''}`)).length;
+                    }
+                  } catch { n = 0; }
+                  return n > 0 ? <ChampionsLeagueBadge count={n} size={21} /> : null;
+                })()}
               </div>
               <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
