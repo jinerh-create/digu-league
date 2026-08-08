@@ -108,7 +108,17 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
                 <div class="rec-title">
                   <b>{r.name}</b>
                 </div>
-                <span class="rec-value">{r.value}</span>
+                {/* VIEW sits with the title; the number belongs beside the holder,
+                    so each line answers one question: what the record is, and who
+                    holds it with how much. */}
+                <details class="rec-why">
+                  <summary>View</summary>
+                  <div class="rec-why-body">
+                    {r.detail && <p>{r.detail}</p>}
+                    {!r.tracked && <p>{r.note || 'Not yet tracked.'}</p>}
+                    {r.tracked && r.holderId && <p>Held by <b>{r.holder}</b> with <b>{r.value}</b>. Recalculated from every completed match each time this page loads.</p>}
+                  </div>
+                </details>
               </div>
               <div class="rec-holder">
                 {r.tracked && r.holderId ? (
@@ -121,17 +131,7 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
                 ) : (
                   <div class="rec-none">🔒 Unclaimed</div>
                 )}
-                {/* Justification is folded away so the tile stays to the three things
-                    that matter at a glance: record, holder, number. <details> keeps it
-                    keyboard-accessible with no JavaScript. */}
-                <details class="rec-why">
-                  <summary>View</summary>
-                  <div class="rec-why-body">
-                    {r.detail && <p>{r.detail}</p>}
-                    {!r.tracked && <p>{r.note || 'Not yet tracked.'}</p>}
-                    {r.tracked && r.holderId && <p>Held by <b>{r.holder}</b> with <b>{r.value}</b>. Recalculated from every completed match each time this page loads.</p>}
-                  </div>
-                </details>
+                <span class="rec-value">{r.value}</span>
               </div>
             </div>
           ))}
@@ -232,7 +232,8 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
     text-shadow: 0 0 10px rgba(212,175,55,0.28);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;
   }
-  .rec-top { min-width: 0; }
+  .rec-top { min-width: 0; flex-wrap: wrap; }
+  .rec-holder .rec-value { margin-left: auto; }
   .rec-title small { font-size: .64rem; color: var(--text-muted); }
   .rec-value { font-family: var(--font-heading); font-weight: 800; font-size: .95rem; color: #D4AF37; font-variant-numeric: tabular-nums; flex-shrink: 0; }
   .rec-holder { margin-top: .55rem; padding-top: .5rem; border-top: 1px solid var(--border); }
