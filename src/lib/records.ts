@@ -471,6 +471,12 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
         mostPlayed
           ? `Most matches played of all time — ${mostPlayed.v} across the whole league. Counts every completed match, singles and teams alike.`
           : 'Most matches played of all time.'),
+      // Most career points scored — volume of scoring, independent of wins.
+      entry('point-master', 'The Point Master', '💯', mostPts?.id,
+        mostPts ? `${mostPts.v} pts` : '—',
+        mostPts
+          ? `Most career points scored — ${mostPts.v} in total. Every point awarded across every completed match, won or lost.`
+          : 'Most career points scored.'),
     ] },
     { title: 'Digu League',      emoji: '🃏', records: [] },
     { title: 'Champions League', emoji: '🏆', records: [] },
