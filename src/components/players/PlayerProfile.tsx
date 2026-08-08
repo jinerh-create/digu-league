@@ -156,6 +156,50 @@ function buildBadges(totalScore: number, ginCount: number, maxWinStreak: number,
   ];
 }
 
+type HeldRecord = { id: string; name: string; emoji: string; value: string; group: string; groupEmoji: string };
+
+/* Records this player currently holds. Fetched rather than passed in, because the
+   figures are recomputed from the match table on every request — so this panel and
+   the Records page can never drift apart. Renders nothing when they hold none. */
+function RecordsHeld({ playerId }: { playerId: string }) {
+  const [records, setRecords] = useState<HeldRecord[]>([]);
+  useEffect(() => {
+    let alive = true;
+    fetch(`/api/records?holder=${encodeURIComponent(playerId)}`)
+      .then((r) => r.json())
+      .then((d: { records?: HeldRecord[] }) => { if (alive) setRecords(d.records || []); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [playerId]);
+
+  if (records.length === 0) return null;
+  return (
+    <>
+      <div className="label" style={{ marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <span>📕 Records Held</span>
+        <span style={{ color: '#D4AF37', fontWeight: 800 }}>· {records.length}</span>
+      </div>
+      <div style={{ display: 'grid', gap: '0.5rem', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', marginBottom: '1.5rem' }}>
+        {records.map((r) => (
+          <div key={r.id} style={{
+            display: 'flex', alignItems: 'center', gap: '0.6rem',
+            padding: '0.6rem 0.7rem', borderRadius: 12,
+            background: 'linear-gradient(160deg, rgba(212,175,55,0.08), var(--card))',
+            border: '1px solid rgba(212,175,55,0.4)',
+          }}>
+            <span style={{ fontSize: '1.3rem', flexShrink: 0 }}>{r.emoji}</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>{r.name}</div>
+              <div style={{ fontSize: '0.64rem', color: 'var(--text-muted)' }}>{r.groupEmoji} {r.group}</div>
+            </div>
+            <span style={{ fontWeight: 800, fontSize: '0.9rem', color: '#D4AF37', fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{r.value}</span>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
 type Trophy = { id: string; name: string; period: string; image: string; desc: string };
 
 function TrophyCase({ trophiesJson }: { trophiesJson: string | undefined | null }) {
@@ -974,6 +1018,9 @@ export default function PlayerProfile({ playerId }: { playerId: string }) {
 
       {/* Trophy Case */}
       <TrophyCase trophiesJson={player.trophies_json} />
+
+      {/* Records held */}
+      <RecordsHeld playerId={player.id} />
 
       {/* Card Collection */}
       <CardCollection totalScore={totalScore} />
