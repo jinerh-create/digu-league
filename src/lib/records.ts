@@ -458,9 +458,13 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
     { title: 'Career', emoji: '📈', records: [
       // Recomputed from the match table on every page load, so the holder and the
       // count change the moment someone goes ahead — nothing is stored or stale.
+      // Face shows the win count alone; matches played belongs in the justification,
+      // where it explains the tiebreak rather than competing with the headline number.
       entry('winning-machine', 'The Winning Machine', '⚙️', winningMachine?.id,
-        winningMachine ? `${winningMachine.v} · ${winningMachine.played} played` : '—',
-        'Most career wins — a tie goes to fewer matches played'),
+        winningMachine ? `${winningMachine.v}` : '—',
+        winningMachine
+          ? `Most career wins — ${winningMachine.v} from ${winningMachine.played} matches played. A tie goes to whoever needed fewer matches.`
+          : 'Most career wins. A tie goes to whoever needed fewer matches.'),
     ] },
     { title: 'Digu League',      emoji: '🃏', records: [] },
     { title: 'Champions League', emoji: '🏆', records: [] },
