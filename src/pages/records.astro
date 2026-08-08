@@ -226,7 +226,6 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
      pushes the number out of alignment. Long names ellipsize instead. */
   /* Gold for the record, silver for whoever holds it — the same hierarchy the
      trophies use, so the two never read as equal weight. */
-  .rec-name { color: #CD7F32; font-weight: 700; text-shadow: 0 0 8px rgba(205,127,50,0.28); }
   .rec-title b {
     font-size: .86rem; color: #D4AF37; font-weight: 700; line-height: 1.2;
     text-shadow: 0 0 10px rgba(212,175,55,0.28);
@@ -266,7 +265,13 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
   .rec-face { width: 30px; height: 30px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: var(--card-raised); display: grid; place-items: center; border: 1.5px solid rgba(212,175,55,0.5); }
   .rec-face img { width: 100%; height: 100%; object-fit: cover; }
   .rec-init { font-size: .68rem; font-weight: 800; color: #D4AF37; font-family: var(--font-heading); }
-  .rec-name { flex: 1; font-weight: 700; font-size: .86rem; color: var(--text-primary); }
+  /* Holder name in red against the gold record title. This is the only .rec-name
+     rule — an earlier duplicate further up the sheet was silently winning on
+     source order and repainting it text-primary. */
+  .rec-name {
+    flex: 1; font-weight: 700; font-size: .86rem;
+    color: #FF4A6A; text-shadow: 0 0 8px rgba(255,74,106,0.25);
+  }
   .rec-tag { font-size: .52rem; font-weight: 800; letter-spacing: .08em; color: #D4AF37; background: rgba(212,175,55,0.14); border: 1px solid rgba(212,175,55,0.3); padding: .15rem .4rem; border-radius: 5px; }
   .rec-none { font-size: .68rem; color: var(--text-muted); font-weight: 600; }
 </style>
