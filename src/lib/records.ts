@@ -220,6 +220,21 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
   const careerDays = (a: Agg) => a.first && a.last ? Math.round((new Date(a.last).getTime() - new Date(a.first).getTime()) / 86400000) : 0;
 
   const mostWins = leadStat(s => s.matches_won);
+  /* The Winning Machine — most career wins, but a tie goes to whoever needed
+     FEWER matches to get there. Same haul from a shorter career is the better
+     record, and it stops the title drifting to whoever simply plays most. */
+  const winningMachine = (() => {
+    let best: { id: string; v: number; played: number } | null = null;
+    for (const s of allStats) {
+      const v = s.matches_won;
+      if (v <= 0) continue;
+      const played = s.matches_played;
+      if (!best || v > best.v || (v === best.v && played < best.played)) {
+        best = { id: s.player_id, v, played };
+      }
+    }
+    return best;
+  })();
   const mostPlayed = leadStat(s => s.matches_played);
   const bestRate = leadStat(s => s.win_rate, 8);
   const mostPts = leadStat(s => s.total_points_scored);
@@ -443,8 +458,9 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
     { title: 'Career', emoji: '📈', records: [
       // Recomputed from the match table on every page load, so the holder and the
       // count change the moment someone goes ahead — nothing is stored or stale.
-      entry('winning-machine', 'The Winning Machine', '⚙️', mostWins?.id,
-        mostWins ? `${mostWins.v} wins` : '—', 'Most wins of all time'),
+      entry('winning-machine', 'The Winning Machine', '⚙️', winningMachine?.id,
+        winningMachine ? `${winningMachine.v} · ${winningMachine.played} played` : '—',
+        'Most career wins — a tie goes to fewer matches played'),
     ] },
     { title: 'Digu League',      emoji: '🃏', records: [] },
     { title: 'Champions League', emoji: '🏆', records: [] },
