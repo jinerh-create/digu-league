@@ -41,10 +41,12 @@ html {
 
 /* ── Font system ── */
 :root {
-  /* Quilon carries the headings; Plus Jakarta Sans stays as the fallback so a
-     failed font load degrades to the previous look rather than to Times. */
-  --font-display: 'Quilon', 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-heading: 'Quilon', 'Plus Jakarta Sans', system-ui, sans-serif;
+  /* Gambarino carries the headings; Plus Jakarta Sans stays as the fallback so a
+     failed font load degrades to the previous look rather than to Times.
+     Gambarino ships a single weight, so headings should not ask for a bold that
+     does not exist — the browser would synthesise a smeared one. */
+  --font-display: 'Gambarino', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-heading: 'Gambarino', 'Plus Jakarta Sans', system-ui, sans-serif;
   --font-name: 'Montserrat', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
   --font-mono: 'Share Tech Mono', monospace;
