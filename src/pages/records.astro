@@ -64,6 +64,26 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
           secs.forEach(s => io.observe(s));
         }
         if (links[0]) links[0].classList.add('on');
+
+        /* Auto-sliding strip. It cycles the pills so every section announces itself
+           even when the strip is wider than the screen. Any touch, drag or hover
+           stops it for 6s — an auto-scroll that fights the user is worse than none. */
+        let idx = 0, paused = false, resumeAt = 0;
+        const nudge = () => {
+          idx = (idx + 1) % links.length;
+          links[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        };
+        const pause = () => { paused = true; resumeAt = Date.now() + 6000; };
+        ['pointerdown', 'wheel', 'touchstart', 'mouseenter'].forEach(ev =>
+          nav.addEventListener(ev, pause, { passive: true }));
+
+        setInterval(() => {
+          if (paused && Date.now() > resumeAt) paused = false;
+          if (paused || document.hidden) return;
+          if (nav.scrollWidth <= nav.clientWidth + 4) return;   // nothing to slide
+          if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+          nudge();
+        }, 2600);
       })();
     </script>
 
@@ -175,8 +195,12 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
   .rec-title { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   /* One line on every screen — a record name that wraps makes the grid ragged and
      pushes the number out of alignment. Long names ellipsize instead. */
+  /* Gold for the record, silver for whoever holds it — the same hierarchy the
+     trophies use, so the two never read as equal weight. */
+  .rec-name { color: #C6CDD6; font-weight: 700; text-shadow: 0 0 8px rgba(198,205,214,0.25); }
   .rec-title b {
-    font-size: .86rem; color: var(--text-primary); font-weight: 700; line-height: 1.2;
+    font-size: .86rem; color: #D4AF37; font-weight: 700; line-height: 1.2;
+    text-shadow: 0 0 10px rgba(212,175,55,0.28);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;
   }
   .rec-top { min-width: 0; }
