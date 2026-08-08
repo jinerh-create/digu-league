@@ -41,8 +41,10 @@ html {
 
 /* ── Font system ── */
 :root {
-  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-heading: 'Plus Jakarta Sans', system-ui, sans-serif;
+  /* Quilon carries the headings; Plus Jakarta Sans stays as the fallback so a
+     failed font load degrades to the previous look rather than to Times. */
+  --font-display: 'Quilon', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-heading: 'Quilon', 'Plus Jakarta Sans', system-ui, sans-serif;
   --font-name: 'Montserrat', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
   --font-mono: 'Share Tech Mono', monospace;
