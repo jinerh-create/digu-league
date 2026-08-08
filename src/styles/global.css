@@ -41,12 +41,12 @@ html {
 
 /* ── Font system ── */
 :root {
-  /* Gambarino carries the headings; Plus Jakarta Sans stays as the fallback so a
-     failed font load degrades to the previous look rather than to Times.
-     Gambarino ships a single weight, so headings should not ask for a bold that
-     does not exist — the browser would synthesise a smeared one. */
-  --font-display: 'Gambarino', 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-heading: 'Gambarino', 'Plus Jakarta Sans', system-ui, sans-serif;
+  /* Clash Display carries the headings — a confident display sans that suits a
+     competitive league. Unlike the single-weight face it replaces, it ships real
+     400/500/600/700, so the bold headings throughout the app are genuine cuts
+     rather than a browser-smeared fake. */
+  --font-display: 'Clash Display', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-heading: 'Clash Display', 'Plus Jakarta Sans', system-ui, sans-serif;
   /* Quicksand everywhere else — a rounded geometric sans against Gambarino's
      display serif. Previous faces kept as fallbacks. */
   --font-name: 'Quicksand', 'Montserrat', system-ui, sans-serif;
