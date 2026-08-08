@@ -440,7 +440,12 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
   // rather than writing new maths.
   void groups;
   const sections: RecordGroup[] = [
-    { title: 'Career',           emoji: '📈', records: [] },
+    { title: 'Career', emoji: '📈', records: [
+      // Recomputed from the match table on every page load, so the holder and the
+      // count change the moment someone goes ahead — nothing is stored or stale.
+      entry('winning-machine', 'The Winning Machine', '⚙️', mostWins?.id,
+        mostWins ? `${mostWins.v} wins` : '—', 'Most wins of all time'),
+    ] },
     { title: 'Digu League',      emoji: '🃏', records: [] },
     { title: 'Champions League', emoji: '🏆', records: [] },
     { title: 'Match',            emoji: '⚔️', records: [] },
