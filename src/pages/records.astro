@@ -187,7 +187,15 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
   .rec-group { margin-bottom: 1.6rem; scroll-margin-top: 3.2rem; }
   .rec-group-title { font-size: 1.1rem; margin-bottom: .7rem; color: var(--text-primary); }
   .rec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: .6rem; }
-  .rec-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: .7rem .8rem; }
+  /* Every tile the same size, whether or not it has a holder — a grid of uneven
+     boxes reads as broken. Fixed base height with the holder row pinned to the
+     bottom, so titles and numbers line up straight across every column. */
+  .rec-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: .7rem .8rem;
+    min-height: 96px; display: flex; flex-direction: column; justify-content: space-between; gap: .5rem;
+  }
+  .rec-card > .rec-holder { margin-top: auto; }
   .rec-card.held { border-color: rgba(212,175,55,0.4); background: linear-gradient(160deg, rgba(212,175,55,0.06), var(--card)); }
   .rec-card.untracked { opacity: .62; }
   .rec-top { display: flex; align-items: center; gap: .55rem; }
