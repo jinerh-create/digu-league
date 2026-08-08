@@ -434,11 +434,20 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
     ]},
   ];
 
-  // Records cleared 2026-08-08 at the user's request — a curated set will be
-  // authored later. Everything above still computes, so restoring the old list is
-  // a one-line change here rather than rebuilding 113 definitions from scratch.
+  // The old 113-record set was cleared 2026-08-08; these are the six sections it
+  // is being rebuilt into, empty until each record is authored. Every statistic
+  // above still computes, so filling a section is a matter of adding entries here
+  // rather than writing new maths.
   void groups;
-  return { groups: [], totalTracked: 0 };
+  const sections: RecordGroup[] = [
+    { title: 'Career',           emoji: '📈', records: [] },
+    { title: 'Digu League',      emoji: '🃏', records: [] },
+    { title: 'Champions League', emoji: '🏆', records: [] },
+    { title: 'Match',            emoji: '⚔️', records: [] },
+    { title: 'Season',           emoji: '📅', records: [] },
+    { title: 'Legendary',        emoji: '🌟', records: [] },
+  ];
+  return { groups: sections, totalTracked: 0 };
 
   function nkOrDash(g: { playerId: string }) { return P.get(g.playerId)?.nick ?? '—'; }
 }
