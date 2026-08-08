@@ -77,7 +77,6 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
                 <span class="rec-emoji">{r.emoji}</span>
                 <div class="rec-title">
                   <b>{r.name}</b>
-                  {r.detail && <small>{r.detail}</small>}
                 </div>
                 <span class="rec-value">{r.value}</span>
               </div>
@@ -88,11 +87,21 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
                       {r.photo ? <img src={r.photo} alt={r.holder} /> : <span class="rec-init">{initials(r.holder || '?')}</span>}
                     </span>
                     <span class="rec-name">{r.holder}</span>
-                    <span class="rec-tag">HOLDER</span>
                   </a>
                 ) : (
-                  <div class="rec-none">🔒 {r.note || 'Not yet tracked'}</div>
+                  <div class="rec-none">🔒 Unclaimed</div>
                 )}
+                {/* Justification is folded away so the tile stays to the three things
+                    that matter at a glance: record, holder, number. <details> keeps it
+                    keyboard-accessible with no JavaScript. */}
+                <details class="rec-why">
+                  <summary>View</summary>
+                  <div class="rec-why-body">
+                    {r.detail && <p>{r.detail}</p>}
+                    {!r.tracked && <p>{r.note || 'Not yet tracked.'}</p>}
+                    {r.tracked && r.holderId && <p>Held by <b>{r.holder}</b> with <b>{r.value}</b>. Recalculated from every completed match each time this page loads.</p>}
+                  </div>
+                </details>
               </div>
             </div>
           ))}
@@ -169,6 +178,31 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
   .rec-value { font-family: var(--font-heading); font-weight: 800; font-size: .95rem; color: #D4AF37; font-variant-numeric: tabular-nums; flex-shrink: 0; }
   .rec-holder { margin-top: .55rem; padding-top: .5rem; border-top: 1px solid var(--border); }
   .rec-who { display: flex; align-items: center; gap: .5rem; text-decoration: none; }
+
+  /* Justification disclosure */
+  .rec-holder { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+  .rec-why { margin-left: auto; }
+  .rec-why > summary {
+    list-style: none; cursor: pointer; user-select: none;
+    padding: .22rem .6rem; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--card-raised, transparent);
+    font-size: .64rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--text-secondary); transition: color .15s, border-color .15s;
+  }
+  .rec-why > summary::-webkit-details-marker { display: none; }
+  .rec-why > summary:hover { color: #D4AF37; border-color: rgba(212,175,55,0.55); }
+  .rec-why[open] > summary { color: #D4AF37; border-color: rgba(212,175,55,0.55); }
+  .rec-why[open] > summary::after { content: ' ▲'; }
+  .rec-why:not([open]) > summary::after { content: ' ▼'; }
+  .rec-why-body {
+    flex-basis: 100%; width: 100%; margin-top: .5rem; padding-top: .5rem;
+    border-top: 1px dashed var(--border);
+    font-size: .7rem; color: var(--text-secondary); line-height: 1.45;
+    animation: rec-why-in .18s ease;
+  }
+  .rec-why-body p { margin: 0 0 .35rem; }
+  .rec-why-body p:last-child { margin-bottom: 0; }
+  @keyframes rec-why-in { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
   .rec-face { width: 30px; height: 30px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: var(--card-raised); display: grid; place-items: center; border: 1.5px solid rgba(212,175,55,0.5); }
   .rec-face img { width: 100%; height: 100%; object-fit: cover; }
   .rec-init { font-size: .68rem; font-weight: 800; color: #D4AF37; font-family: var(--font-heading); }
