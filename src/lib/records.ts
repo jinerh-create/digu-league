@@ -465,6 +465,12 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
         winningMachine
           ? `Most career wins — ${winningMachine.v} from ${winningMachine.played} matches played. A tie goes to whoever needed fewer matches.`
           : 'Most career wins. A tie goes to whoever needed fewer matches.'),
+      // Most matches played — the opposite virtue to The Winning Machine: turning up.
+      entry('game-master', 'The Game Master', '🎴', mostPlayed?.id,
+        mostPlayed ? `${mostPlayed.v} matches` : '—',
+        mostPlayed
+          ? `Most matches played of all time — ${mostPlayed.v} across the whole league. Counts every completed match, singles and teams alike.`
+          : 'Most matches played of all time.'),
     ] },
     { title: 'Digu League',      emoji: '🃏', records: [] },
     { title: 'Champions League', emoji: '🏆', records: [] },
