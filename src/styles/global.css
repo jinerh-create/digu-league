@@ -47,8 +47,10 @@ html {
      does not exist — the browser would synthesise a smeared one. */
   --font-display: 'Gambarino', 'Plus Jakarta Sans', system-ui, sans-serif;
   --font-heading: 'Gambarino', 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-name: 'Montserrat', system-ui, sans-serif;
-  --font-body: 'Inter', system-ui, sans-serif;
+  /* Quicksand everywhere else — a rounded geometric sans against Gambarino's
+     display serif. Previous faces kept as fallbacks. */
+  --font-name: 'Quicksand', 'Montserrat', system-ui, sans-serif;
+  --font-body: 'Quicksand', 'Inter', system-ui, sans-serif;
   --font-mono: 'Share Tech Mono', monospace;
 }
 
