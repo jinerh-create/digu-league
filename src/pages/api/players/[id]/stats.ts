@@ -28,7 +28,17 @@ export const GET: APIRoute = async ({ params, locals }) => {
            OR m.player2_id = ?
            OR m.team1_player2_id = ?
            OR m.team2_player2_id = ?)
-      `).bind(id, id, id, id).first<{ total: number }>(),
+          -- Only rounds THIS player's side won. Without this the sum included the
+          -- opponents' points too, so a player's "all-time score" was really the
+          -- combined score of both sides in every match they appeared in.
+          AND (
+            ((m.player1_id = ? OR m.team1_player2_id = ?)
+              AND g.winner_id IN (m.player1_id, m.team1_player2_id))
+            OR
+            ((m.player2_id = ? OR m.team2_player2_id = ?)
+              AND g.winner_id IN (m.player2_id, m.team2_player2_id))
+          )
+      `).bind(id, id, id, id, id, id, id, id).first<{ total: number }>(),
       db.prepare('SELECT COUNT(*) AS cnt FROM games g JOIN matches m ON m.id = g.match_id WHERE g.gin_player_id = ? AND m.is_classic = 0').bind(id).first<{ cnt: number }>(),
       // Hands where player's team scored 100+ in a single round
       db.prepare(`
