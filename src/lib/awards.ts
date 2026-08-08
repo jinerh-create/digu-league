@@ -10,12 +10,50 @@ export interface AwardDef {
   key: string; emoji: string; name: string; desc: string;
   /** which computed suggestion applies, if any */
   suggest?: 'champion' | 'streak' | 'active' | 'improved' | 'fastest' | 'comeback';
+  /** section this award belongs under on the awards board */
+  group?: string;
+  /** 1–12 for a monthly award; absent for annual ones */
+  month?: number;
 }
 
-// Annual awards cleared 2026-08-08 at the user's request. The original set is
-// kept below as ORIGINAL_AWARD_DEFS so a curated list can be restored by name
-// rather than rewritten. Nothing consumes it while this is empty.
-export const AWARD_DEFS: AwardDef[] = [];
+export const AWARD_GROUPS = ['Digu League', 'Champions League'] as const;
+
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'];
+
+const PLACES: { slug: string; emoji: string; label: string; suggest?: AwardDef['suggest'] }[] = [
+  { slug: 'champion', emoji: '🥇', label: 'Champion',  suggest: 'champion' },
+  { slug: 'second',   emoji: '🥈', label: '2nd Place' },
+  { slug: 'third',    emoji: '🥉', label: '3rd Place' },
+];
+
+/* Monthly podium awards for both competitions. Generated rather than written out
+   so all 72 stay consistent — a hand-typed list of this size drifts the moment
+   one entry is edited. Keys are stable and year-free because the awards API is
+   already scoped by year; the month lives in the key, the year in the query. */
+function monthlyPodium(prefix: string, group: string): AwardDef[] {
+  const out: AwardDef[] = [];
+  MONTHS.forEach((monthName, i) => {
+    const month = i + 1;
+    for (const p of PLACES) {
+      out.push({
+        key: `${prefix}-${String(month).padStart(2, '0')}-${p.slug}`,
+        emoji: p.emoji,
+        name: `${monthName} — ${p.label}`,
+        desc: `${group} · ${monthName} ${p.label.toLowerCase()}.`,
+        group,
+        month,
+        ...(p.suggest ? { suggest: p.suggest } : {}),
+      });
+    }
+  });
+  return out;
+}
+
+export const AWARD_DEFS: AwardDef[] = [
+  ...monthlyPodium('dl', 'Digu League'),
+  ...monthlyPodium('cl', 'Champions League'),
+];
 
 const ORIGINAL_AWARD_DEFS: AwardDef[] = [
   { key: 'champion',      emoji: '🏆', name: 'Champion of the Year',        desc: 'The player who ended the year on top of the league.', suggest: 'champion' },

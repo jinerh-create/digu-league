@@ -11,6 +11,21 @@ type Player = { id: string; name: string; nickname?: string };
 
 const nick = (name?: string, nickname?: string | null) => nickname || (name || '').split(' ')[0] || name || '';
 
+/* Interleave section headings into the card list. Doing it this way keeps a single
+   CSS grid — a heading is just a full-width row — so the cards below it stay on the
+   same column tracks instead of each section laying out independently. */
+type BoardRow = { heading: string } | { def: Def };
+function withHeadings(defs: Def[]): BoardRow[] {
+  const rows: BoardRow[] = [];
+  let current: string | null = null;
+  for (const d of defs) {
+    const g = (d as Def & { group?: string }).group || '';
+    if (g && g !== current) { rows.push({ heading: g }); current = g; }
+    rows.push({ def: d });
+  }
+  return rows;
+}
+
 export default function AwardsBoard({ isAdmin, year: initialYear }: { isAdmin: boolean; year: number }) {
   const [year, setYear] = useState(initialYear);
   const [defs, setDefs] = useState<Def[]>([]);
@@ -87,7 +102,16 @@ export default function AwardsBoard({ isAdmin, year: initialYear }: { isAdmin: b
 
       {loading ? <div className="loading">Loading awards…</div> : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(210px,1fr))', gap: 12 }}>
-          {defs.map(d => {
+          {withHeadings(defs).map(row => {
+            if ('heading' in row) return (
+              <div key={`h-${row.heading}`} style={{
+                gridColumn: '1 / -1', marginTop: 8, paddingBottom: 4,
+                borderBottom: '1px solid rgba(212,175,55,0.35)',
+                fontSize: 13, fontWeight: 800, letterSpacing: '0.08em',
+                textTransform: 'uppercase', color: '#D4AF37',
+              }}>{row.heading}</div>
+            );
+            const d = row.def;
             const a = awards[d.key];
             const s = sugs[d.key];
             const winner = a ? (a.player_id ? nick(a.player_name, a.player_nickname) : a.recipient_name) : null;
