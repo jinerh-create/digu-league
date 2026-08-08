@@ -43,7 +43,10 @@ export interface Match {
   team2_player2_nickname?: string | null;
   team1_player2_avatar?: string | null;
   team2_player2_avatar?: string | null;
-  king_name?: string | null;   // King of the Table: most digus in the match
+  // King of the Table / MVP: most digus in the match, but only among the WINNING
+  // side's players. A losing player can out-digu the winners and still not be MVP.
+  // Drawn matches have no MVP.
+  king_name?: string | null;
   king_digus?: number | null;
 }
 

@@ -92,6 +92,10 @@ export async function getMatches(db: D1Database, limit = 50): Promise<Match[]> {
         p4.name AS team2_player2_name, p4.nickname AS team2_player2_nickname,
         (SELECT COALESCE(pk.nickname, pk.name) FROM games g JOIN players pk ON pk.id = g.gin_player_id
           WHERE g.match_id = m.id AND g.is_gin = 1 AND g.gin_player_id IS NOT NULL
+            AND m.winner_id IS NOT NULL
+            AND g.gin_player_id IN (
+              CASE WHEN m.winner_id = m.player1_id THEN m.player1_id       ELSE m.player2_id       END,
+              CASE WHEN m.winner_id = m.player1_id THEN m.team1_player2_id ELSE m.team2_player2_id END)
           GROUP BY g.gin_player_id ORDER BY COUNT(*) DESC, pk.name LIMIT 1) AS king_name,
         (SELECT COUNT(*) FROM games g WHERE g.match_id = m.id AND g.is_gin = 1 AND g.gin_player_id IS NOT NULL
           GROUP BY g.gin_player_id ORDER BY COUNT(*) DESC LIMIT 1) AS king_digus
