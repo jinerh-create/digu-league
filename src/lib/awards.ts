@@ -12,7 +12,12 @@ export interface AwardDef {
   suggest?: 'champion' | 'streak' | 'active' | 'improved' | 'fastest' | 'comeback';
 }
 
-export const AWARD_DEFS: AwardDef[] = [
+// Annual awards cleared 2026-08-08 at the user's request. The original set is
+// kept below as ORIGINAL_AWARD_DEFS so a curated list can be restored by name
+// rather than rewritten. Nothing consumes it while this is empty.
+export const AWARD_DEFS: AwardDef[] = [];
+
+const ORIGINAL_AWARD_DEFS: AwardDef[] = [
   { key: 'champion',      emoji: '🏆', name: 'Champion of the Year',        desc: 'The player who ended the year on top of the league.', suggest: 'champion' },
   { key: 'digu-king',     emoji: '👑', name: 'Digu King',                   desc: 'The crown. The table knows who wore it.' },
   { key: 'mvp',           emoji: '⭐', name: 'Most Valuable Player',        desc: 'The player the league could not have done without.' },

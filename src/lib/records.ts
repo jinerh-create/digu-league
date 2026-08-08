@@ -434,8 +434,11 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
     ]},
   ];
 
-  const totalTracked = groups.reduce((n, g) => n + g.records.filter(r => r.tracked && r.holderId).length, 0);
-  return { groups, totalTracked };
+  // Records cleared 2026-08-08 at the user's request — a curated set will be
+  // authored later. Everything above still computes, so restoring the old list is
+  // a one-line change here rather than rebuilding 113 definitions from scratch.
+  void groups;
+  return { groups: [], totalTracked: 0 };
 
   function nkOrDash(g: { playerId: string }) { return P.get(g.playerId)?.nick ?? '—'; }
 }
