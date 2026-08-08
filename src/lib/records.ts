@@ -461,7 +461,7 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
       // Face shows the win count alone; matches played belongs in the justification,
       // where it explains the tiebreak rather than competing with the headline number.
       entry('winning-machine', 'The Winning Machine', '⚙️', winningMachine?.id,
-        winningMachine ? `${winningMachine.v}` : '—',
+        winningMachine ? `${winningMachine.v} wins` : '—',
         winningMachine
           ? `Most career wins — ${winningMachine.v} from ${winningMachine.played} matches played. A tie goes to whoever needed fewer matches.`
           : 'Most career wins. A tie goes to whoever needed fewer matches.'),
