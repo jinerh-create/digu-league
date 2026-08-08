@@ -81,8 +81,12 @@ export default function AwardsBoard({ isAdmin, year: initialYear }: { isAdmin: b
   }
 
   const thisYear = new Date().getFullYear();
-  const years = [];
-  for (let y = thisYear; y >= 2024; y--) years.push(y);
+  /* The league's awards start in 2026 — 2024 and 2025 predate it and were only
+     ever empty tabs. Newest first, and the list grows on its own each January,
+     so nothing needs editing at year end. */
+  const FIRST_AWARD_YEAR = 2026;
+  const years: number[] = [];
+  for (let y = Math.max(thisYear, FIRST_AWARD_YEAR); y >= FIRST_AWARD_YEAR; y--) years.push(y);
   const awarded = Object.keys(awards).length;
 
   return (
