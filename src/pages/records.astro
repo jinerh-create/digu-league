@@ -20,6 +20,7 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
     </div>
 
     <div class="rec-nav-wrap">
+      <button class="rn-arrow rn-prev" id="rnPrev" type="button" aria-label="Previous section">‹</button>
       <nav class="rec-nav" id="recNav">
         {groups.map((g, i) => (
           <a href={`#${g.title}`} data-sec={g.title} style={`--i:${i}`}>
@@ -27,6 +28,7 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
           </a>
         ))}
       </nav>
+      <button class="rn-arrow rn-next" id="rnNext" type="button" aria-label="Next section">›</button>
     </div>
 
     <script is:inline>
@@ -65,25 +67,33 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
         }
         if (links[0]) links[0].classList.add('on');
 
-        /* Auto-sliding strip. It cycles the pills so every section announces itself
-           even when the strip is wider than the screen. Any touch, drag or hover
-           stops it for 6s — an auto-scroll that fights the user is worse than none. */
-        let idx = 0, paused = false, resumeAt = 0;
-        const nudge = () => {
-          idx = (idx + 1) % links.length;
-          links[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        };
-        const pause = () => { paused = true; resumeAt = Date.now() + 6000; };
-        ['pointerdown', 'wheel', 'touchstart', 'mouseenter'].forEach(ev =>
-          nav.addEventListener(ev, pause, { passive: true }));
+        /* Manual paging. Each press moves exactly one heading and jumps the page to
+           that section, so the arrows drive the content rather than just sliding a
+           ribbon of pills the user then has to tap anyway. */
+        const prev = document.getElementById('rnPrev');
+        const next = document.getElementById('rnNext');
 
-        setInterval(() => {
-          if (paused && Date.now() > resumeAt) paused = false;
-          if (paused || document.hidden) return;
-          if (nav.scrollWidth <= nav.clientWidth + 4) return;   // nothing to slide
-          if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-          nudge();
-        }, 2600);
+        const currentIndex = () => Math.max(0, links.findIndex(l => l.classList.contains('on')));
+        function go(step) {
+          const i = Math.min(links.length - 1, Math.max(0, currentIndex() + step));
+          const link = links[i];
+          if (!link) return;
+          activate(link);
+          const target = document.getElementById(link.dataset.sec);
+          if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          history.replaceState(null, '', '#' + link.dataset.sec);
+          syncArrows(i);
+        }
+        function syncArrows(i = currentIndex()) {
+          if (prev) prev.disabled = i <= 0;
+          if (next) next.disabled = i >= links.length - 1;
+        }
+        prev && prev.addEventListener('click', () => go(-1));
+        next && next.addEventListener('click', () => go(1));
+        syncArrows();
+        // Keep the arrows honest when the page is scrolled by hand.
+        nav.addEventListener('click', () => setTimeout(syncArrows, 0));
+        window.addEventListener('scroll', () => syncArrows(), { passive: true });
       })();
     </script>
 
@@ -146,8 +156,19 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
   .rec-nav-wrap::before, .rec-nav-wrap::after {
     content: ''; position: absolute; top: 0; bottom: 0; width: 26px; pointer-events: none; z-index: 2;
   }
-  .rec-nav-wrap::before { left: 0;  background: linear-gradient(90deg, var(--bg), transparent); }
-  .rec-nav-wrap::after  { right: 0; background: linear-gradient(270deg, var(--bg), transparent); }
+  .rec-nav-wrap::before { left: 26px;  background: linear-gradient(90deg, var(--bg), transparent); }
+  .rec-nav-wrap::after  { right: 26px; background: linear-gradient(270deg, var(--bg), transparent); }
+  .rec-nav-wrap { display: flex; align-items: center; gap: .3rem; }
+
+  .rn-arrow {
+    flex: none; width: 28px; height: 28px; border-radius: 50%; z-index: 3;
+    display: grid; place-items: center; cursor: pointer;
+    border: 1px solid var(--border); background: var(--card);
+    color: #D4AF37; font-size: 1rem; font-weight: 800; line-height: 1;
+    transition: opacity .15s, border-color .15s, background .15s;
+  }
+  .rn-arrow:hover:not(:disabled) { border-color: rgba(212,175,55,0.6); background: rgba(212,175,55,0.12); }
+  .rn-arrow:disabled { opacity: .3; cursor: default; }
 
   .rec-nav {
     display: flex; gap: .4rem; overflow-x: auto; scrollbar-width: none;
@@ -205,7 +226,7 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
      pushes the number out of alignment. Long names ellipsize instead. */
   /* Gold for the record, silver for whoever holds it — the same hierarchy the
      trophies use, so the two never read as equal weight. */
-  .rec-name { color: #C6CDD6; font-weight: 700; text-shadow: 0 0 8px rgba(198,205,214,0.25); }
+  .rec-name { color: #CD7F32; font-weight: 700; text-shadow: 0 0 8px rgba(205,127,50,0.28); }
   .rec-title b {
     font-size: .86rem; color: #D4AF37; font-weight: 700; line-height: 1.2;
     text-shadow: 0 0 10px rgba(212,175,55,0.28);
