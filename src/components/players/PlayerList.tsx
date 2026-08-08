@@ -105,11 +105,24 @@ export default function PlayerList() {
   }
 
   async function handleVerify(id: string) {
-    const r = await fetch('/api/verify', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ playerId: id, action: 'approve' }),
-    });
-    if (r.ok) setPlayers(prev => prev.map(p => p.id === id ? ({ ...p, verified: 1, verify_requested: 0 }) : p));
+    try {
+      const r = await fetch('/api/verify', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerId: id, action: 'approve' }),
+      });
+      if (r.ok) {
+        setPlayers(prev => prev.map(p => p.id === id ? ({ ...p, verified: 1, verify_requested: 0 }) : p));
+        return;
+      }
+      // Previously a failure was swallowed silently, so a rejected approval looked
+      // identical to a broken button. Show what the server actually said.
+      const d = await r.json().catch(() => ({} as { error?: string }));
+      alert(r.status === 403
+        ? 'Only an admin can approve verification. Sign in with the admin password or via Google.'
+        : `Could not verify: ${d.error || r.status}`);
+    } catch {
+      alert('Could not verify — network error.');
+    }
   }
 
   function startEdit(p: Player) {
