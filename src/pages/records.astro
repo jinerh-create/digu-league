@@ -19,9 +19,53 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
       <p class="sub">{totalRecords} official records · {totalTracked} currently held</p>
     </div>
 
-    <nav class="rec-nav">
-      {groups.map(g => <a href={`#${g.title}`}>{g.emoji} {g.title}</a>)}
-    </nav>
+    <div class="rec-nav-wrap">
+      <nav class="rec-nav" id="recNav">
+        {groups.map((g, i) => (
+          <a href={`#${g.title}`} data-sec={g.title} style={`--i:${i}`}>
+            <span class="rn-emoji">{g.emoji}</span><span>{g.title}</span>
+          </a>
+        ))}
+      </nav>
+    </div>
+
+    <script is:inline>
+      (function () {
+        const nav = document.getElementById('recNav');
+        if (!nav) return;
+        const links = [...nav.querySelectorAll('a')];
+        const secs = links.map(a => document.getElementById(a.dataset.sec)).filter(Boolean);
+
+        function activate(el) {
+          links.forEach(l => l.classList.toggle('on', l === el));
+          // Keep the active pill in view — on a phone the strip is wider than the
+          // screen, so the current section would otherwise scroll out of sight.
+          el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+
+        links.forEach(a => a.addEventListener('click', (e) => {
+          const target = document.getElementById(a.dataset.sec);
+          if (!target) return;
+          e.preventDefault();
+          activate(a);
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          history.replaceState(null, '', '#' + a.dataset.sec);
+        }));
+
+        // Scroll-spy: whichever section owns the upper third of the screen wins.
+        if ('IntersectionObserver' in window && secs.length) {
+          const io = new IntersectionObserver((entries) => {
+            const vis = entries.filter(en => en.isIntersecting)
+              .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+            if (!vis) return;
+            const link = links.find(l => l.dataset.sec === vis.target.id);
+            if (link && !link.classList.contains('on')) activate(link);
+          }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+          secs.forEach(s => io.observe(s));
+        }
+        if (links[0]) links[0].classList.add('on');
+      })();
+    </script>
 
     {groups.map(g => (
       <section class="rec-group" id={g.title}>
@@ -62,10 +106,55 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
   .rec-header { margin-bottom: .8rem; }
   .rec-header h1 { font-size: 1.5rem; }
   .rec-header .sub { color: var(--text-muted); font-size: .82rem; margin-top: .2rem; }
-  .rec-nav { display: flex; gap: .35rem; overflow-x: auto; padding-bottom: .6rem; margin-bottom: 1rem; scrollbar-width: none; position: sticky; top: 0; background: var(--bg); z-index: 5; padding-top: .4rem; }
+  /* Sticky section strip. The wrapper carries the sticky position and the edge
+     fades, so the fades stay pinned while the pills scroll underneath them —
+     doing both on one element makes the mask scroll away with the content. */
+  .rec-nav-wrap {
+    position: sticky; top: 0; z-index: 5;
+    margin-bottom: 1rem; padding: .5rem 0 .55rem;
+    background: linear-gradient(180deg, var(--bg) 72%, transparent);
+  }
+  .rec-nav-wrap::before, .rec-nav-wrap::after {
+    content: ''; position: absolute; top: 0; bottom: 0; width: 26px; pointer-events: none; z-index: 2;
+  }
+  .rec-nav-wrap::before { left: 0;  background: linear-gradient(90deg, var(--bg), transparent); }
+  .rec-nav-wrap::after  { right: 0; background: linear-gradient(270deg, var(--bg), transparent); }
+
+  .rec-nav {
+    display: flex; gap: .4rem; overflow-x: auto; scrollbar-width: none;
+    scroll-snap-type: x proximity; padding: 2px 4px;
+  }
   .rec-nav::-webkit-scrollbar { display: none; }
-  .rec-nav a { flex-shrink: 0; padding: .4rem .75rem; border-radius: 999px; font-size: .78rem; font-weight: 700; color: var(--text-secondary); background: var(--card); border: 1px solid var(--border); white-space: nowrap; text-decoration: none; }
-  .rec-nav a:hover { border-color: rgba(212,175,55,0.5); color: #D4AF37; }
+
+  .rec-nav a {
+    position: relative; flex-shrink: 0; scroll-snap-align: center;
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .45rem .85rem; border-radius: 999px;
+    font-size: .78rem; font-weight: 700; white-space: nowrap; text-decoration: none;
+    color: var(--text-secondary);
+    background: linear-gradient(160deg, rgba(255,255,255,0.05), var(--card));
+    border: 1px solid var(--border);
+    transition: color .18s ease, border-color .18s ease, background .18s ease, transform .18s ease;
+    /* staggered slide-in on load */
+    animation: rn-in .34s cubic-bezier(.22,.9,.3,1) backwards;
+    animation-delay: calc(var(--i, 0) * 45ms);
+  }
+  .rec-nav a .rn-emoji { font-size: .95rem; line-height: 1; transition: transform .18s ease; }
+  .rec-nav a:hover { color: #D4AF37; border-color: rgba(212,175,55,0.5); transform: translateY(-1px); }
+  .rec-nav a:hover .rn-emoji { transform: scale(1.12); }
+
+  /* Active pill — gold, lifted, with a soft glow so it reads at a glance. */
+  .rec-nav a.on {
+    color: #1a1000; border-color: #E8C84A;
+    background: linear-gradient(135deg, #b8922a 0%, #d4af37 52%, #e8c84a 100%);
+    box-shadow: 0 3px 12px rgba(212,175,55,0.34);
+  }
+  .rec-nav a.on .rn-emoji { transform: scale(1.1); }
+
+  @keyframes rn-in { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .rec-nav a { animation: none; transition: none; }
+  }
   .rec-group { margin-bottom: 1.6rem; scroll-margin-top: 3.2rem; }
   .rec-group-title { font-size: 1.1rem; margin-bottom: .7rem; color: var(--text-primary); }
   .rec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: .6rem; }
