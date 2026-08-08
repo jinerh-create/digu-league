@@ -41,16 +41,18 @@ html {
 
 /* ── Font system ── */
 :root {
-  /* Clash Display carries the headings — a confident display sans that suits a
-     competitive league. Unlike the single-weight face it replaces, it ships real
-     400/500/600/700, so the bold headings throughout the app are genuine cuts
-     rather than a browser-smeared fake. */
-  --font-display: 'Clash Display', 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-heading: 'Clash Display', 'Plus Jakarta Sans', system-ui, sans-serif;
-  /* Quicksand everywhere else — a rounded geometric sans against Gambarino's
-     display serif. Previous faces kept as fallbacks. */
-  --font-name: 'Quicksand', 'Montserrat', system-ui, sans-serif;
-  --font-body: 'Quicksand', 'Inter', system-ui, sans-serif;
+  /* Futuristic squared display, in the spirit of Armstrong. Armstrong itself is a
+     commercial licence with no CDN, so this is the closest freely-hostable match:
+     Orbitron for the wide geometric headings, Chakra Petch for text — its clipped
+     corners echo the same angular cut without hurting readability at body size.
+     To move to real Armstrong: add @font-face rules pointing at self-hosted woff2
+     files and put 'Armstrong' first in these two stacks. */
+  --font-display: 'Orbitron', 'Chakra Petch', 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-heading: 'Orbitron', 'Chakra Petch', 'Plus Jakarta Sans', system-ui, sans-serif;
+  /* Body and names in Chakra Petch — same angular family as the headings, but
+     built for reading rather than for a wordmark. */
+  --font-name: 'Chakra Petch', 'Inter', system-ui, sans-serif;
+  --font-body: 'Chakra Petch', 'Inter', system-ui, sans-serif;
   --font-mono: 'Share Tech Mono', monospace;
 }
 
