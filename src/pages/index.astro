@@ -392,13 +392,20 @@ function side2(m: typeof recentMatches[0]) {
   }
    60%{left:150%} 100%{left:150%} }
 
+  /* Trimmed from 0.9375rem: Chakra Petch and Orbitron set wider than the faces
+     these sizes were chosen for, so the old values now overflow the tile. */
   .match-players {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.9375rem;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    font-size: 0.8125rem;
     font-weight: 600;
+    min-width: 0;
   }
+  .match-players .vs { font-size: 0.65rem; }
+  .home-match-card .badge { font-size: 0.625rem !important; }
+  .home-match-card .match-date { font-size: 0.625rem; }
 
   .winner {
     color: var(--gold);
