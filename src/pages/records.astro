@@ -32,6 +32,7 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
           record, the player who achieved it first remains the record holder until the
           record is broken.
         </p>
+        <p class="rec-slogan">&ldquo;Every Match Counts. Every Record Tells a Story&rdquo;</p>
       </div>
     </div>
 
@@ -171,6 +172,18 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
   }
   .rec-intro p { margin: 0 0 .6rem; font-size: .78rem; line-height: 1.6; color: var(--text-secondary); }
   .rec-intro p:last-child { margin-bottom: 0; }
+
+  /* Felt green — the table colour the whole league is played on, and the one
+     accent this page doesn't already spend on records, holders and figures. */
+  .rec-slogan {
+    margin-top: .85rem !important; padding-top: .8rem;
+    border-top: 1px solid rgba(0,212,126,0.28);
+    text-align: center;
+    font-size: .84rem !important; font-weight: 700;
+    letter-spacing: .04em; font-style: italic;
+    color: #00D47E !important;
+    text-shadow: 0 0 12px rgba(0,212,126,0.35);
+  }
 
   /* Sticky section strip. The wrapper carries the sticky position and the edge
      fades, so the fades stay pinned while the pills scroll underneath them —
