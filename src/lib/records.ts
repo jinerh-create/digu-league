@@ -540,7 +540,15 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
     ] },
     { title: 'Match',            emoji: '⚔️', records: [] },
     { title: 'Rivalry',          emoji: '🥊', records: [] },
-    { title: 'Opponent',         emoji: '🎯', records: [] },
+    { title: 'Opponent', emoji: '🎯', records: [
+      // Wins against players who have held a championship. Placed here rather than
+      // duplicated into Rivalry — one record, one home.
+      entry('champion-hunter', 'Champion Hunter', '🗡️', giantKiller?.id,
+        giantKiller ? `${giantKiller.v} wins` : '—',
+        giantKiller
+          ? `Most wins against past champions — ${giantKiller.v} of them. Counts victories over any player who has held a league title.`
+          : 'Most wins against players who have held a championship.'),
+    ] },
     { title: 'Defensive',        emoji: '🛡️', records: [] },
     { title: 'Discipline',       emoji: '📐', records: [] },
     { title: 'Season', emoji: '📅', records: [
