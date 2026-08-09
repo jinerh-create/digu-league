@@ -17,6 +17,22 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
     <div class="rec-header">
       <h1>🏆 DIGU League Records</h1>
       <p class="sub">{totalRecords} official records · {totalTracked} currently held</p>
+
+      <div class="rec-intro">
+        <p>
+          Welcome to the DIGU League Record Hall, where every match creates history.
+          These records recognize champions, consistent performers, comeback specialists,
+          tactical masters, rising stars and players who show outstanding dedication
+          throughout their careers.
+        </p>
+        <p>
+          Each record is awarded using official match results recorded in the DIGU League
+          system. Career records continue across all seasons, while season, tournament and
+          match records reset according to their stated period. If two players share a
+          record, the player who achieved it first remains the record holder until the
+          record is broken.
+        </p>
+      </div>
     </div>
 
     <div class="rec-nav-wrap">
@@ -145,6 +161,17 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
   .rec-header { margin-bottom: .8rem; }
   .rec-header h1 { font-size: 1.5rem; }
   .rec-header .sub { color: var(--text-muted); font-size: .82rem; margin-top: .2rem; }
+  .rec-intro {
+    max-width: 62ch; margin: .9rem auto 0;
+    padding: .85rem 1rem; border-radius: 12px;
+    background: linear-gradient(160deg, rgba(212,175,55,0.05), var(--card));
+    border: 1px solid rgba(212,175,55,0.22);
+    border-left: 3px solid rgba(212,175,55,0.6);
+    text-align: left;
+  }
+  .rec-intro p { margin: 0 0 .6rem; font-size: .78rem; line-height: 1.6; color: var(--text-secondary); }
+  .rec-intro p:last-child { margin-bottom: 0; }
+
   /* Sticky section strip. The wrapper carries the sticky position and the edge
      fades, so the fades stay pinned while the pills scroll underneath them —
      doing both on one element makes the mask scroll away with the content. */
