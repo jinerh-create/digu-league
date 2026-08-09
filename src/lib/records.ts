@@ -548,7 +548,35 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
           : 'Longest run of consecutive match wins.'),
     ] },
   ];
-  return { groups: sections, totalTracked: 0 };
+  /* The Ultimate Record Holder — whoever holds the most of the records above.
+     Counted from the finished sections rather than a hard-coded list, so it stays
+     correct as records are added or removed, and it deliberately excludes itself:
+     holding this one is a consequence of the others, not another record to win. */
+  const holdCount = new Map<string, number>();
+  for (const g of sections) {
+    for (const r of g.records) {
+      if (r.tracked && r.holderId) holdCount.set(r.holderId, (holdCount.get(r.holderId) || 0) + 1);
+    }
+  }
+  let ultimate: { id: string; v: number } | null = null;
+  for (const [id, v] of holdCount) {
+    // Ties go to the player already ahead on records overall; with one metric
+    // there is nothing better to separate them on.
+    if (!ultimate || v > ultimate.v) ultimate = { id, v };
+  }
+  const legendary = sections.find((g) => g.title === 'Legendary');
+  legendary?.records.push(
+    entry('ultimate-holder', 'The Ultimate Record Holder', '💎', ultimate?.id,
+      ultimate ? `${ultimate.v} ${ultimate.v === 1 ? 'record' : 'records'}` : '—',
+      ultimate
+        ? `Holds more league records than anyone else — ${ultimate.v} of them. Recounted every time this page loads, so it changes the moment another record changes hands.`
+        : 'Holds more league records than anyone else.'),
+  );
+
+  const totalTracked = sections.reduce(
+    (n, g) => n + g.records.filter((r) => r.tracked && r.holderId).length, 0);
+
+  return { groups: sections, totalTracked };
 
   function nkOrDash(g: { playerId: string }) { return P.get(g.playerId)?.nick ?? '—'; }
 }
