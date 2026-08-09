@@ -222,6 +222,34 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
     }
     return best;
   };
+  /* Leader Stopper — beat the player who topped the league in that same month.
+     Deliberately not the same thing as Champion Hunter: that counts wins over
+     anyone who has ever held a title, this counts wins over the leader while they
+     were leading, which is the harder and more specific feat. */
+  const leaderStopper = (() => {
+    const monthChamp = new Map<string, string>();      // 'YYYY-MM' -> player id
+    for (const a of awards as any[]) {
+      const mm = /^dl-(\d{2})-champion$/.exec(a.award_key);
+      if (mm) monthChamp.set(`${a.year}-${mm[1]}`, a.player_id);
+    }
+    const wins = new Map<string, number>();
+    for (const mt of matches as any[]) {
+      if (!mt.completed_at || !mt.winner_id) continue;
+      const champ = monthChamp.get((mt.started_at || '').slice(0, 7));
+      if (!champ) continue;
+      const t1 = [mt.player1_id, mt.team1_player2_id].filter(Boolean) as string[];
+      const t2 = [mt.player2_id, mt.team2_player2_id].filter(Boolean) as string[];
+      const wonByT1 = mt.winner_id === mt.player1_id;
+      const winners = wonByT1 ? t1 : t2;
+      const losers  = wonByT1 ? t2 : t1;
+      if (!losers.includes(champ)) continue;           // the leader must be the one who lost
+      for (const w of winners) wins.set(w, (wins.get(w) || 0) + 1);
+    }
+    let best: { id: string; v: number } | null = null;
+    for (const [id, v] of wins) if (!best || v > best.v) best = { id, v };
+    return best;
+  })();
+
   const crownConqueror   = mostTitlesIn('dl');
   const championOfChamps = mostTitlesIn('cl');
 
@@ -549,7 +577,13 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
           ? `Most wins against past champions — ${giantKiller.v} of them. Counts victories over any player who has held a league title.`
           : 'Most wins against players who have held a championship.'),
     ] },
-    { title: 'Defensive',        emoji: '🛡️', records: [] },
+    { title: 'Defensive', emoji: '🛡️', records: [
+      entry('leader-stopper', 'Leader Stopper', '🛑', leaderStopper?.id,
+        leaderStopper ? `${leaderStopper.v} ${leaderStopper.v === 1 ? 'win' : 'wins'}` : '—',
+        leaderStopper
+          ? `Defeated the month's league leader more often than anyone — ${leaderStopper.v} ${leaderStopper.v === 1 ? 'time' : 'times'}. Counts only wins over the player who went on to top that month, while the month was being played.`
+          : 'Most wins over the player who topped the league that month.'),
+    ] },
     { title: 'Discipline',       emoji: '📐', records: [] },
     { title: 'Season', emoji: '📅', records: [
       // A season is a calendar month in this league, so this is the best single
