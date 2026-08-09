@@ -539,7 +539,16 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
           : 'Most Champions League titles. A tie goes to whoever needed fewer matches.'),
     ] },
     { title: 'Match',            emoji: '⚔️', records: [] },
-    { title: 'Season',           emoji: '📅', records: [] },
+    { title: 'Season', emoji: '📅', records: [
+      // A season is a calendar month in this league, so this is the best single
+      // month anyone has had, not a whole-year total.
+      entry('season-dominator', 'Season Dominator', '📅',
+        bestSeasonWins.v > 0 ? bestSeasonWins.id : null,
+        bestSeasonWins.v > 0 ? `${bestSeasonWins.v} wins` : '—',
+        bestSeasonWins.v > 0
+          ? `Most wins in a single season — ${bestSeasonWins.v} during ${bestSeasonWins.ym}. Each month is its own season, so this is the best month anyone has put together.`
+          : 'Most wins in a single season. Each month counts as its own season.'),
+    ] },
     { title: 'Legendary', emoji: '🌟', records: [
       entry('unbreakable-streak', 'The Unbreakable Streak', '🔥', longestStreak?.id,
         longestStreak ? `${longestStreak.v} in a row` : '—',
