@@ -498,6 +498,12 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
         mostPts
           ? `Most career points scored — ${mostPts.v} in total. Every point awarded across every completed match, won or lost.`
           : 'Most career points scored.'),
+      // Most digus (gin finishes) of all time.
+      entry('eternal-king', 'The Eternal King', '👑', mostGin?.id,
+        mostGin ? `${mostGin.v} digus` : '—',
+        mostGin
+          ? `Most digus of all time — ${mostGin.v} gin finishes across every completed match.`
+          : 'Most digus of all time.'),
     ] },
     { title: 'Digu League', emoji: '🃏', records: [
       entry('crown-conqueror', 'The Crown Conqueror', '👑', crownConqueror?.id,
