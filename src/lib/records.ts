@@ -27,7 +27,7 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
                  WHERE m.is_classic=0 AND m.completed_at IS NOT NULL
                  ORDER BY m.started_at ASC`).all<any>(),
     db.prepare(`SELECT g.* FROM games g JOIN matches m ON m.id=g.match_id WHERE m.is_classic=0 ORDER BY g.match_id, g.round_number`).all<any>(),
-    db.prepare(`SELECT id,name,nickname,avatar_b64,birthday FROM players WHERE is_guest=0`).all<any>(),
+    db.prepare(`SELECT id,name,nickname,avatar_b64,birthday,trophies_json FROM players WHERE is_guest=0`).all<any>(),
     db.prepare(`SELECT year,award_key,player_id FROM awards WHERE player_id IS NOT NULL`).all<any>(),
   ]);
   const matches = matchesRes.results || [];
@@ -583,7 +583,28 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
           ? `Defeated the month's league leader more often than anyone — ${leaderStopper.v} ${leaderStopper.v === 1 ? 'time' : 'times'}. Counts only wins over the player who went on to top that month, while the month was being played.`
           : 'Most wins over the player who topped the league that month.'),
     ] },
-    { title: 'Milestones',       emoji: '🎖️', records: [] },
+    { title: 'Milestones', emoji: '🎖️', records: [
+      /* Counted from the badges actually awarded in a player's trophy cabinet —
+         championships, Digu King crowns and any other honour an admin has given.
+         Computed badges shown on a profile are derived from stats and would double
+         count what other records already measure. */
+      (() => {
+        let best: { id: string; v: number } | null = null;
+        for (const p of players as any[]) {
+          let n = 0;
+          try {
+            const arr = JSON.parse(p.trophies_json || '[]');
+            if (Array.isArray(arr)) n = arr.length;
+          } catch { n = 0; }
+          if (n > 0 && (!best || n > best.v)) best = { id: p.id, v: n };
+        }
+        return entry('badge-collector', 'Badge Collector', '🎖️', best?.id,
+          best ? `${best.v} ${best.v === 1 ? 'badge' : 'badges'}` : '—',
+          best
+            ? `Most official Digu badges earned — ${best.v} in the trophy cabinet. Counts every honour formally awarded, not badges derived from statistics.`
+            : 'Most official Digu badges earned.');
+      })(),
+    ] },
     { title: 'Season', emoji: '📅', records: [
       // A season is a calendar month in this league, so this is the best single
       // month anyone has had, not a whole-year total.
