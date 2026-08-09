@@ -546,6 +546,33 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
         longestStreak
           ? `Longest run of consecutive match wins — ${longestStreak.v} straight, without a single defeat in between.`
           : 'Longest run of consecutive match wins.'),
+      /* The GOAT — ranked on silverware first, then digus, then fewer matches.
+         Titles count both competitions equally: a Champions League crown is worth
+         the same as a league month. Deliberately a strict ordering rather than a
+         weighted score, so the reason one player outranks another is always
+         explainable rather than the output of an invisible formula. */
+      (() => {
+        let best: { id: string; titles: number; digus: number; played: number } | null = null;
+        for (const s of allStats as any[]) {
+          const keys = awardCount.get(s.player_id);
+          let titles = 0;
+          if (keys) for (const [k, c] of keys) if (/^(dl|cl)-\d{2}-champion$/.test(k)) titles += c;
+          const digus = s.gin_count as number;
+          const played = s.matches_played as number;
+          if (titles === 0 && digus === 0) continue;
+          if (!best
+            || titles > best.titles
+            || (titles === best.titles && digus > best.digus)
+            || (titles === best.titles && digus === best.digus && played < best.played)) {
+            best = { id: s.player_id, titles, digus, played };
+          }
+        }
+        return entry('goat', 'The GOAT', '🐐', best?.id,
+          best ? `${best.titles} ${best.titles === 1 ? 'title' : 'titles'} · ${best.digus} digus` : '—',
+          best
+            ? `Greatest of all time — ${best.titles} ${best.titles === 1 ? 'title' : 'titles'} across the Digu League and Champions League, ${best.digus} digus, from ${best.played} matches played. Titles rank first, then digus, then whoever needed fewer matches.`
+            : 'Most titles across both competitions, then most digus, then fewer matches played.');
+      })(),
     ] },
   ];
   /* The Ultimate Record Holder — whoever holds the most of the records above.
@@ -558,18 +585,16 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
       if (r.tracked && r.holderId) holdCount.set(r.holderId, (holdCount.get(r.holderId) || 0) + 1);
     }
   }
-  let ultimate: { id: string; v: number } | null = null;
+  let ultimateHolder: { id: string; v: number } | null = null;
   for (const [id, v] of holdCount) {
-    // Ties go to the player already ahead on records overall; with one metric
-    // there is nothing better to separate them on.
-    if (!ultimate || v > ultimate.v) ultimate = { id, v };
+    if (!ultimateHolder || v > ultimateHolder.v) ultimateHolder = { id, v };
   }
   const legendary = sections.find((g) => g.title === 'Legendary');
   legendary?.records.push(
-    entry('ultimate-holder', 'The Ultimate Record Holder', '💎', ultimate?.id,
-      ultimate ? `${ultimate.v} ${ultimate.v === 1 ? 'record' : 'records'}` : '—',
-      ultimate
-        ? `Holds more league records than anyone else — ${ultimate.v} of them. Recounted every time this page loads, so it changes the moment another record changes hands.`
+    entry('ultimate-holder', 'The Ultimate Record Holder', '💎', ultimateHolder?.id,
+      ultimateHolder ? `${ultimateHolder.v} ${ultimateHolder.v === 1 ? 'record' : 'records'}` : '—',
+      ultimateHolder
+        ? `Holds more league records than anyone else — ${ultimateHolder.v} of them. Recounted every time this page loads, so it changes the moment another record changes hands.`
         : 'Holds more league records than anyone else.'),
   );
 
