@@ -204,22 +204,26 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
   for (const a of awards) { const m = awardCount.get(a.player_id) || awardCount.set(a.player_id, new Map()).get(a.player_id)!; m.set(a.award_key, (m.get(a.award_key) || 0) + 1); }
   const awardHolder = (key: string) => { let best: { id: string; n: number } | null = null; for (const [pid, m] of awardCount) { const n = m.get(key) || 0; if (n > 0 && (!best || n > best.n)) best = { id: pid, n }; } return best; };
 
-  /* The Crown Conqueror — most Digu League monthly championships.
-     Counted from the titles actually awarded (dl-MM-champion), never inferred from
-     match wins: the league title comes from the standings, and deriving it from raw
-     wins already proved wrong once. Ties go to whoever needed fewer matches. */
-  const crownConqueror = (() => {
-    const playedBy = new Map<string, number>(allStats.map((s: any) => [s.player_id, s.matches_played as number]));
+  /* Most championships in a competition, counted from the titles actually awarded
+     (dl-MM-champion / cl-MM-champion) rather than inferred from match wins: a
+     league title comes from the standings, and deriving it from raw wins already
+     proved wrong once. Ties go to whoever needed fewer matches — the same haul
+     from a shorter career is the better record. */
+  const playedBy = new Map<string, number>(allStats.map((s: any) => [s.player_id, s.matches_played as number]));
+  const mostTitlesIn = (prefix: 'dl' | 'cl') => {
+    const re = new RegExp(`^${prefix}-\\d{2}-champion$`);
     let best: { id: string; v: number; played: number } | null = null;
     for (const [pid, keys] of awardCount) {
       let n = 0;
-      for (const [k, c] of keys) if (/^dl-\d{2}-champion$/.test(k)) n += c;
+      for (const [k, c] of keys) if (re.test(k)) n += c;
       if (n <= 0) continue;
       const played = playedBy.get(pid) ?? Number.MAX_SAFE_INTEGER;
       if (!best || n > best.v || (n === best.v && played < best.played)) best = { id: pid, v: n, played };
     }
     return best;
-  })();
+  };
+  const crownConqueror   = mostTitlesIn('dl');
+  const championOfChamps = mostTitlesIn('cl');
 
   // ── helpers to build entries ────────────────────────────────────────────────
   const fmtMins = (m: number) => m < 60 ? `${Math.round(m)}m` : `${Math.floor(m / 60)}h ${Math.round(m % 60)}m`;
@@ -502,7 +506,13 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
           ? `Most Digu League championships — ${crownConqueror.v} won from ${crownConqueror.played} matches played. A tie goes to whoever needed fewer matches.`
           : 'Most Digu League monthly championships. A tie goes to whoever needed fewer matches.'),
     ] },
-    { title: 'Champions League', emoji: '🏆', records: [] },
+    { title: 'Champions League', emoji: '🏆', records: [
+      entry('champion-of-champions', 'Champion of Champions', '🏆', championOfChamps?.id,
+        championOfChamps ? `${championOfChamps.v} ${championOfChamps.v === 1 ? 'title' : 'titles'}` : '—',
+        championOfChamps
+          ? `Most Champions League titles — ${championOfChamps.v} won from ${championOfChamps.played} matches played. A tie goes to whoever needed fewer matches.`
+          : 'Most Champions League titles. A tie goes to whoever needed fewer matches.'),
+    ] },
     { title: 'Match',            emoji: '⚔️', records: [] },
     { title: 'Season',           emoji: '📅', records: [] },
     { title: 'Legendary',        emoji: '🌟', records: [] },
