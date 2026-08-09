@@ -567,8 +567,7 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
           : 'Most Champions League titles. A tie goes to whoever needed fewer matches.'),
     ] },
     { title: 'Match',            emoji: '⚔️', records: [] },
-    { title: 'Rivalry',          emoji: '🥊', records: [] },
-    { title: 'Opponent', emoji: '🎯', records: [
+    { title: 'Rivalry & Opponent', emoji: '🥊', records: [
       // Wins against players who have held a championship. Placed here rather than
       // duplicated into Rivalry — one record, one home.
       entry('champion-hunter', 'Champion Hunter', '🗡️', giantKiller?.id,
@@ -577,14 +576,13 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
           ? `Most wins against past champions — ${giantKiller.v} of them. Counts victories over any player who has held a league title.`
           : 'Most wins against players who have held a championship.'),
     ] },
-    { title: 'Defensive', emoji: '🛡️', records: [
+    { title: 'Defensive & Discipline', emoji: '🛡️', records: [
       entry('leader-stopper', 'Leader Stopper', '🛑', leaderStopper?.id,
         leaderStopper ? `${leaderStopper.v} ${leaderStopper.v === 1 ? 'win' : 'wins'}` : '—',
         leaderStopper
           ? `Defeated the month's league leader more often than anyone — ${leaderStopper.v} ${leaderStopper.v === 1 ? 'time' : 'times'}. Counts only wins over the player who went on to top that month, while the month was being played.`
           : 'Most wins over the player who topped the league that month.'),
     ] },
-    { title: 'Discipline',       emoji: '📐', records: [] },
     { title: 'Season', emoji: '📅', records: [
       // A season is a calendar month in this league, so this is the best single
       // month anyone has had, not a whole-year total.
