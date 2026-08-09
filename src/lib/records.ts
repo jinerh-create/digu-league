@@ -583,6 +583,7 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
           ? `Defeated the month's league leader more often than anyone — ${leaderStopper.v} ${leaderStopper.v === 1 ? 'time' : 'times'}. Counts only wins over the player who went on to top that month, while the month was being played.`
           : 'Most wins over the player who topped the league that month.'),
     ] },
+    { title: 'Milestones',       emoji: '🎖️', records: [] },
     { title: 'Season', emoji: '📅', records: [
       // A season is a calendar month in this league, so this is the best single
       // month anyone has had, not a whole-year total.
