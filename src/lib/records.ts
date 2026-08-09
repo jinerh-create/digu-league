@@ -541,6 +541,8 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
     { title: 'Match',            emoji: '⚔️', records: [] },
     { title: 'Rivalry',          emoji: '🥊', records: [] },
     { title: 'Opponent',         emoji: '🎯', records: [] },
+    { title: 'Defensive',        emoji: '🛡️', records: [] },
+    { title: 'Discipline',       emoji: '📐', records: [] },
     { title: 'Season', emoji: '📅', records: [
       // A season is a calendar month in this league, so this is the best single
       // month anyone has had, not a whole-year total.
