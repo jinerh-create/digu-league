@@ -225,6 +225,20 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
   const crownConqueror   = mostTitlesIn('dl');
   const championOfChamps = mostTitlesIn('cl');
 
+  /* The Digu King — most monthly Digu King awards. Same counting and tiebreak as
+     the title records, but keyed on the digu-king award rather than the champion. */
+  const diguKingHolder = (() => {
+    let best: { id: string; v: number; played: number } | null = null;
+    for (const [pid, keys] of awardCount) {
+      let n = 0;
+      for (const [k, c] of keys) if (/^dl-\d{2}-digu-king$/.test(k)) n += c;
+      if (n <= 0) continue;
+      const played = playedBy.get(pid) ?? Number.MAX_SAFE_INTEGER;
+      if (!best || n > best.v || (n === best.v && played < best.played)) best = { id: pid, v: n, played };
+    }
+    return best;
+  })();
+
   // ── helpers to build entries ────────────────────────────────────────────────
   const fmtMins = (m: number) => m < 60 ? `${Math.round(m)}m` : `${Math.floor(m / 60)}h ${Math.round(m % 60)}m`;
   const entry = (key: string, name: string, emoji: string, holderId: string | null | undefined, value: string, detail?: string): RecordEntry => {
@@ -511,6 +525,11 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
         crownConqueror
           ? `Most Digu League championships — ${crownConqueror.v} won from ${crownConqueror.played} matches played. A tie goes to whoever needed fewer matches.`
           : 'Most Digu League monthly championships. A tie goes to whoever needed fewer matches.'),
+      entry('digu-king', 'The Digu King', '🃏', diguKingHolder?.id,
+        diguKingHolder ? `${diguKingHolder.v} ${diguKingHolder.v === 1 ? 'crown' : 'crowns'}` : '—',
+        diguKingHolder
+          ? `Most monthly Digu King crowns — ${diguKingHolder.v} won from ${diguKingHolder.played} matches played. A tie goes to whoever needed fewer matches.`
+          : 'Most monthly Digu King crowns. A tie goes to whoever needed fewer matches.'),
     ] },
     { title: 'Champions League', emoji: '🏆', records: [
       entry('champion-of-champions', 'Champion of Champions', '🏆', championOfChamps?.id,

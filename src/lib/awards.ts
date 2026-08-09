@@ -31,11 +31,15 @@ const PLACES: { slug: string; emoji: string; label: string; suggest?: AwardDef['
    so all 72 stay consistent — a hand-typed list of this size drifts the moment
    one entry is edited. Keys are stable and year-free because the awards API is
    already scoped by year; the month lives in the key, the year in the query. */
-function monthlyPodium(prefix: string, group: string): AwardDef[] {
+// The Digu King (most digus that month) is a Digu League honour only — the
+// Champions League does not award it.
+const DIGU_KING: typeof PLACES[number] = { slug: 'digu-king', emoji: '👑', label: 'Digu King' };
+
+function monthlyPodium(prefix: string, group: string, extra: typeof PLACES = []): AwardDef[] {
   const out: AwardDef[] = [];
   MONTHS.forEach((monthName, i) => {
     const month = i + 1;
-    for (const p of PLACES) {
+    for (const p of [...PLACES, ...extra]) {
       out.push({
         key: `${prefix}-${String(month).padStart(2, '0')}-${p.slug}`,
         emoji: p.emoji,
@@ -51,7 +55,7 @@ function monthlyPodium(prefix: string, group: string): AwardDef[] {
 }
 
 export const AWARD_DEFS: AwardDef[] = [
-  ...monthlyPodium('dl', 'Digu League'),
+  ...monthlyPodium('dl', 'Digu League', [DIGU_KING]),
   ...monthlyPodium('cl', 'Champions League'),
 ];
 
