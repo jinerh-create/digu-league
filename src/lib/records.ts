@@ -546,6 +546,12 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
         longestStreak
           ? `Longest run of consecutive match wins — ${longestStreak.v} straight, without a single defeat in between.`
           : 'Longest run of consecutive match wins.'),
+      entry('lightning-victory', 'Lightning Victory', '⚡',
+        fastWin.v < Infinity ? fastWin.id : null,
+        fastWin.v < Infinity ? fmtMins(fastWin.v) : '—',
+        fastWin.v < Infinity
+          ? `Fastest match win on record — start to finish in ${fmtMins(fastWin.v)}. Only completed matches with a recorded start and finish time count.`
+          : 'Fastest match win on record.'),
       /* The GOAT — ranked on silverware first, then digus, then fewer matches.
          Titles count both competitions equally: a Champions League crown is worth
          the same as a league month. Deliberately a strict ordering rather than a
