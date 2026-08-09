@@ -540,7 +540,13 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
     ] },
     { title: 'Match',            emoji: '⚔️', records: [] },
     { title: 'Season',           emoji: '📅', records: [] },
-    { title: 'Legendary',        emoji: '🌟', records: [] },
+    { title: 'Legendary', emoji: '🌟', records: [
+      entry('unbreakable-streak', 'The Unbreakable Streak', '🔥', longestStreak?.id,
+        longestStreak ? `${longestStreak.v} in a row` : '—',
+        longestStreak
+          ? `Longest run of consecutive match wins — ${longestStreak.v} straight, without a single defeat in between.`
+          : 'Longest run of consecutive match wins.'),
+    ] },
   ];
   return { groups: sections, totalTracked: 0 };
 
