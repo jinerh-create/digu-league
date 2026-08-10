@@ -29,6 +29,7 @@ function withHeadings(defs: Def[]): BoardRow[] {
 export default function AwardsBoard({ isAdmin, year: initialYear }: { isAdmin: boolean; year: number }) {
   const [year, setYear] = useState(initialYear);
   const [defs, setDefs] = useState<Def[]>([]);
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [awards, setAwards] = useState<Record<string, Row>>({});
   const [sugs, setSugs] = useState<Record<string, Sug>>({});
   const [players, setPlayers] = useState<Player[]>([]);
@@ -107,15 +108,35 @@ export default function AwardsBoard({ isAdmin, year: initialYear }: { isAdmin: b
       {loading ? <div className="loading">Loading awards…</div> : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(210px,1fr))', gap: 12 }}>
           {withHeadings(defs).map(row => {
-            if ('heading' in row) return (
-              <div key={`h-${row.heading}`} style={{
-                gridColumn: '1 / -1', marginTop: 8, paddingBottom: 4,
-                borderBottom: '1px solid rgba(212,175,55,0.35)',
-                fontSize: 13, fontWeight: 800, letterSpacing: '0.08em',
-                textTransform: 'uppercase', color: '#D4AF37',
-              }}>{row.heading}</div>
-            );
+            if ('heading' in row) {
+              const g = row.heading;
+              const total = defs.filter(x => ((x as Def & { group?: string }).group || '') === g).length;
+              const given = defs.filter(x => ((x as Def & { group?: string }).group || '') === g && awards[x.key]).length;
+              const open = !!openGroups[g];
+              return (
+                <button key={`h-${g}`} type="button"
+                  onClick={() => setOpenGroups(p => ({ ...p, [g]: !p[g] }))}
+                  aria-expanded={open}
+                  style={{
+                    gridColumn: '1 / -1', marginTop: 8, padding: '8px 10px',
+                    display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
+                    background: 'linear-gradient(160deg, rgba(212,175,55,0.10), transparent)',
+                    border: '1px solid rgba(212,175,55,0.35)', borderRadius: 10,
+                    fontSize: 13, fontWeight: 800, letterSpacing: '0.08em',
+                    textTransform: 'uppercase', color: '#D4AF37', textAlign: 'left',
+                  }}>
+                  <span style={{ display: 'inline-block', transition: 'transform .18s', transform: open ? 'rotate(90deg)' : 'none' }}>▶</span>
+                  <span style={{ flex: 1 }}>{g}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', letterSpacing: 0, textTransform: 'none' }}>
+                    {given} / {total} awarded
+                  </span>
+                </button>
+              );
+            }
             const d = row.def;
+            // 36 awards per competition is far too many to show at once, so a
+            // section stays folded until asked for.
+            if (!openGroups[(d as Def & { group?: string }).group || '']) return null;
             const a = awards[d.key];
             const s = sugs[d.key];
             const winner = a ? (a.player_id ? nick(a.player_name, a.player_nickname) : a.recipient_name) : null;
