@@ -250,6 +250,28 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
     return best;
   })();
 
+  /* Back-to-Back King — the longest run of Digu King crowns in consecutive months.
+     A gap breaks the run even if the same player returns later: winning May and
+     July is not back-to-back. Months are compared as a running index so December
+     to January counts correctly across a year boundary. */
+  const backToBackKing = (() => {
+    const crowns: { idx: number; pid: string }[] = [];
+    for (const a of awards as any[]) {
+      const mm = /^dl-(\d{2})-digu-king$/.exec(a.award_key);
+      if (mm && a.player_id) crowns.push({ idx: Number(a.year) * 12 + Number(mm[1]), pid: a.player_id });
+    }
+    crowns.sort((x, y) => x.idx - y.idx);
+    let best: { id: string; v: number } | null = null;
+    let curId = '', run = 0, prevIdx = -999;
+    for (const c of crowns) {
+      if (c.pid === curId && c.idx === prevIdx + 1) run++;
+      else { curId = c.pid; run = 1; }
+      prevIdx = c.idx;
+      if (run >= 2 && (!best || run > best.v)) best = { id: c.pid, v: run };
+    }
+    return best;
+  })();
+
   const crownConqueror   = mostTitlesIn('dl');
   const championOfChamps = mostTitlesIn('cl');
 
@@ -546,6 +568,11 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
         mostGin
           ? `Most digus of all time — ${mostGin.v} gin finishes across every completed match.`
           : 'Most digus of all time.'),
+      entry('back-to-back-king', 'Back-to-Back King', '♛', backToBackKing?.id,
+        backToBackKing ? `${backToBackKing.v} in a row` : '—',
+        backToBackKing
+          ? `Won the Digu King crown ${backToBackKing.v} months running. Consecutive months only — a gap breaks the run.`
+          : 'Won the Digu King crown in consecutive months. Nobody has done it yet.'),
     ] },
     { title: 'Digu League', emoji: '🃏', records: [
       entry('crown-conqueror', 'The Crown Conqueror', '👑', crownConqueror?.id,
