@@ -409,7 +409,23 @@ export default function ActiveMatch({ matchId, isAdmin = false, isAuthed = false
     ctx.fillStyle = 'rgba(212,175,55,0.55)'; ctx.font = '700 24px Arial, sans-serif';
     ctx.fillText('PLAY SMART  ·  WIN THE CROWN', W / 2, 1270);
 
-    const caption = `🎴 Digu League — ${done ? 'full time!' : 'match starting!'}\n${team1Label} 🆚 ${team2Label}`;
+    /* Match-start captions. Chosen from the match id rather than at random, so
+       re-sharing the same match always produces the same words — a caption that
+       changed every time would look like a different match to the group. */
+    const START_CAPTIONS = [
+      '⚔️ A new battle begins — who will rule the table?',
+      '🔥 Battle begins!',
+      '🎬 Match underway!',
+      '🃏 Game on!',
+      '👑 The crown hunt begins!',
+      '🏁 The road to victory starts now!',
+    ];
+    const pickFor = (id: string, list: string[]) =>
+      list[[...id].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7) % list.length];
+
+    const caption = done
+      ? `🏆 Digu League — full time!\n${team1Label} 🆚 ${team2Label}`
+      : `${pickFor(match.id, START_CAPTIONS)}\n🎴 Digu League\n${team1Label} 🆚 ${team2Label}`;
     canvas.toBlob(async (blob) => {
       if (!blob) return;
       const file = new File([blob], 'digu-match.png', { type: 'image/png' });
