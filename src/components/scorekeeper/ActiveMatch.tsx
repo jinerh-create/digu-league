@@ -423,9 +423,11 @@ export default function ActiveMatch({ matchId, isAdmin = false, isAuthed = false
     const pickFor = (id: string, list: string[]) =>
       list[[...id].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7) % list.length];
 
+    // The card already carries the Digu League branding, so the caption doesn't
+    // repeat it — it just sets the scene and names the sides.
     const caption = done
-      ? `🏆 Digu League — full time!\n${team1Label} 🆚 ${team2Label}`
-      : `${pickFor(match.id, START_CAPTIONS)}\n🎴 Digu League\n${team1Label} 🆚 ${team2Label}`;
+      ? `🏆 Full time!\n${team1Label} 🆚 ${team2Label}`
+      : `${pickFor(match.id, START_CAPTIONS)}\n${team1Label} 🆚 ${team2Label}`;
     canvas.toBlob(async (blob) => {
       if (!blob) return;
       const file = new File([blob], 'digu-match.png', { type: 'image/png' });
