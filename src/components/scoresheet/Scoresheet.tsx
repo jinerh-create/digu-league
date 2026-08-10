@@ -493,7 +493,40 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
       const idx = sameDay.findIndex(m => m.id === matchId);
       if (idx >= 0) matchNo = idx + 1;
     } catch { /* default to 1 */ }
-    return `DIGU LEAGUE\n${dateStr}\nMATCH NO : ${matchNo}`;
+    /* A finished match deserves more than a filing reference. The card already
+       carries the branding and the scores, so the caption congratulates the
+       winners and states the margin — the two things a group chat reacts to.
+       Chosen from the match id so re-sharing never changes the wording. */
+    const SALUTES = [
+      '🏆 CHAMPIONS OF THE TABLE',
+      '🏆 THE TABLE HAS A WINNER',
+      '🏆 VICTORY SEALED',
+      '🏆 THAT IS HOW IT IS DONE',
+      '🏆 CROWNED AT THE TABLE',
+    ];
+    const CLOSERS = [
+      'Fought hard. Earned every point.',
+      'No mercy, no excuses. Well played.',
+      'Cards fell, nerve held. Take a bow.',
+      'Outplayed, outlasted, out in front.',
+      'Every digu counted. Deserved.',
+    ];
+    const pick = (list: string[]) =>
+      list[[...matchId].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7) % list.length];
+
+    if (!match?.completed_at) {
+      return `${dateStr}\nMATCH NO : ${matchNo}`;
+    }
+    if (!winnerLabel) {
+      return `🤝 HONOURS EVEN\n${team1Label} 🆚 ${team2Label}\n${dateStr} · Match ${matchNo}`;
+    }
+    return [
+      pick(SALUTES),
+      `${winnerLabel} win by ${margin}`,
+      '',
+      pick(CLOSERS),
+      `${dateStr} · Match ${matchNo}`,
+    ].join('\n');
   }
 
   async function handleShare() {
