@@ -553,11 +553,6 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
         crownConqueror
           ? `Most Digu League championships — ${crownConqueror.v} won from ${crownConqueror.played} matches played. A tie goes to whoever needed fewer matches.`
           : 'Most Digu League monthly championships. A tie goes to whoever needed fewer matches.'),
-      entry('digu-king', 'The Digu King', '🃏', diguKingHolder?.id,
-        diguKingHolder ? `${diguKingHolder.v} ${diguKingHolder.v === 1 ? 'crown' : 'crowns'}` : '—',
-        diguKingHolder
-          ? `Most monthly Digu King crowns — ${diguKingHolder.v} won from ${diguKingHolder.played} matches played. A tie goes to whoever needed fewer matches.`
-          : 'Most monthly Digu King crowns. A tie goes to whoever needed fewer matches.'),
     ] },
     { title: 'Champions League', emoji: '🏆', records: [
       entry('champion-of-champions', 'Champion of Champions', '🏆', championOfChamps?.id,
@@ -621,6 +616,13 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
         longestStreak
           ? `Longest run of consecutive match wins — ${longestStreak.v} straight, without a single defeat in between.`
           : 'Longest run of consecutive match wins.'),
+      /* Moved here from the Digu League section and renamed — it was the same
+         statistic as "The Digu King", and one metric should have one record. */
+      entry('king-of-kings', 'King of Kings', '👑', diguKingHolder?.id,
+        diguKingHolder ? `${diguKingHolder.v} ${diguKingHolder.v === 1 ? 'crown' : 'crowns'}` : '—',
+        diguKingHolder
+          ? `Most Digu King awards ever won — ${diguKingHolder.v} ${diguKingHolder.v === 1 ? 'crown' : 'crowns'} from ${diguKingHolder.played} matches played. A tie goes to whoever needed fewer matches.`
+          : 'Most Digu King awards ever won. A tie goes to whoever needed fewer matches.'),
       entry('lightning-victory', 'Lightning Victory', '⚡',
         fastWin.v < Infinity ? fastWin.id : null,
         fastWin.v < Infinity ? fmtMins(fastWin.v) : '—',
