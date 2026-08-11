@@ -520,9 +520,13 @@ export default function Scoresheet({ matchId, isAdmin = false, isAuthed = false 
     if (!winnerLabel) {
       return `🤝 HONOURS EVEN\n${team1Label} 🆚 ${team2Label}\n${dateStr} · Match ${matchNo}`;
     }
+    // Computed here rather than reused: the `margin` in the JSX below lives inside
+    // an IIFE, so it is not in scope at this point and referencing it threw at
+    // runtime — which silently broke sharing.
+    const winMargin = Math.abs(isTeam ? p1DisplayTotal - p2DisplayTotal : p1Running - p2Running);
     return [
       pick(SALUTES),
-      `${winnerLabel} win by ${margin}`,
+      `${winnerLabel} win by ${winMargin}`,
       '',
       pick(CLOSERS),
       `${dateStr} · Match ${matchNo}`,
