@@ -340,6 +340,25 @@ export default function MatchList() {
       )}
 
       <style>{`
+        /* Uniform height so a row of tiles reads as a list rather than a ragged
+           stack — tiles with a King chip were taller than those without. */
+        .match-card { min-height: 58px; display: flex; flex-direction: column; justify-content: center; }
+
+        /* Phone: the display typefaces set wider than the sizes were chosen for,
+           so every element steps down and the row stays on one line. */
+        @media (max-width: 560px) {
+          .match-card { min-height: 50px; padding: 0.35rem 0.5rem !important; }
+          .match-head { gap: 0.3rem; }
+          .match-head .match-vs { font-size: 0.74rem; gap: 0.3rem; }
+          .vs-text { font-size: 0.6rem; }
+          .king-chip { font-size: 0.55rem; padding: 0.06rem 0.34rem; }
+          .result-chip { font-size: 0.58rem; padding: 0.12rem 0.4rem; }
+          .caret { width: 17px; height: 17px; }
+          .caret svg { width: 8px; height: 5px; }
+          .x-btn { width: 17px; height: 17px; font-size: 0.6rem; }
+          .detail-row { font-size: 0.66rem; }
+        }
+
         .match-card {
     padding: 0.45rem 0.65rem; cursor: default;
     border: 1px solid rgba(212,175,55,0.32) !important;
