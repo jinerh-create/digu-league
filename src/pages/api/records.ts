@@ -23,7 +23,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
       g.records
         .filter((r) => r.tracked && r.holderId && (!holder || r.holderId === holder))
         .map((r) => ({
-          id: r.id,
+          id: r.key,
           name: r.name,
           emoji: r.emoji,
           value: r.value,

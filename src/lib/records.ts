@@ -272,6 +272,52 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
     return best;
   })();
 
+  /* Multi-Crown Legend — championships in the most DIFFERENT seasons. Distinct from
+     Crown Conqueror, which counts titles: winning the league and the Champions
+     League in the same month is two titles but only one season. Counts a month once
+     however many crowns it held. */
+  const multiCrown = (() => {
+    const seasonsOf = new Map<string, Set<string>>();
+    for (const a of awards as any[]) {
+      const mm = /^(?:dl|cl)-(\d{2})-champion$/.exec(a.award_key);
+      if (!mm || !a.player_id) continue;
+      const set = seasonsOf.get(a.player_id) || seasonsOf.set(a.player_id, new Set()).get(a.player_id)!;
+      set.add(`${a.year}-${mm[1]}`);
+    }
+    let best: { id: string; v: number } | null = null;
+    for (const [id, set] of seasonsOf) {
+      const v = set.size;
+      const played = playedBy.get(id) ?? Number.MAX_SAFE_INTEGER;
+      const bestPlayed = best ? (playedBy.get(best.id) ?? Number.MAX_SAFE_INTEGER) : Infinity;
+      if (!best || v > best.v || (v === best.v && played < bestPlayed)) best = { id, v };
+    }
+    return best;
+  })();
+
+  /* First-Time Champion — won the league in their debut season. A player's debut is
+     the first month they appear in a completed match; the record is held by whoever
+     took the title in that very month. */
+  const firstTimeChampion = (() => {
+    const debut = new Map<string, string>();      // player -> earliest 'YYYY-MM'
+    for (const mt of matches as any[]) {
+      const ym = (mt.started_at || '').slice(0, 7);
+      if (!ym) continue;
+      for (const pid of [mt.player1_id, mt.player2_id, mt.team1_player2_id, mt.team2_player2_id]) {
+        if (!pid) continue;
+        const cur = debut.get(pid);
+        if (!cur || ym < cur) debut.set(pid, ym);
+      }
+    }
+    for (const a of awards as any[]) {
+      const mm = /^dl-(\d{2})-champion$/.exec(a.award_key);
+      if (!mm || !a.player_id) continue;
+      if (debut.get(a.player_id) === `${a.year}-${mm[1]}`) {
+        return { id: a.player_id as string, ym: `${a.year}-${mm[1]}` };
+      }
+    }
+    return null;
+  })();
+
   const crownConqueror   = mostTitlesIn('dl');
   const championOfChamps = mostTitlesIn('cl');
 
@@ -650,6 +696,16 @@ export async function computeRecords(db: D1Database): Promise<{ groups: RecordGr
         diguKingHolder
           ? `Most Digu King awards ever won — ${diguKingHolder.v} ${diguKingHolder.v === 1 ? 'crown' : 'crowns'} from ${diguKingHolder.played} matches played. A tie goes to whoever needed fewer matches.`
           : 'Most Digu King awards ever won. A tie goes to whoever needed fewer matches.'),
+      entry('multi-crown-legend', 'Multi-Crown Legend', '🌗', multiCrown?.id,
+        multiCrown ? `${multiCrown.v} ${multiCrown.v === 1 ? 'season' : 'seasons'}` : '—',
+        multiCrown
+          ? `Won a championship in ${multiCrown.v} different ${multiCrown.v === 1 ? 'season' : 'seasons'}. A season counts once however many crowns it held, so taking the league and the Champions League in one month still counts as one.`
+          : 'Championships in the most different seasons.'),
+      entry('first-time-champion', 'First-Time Champion', '🌱', firstTimeChampion?.id,
+        firstTimeChampion ? firstTimeChampion.ym : '—',
+        firstTimeChampion
+          ? `Won the league in their debut season — champion in ${firstTimeChampion.ym}, the very first month they played a completed match.`
+          : 'Won the league in a debut season. Nobody has managed it yet.'),
       entry('lightning-victory', 'Lightning Victory', '⚡',
         fastWin.v < Infinity ? fastWin.id : null,
         fastWin.v < Infinity ? fmtMins(fastWin.v) : '—',

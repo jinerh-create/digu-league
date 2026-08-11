@@ -115,8 +115,12 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
     </script>
 
     {groups.map(g => (
-      <section class="rec-group" id={g.title}>
-        <h2 class="rec-group-title">{g.emoji} {g.title}</h2>
+      <details class="rec-group" id={g.title} open>
+        <summary class="rec-group-title">
+          <span class="rg-chev" aria-hidden="true">▸</span>
+          <span>{g.emoji} {g.title}</span>
+          <span class="rg-count">{g.records.length}</span>
+        </summary>
         <div class="rec-grid">
           {g.records.map(r => (
             <div class={`rec-card${!r.tracked ? ' untracked' : ''}${r.holderId ? ' held' : ''}`}>
@@ -153,7 +157,7 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
             </div>
           ))}
         </div>
-      </section>
+      </details>
     ))}
   </div>
 </BaseLayout>
@@ -246,7 +250,25 @@ const totalRecords = groups.reduce((n, g) => n + g.records.length, 0);
     .rec-nav a { animation: none; transition: none; }
   }
   .rec-group { margin-bottom: 1.6rem; scroll-margin-top: 3.2rem; }
-  .rec-group-title { font-size: 1.1rem; margin-bottom: .7rem; color: var(--text-primary); }
+  /* Each section folds. Built on <details>, so it works without JavaScript and the
+     open/closed state survives the scroll-spy moving the active pill around. */
+  .rec-group-title {
+    list-style: none; cursor: pointer; user-select: none;
+    display: flex; align-items: center; gap: .5rem;
+    font-size: 1.1rem; font-weight: 700; color: var(--text-primary);
+    margin-bottom: .7rem; padding: .45rem .6rem; border-radius: 10px;
+    background: linear-gradient(160deg, rgba(212,175,55,0.07), transparent);
+    border: 1px solid rgba(212,175,55,0.24);
+  }
+  .rec-group-title::-webkit-details-marker { display: none; }
+  .rec-group-title:hover { border-color: rgba(212,175,55,0.5); }
+  .rg-chev { color: #D4AF37; font-size: .8rem; transition: transform .18s ease; }
+  .rec-group[open] .rg-chev { transform: rotate(90deg); }
+  .rg-count {
+    margin-left: auto; font-size: .68rem; font-weight: 800;
+    color: var(--text-muted); background: var(--card);
+    border: 1px solid var(--border); border-radius: 999px; padding: .1rem .5rem;
+  }
   .rec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: .6rem; }
   /* Every tile the same size, whether or not it has a holder — a grid of uneven
      boxes reads as broken. Fixed base height with the holder row pinned to the
